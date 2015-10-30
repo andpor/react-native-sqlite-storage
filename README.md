@@ -5,19 +5,29 @@ Inspired by fantastic work done by Chris Brody I did not want to re-invent the w
 
 This is iOS binding only for now. Initial release - fully working. Tested so far with Simulators.
 
-Supports transactions
+Supports transactions.
 
-How to use:
+#How to use:
 
-1. npm install --save react-native-sqlite-storage
-2. Drag the SQLite Xcode project as a dependency project into your React Native XCode project
-3. Add libSQLite.a (from Workspace location) to the required Libraries and Frameworks.
-4. Add var SQLite = require('react-native-sqlite-storage') to your index.ios.js
-5. Add JS application code to use SQLite API in your index.ios.js etc.
+Step 1. npm install --save react-native-sqlite-storage
+
+Step 2. Drag the SQLite Xcode project as a dependency project into your React Native XCode project
+
+![alt tag](https://raw.github.com/andpor/react-native-sqlite-storage/master/instructions/libs.png)
+
+Step 3. Add libSQLite.a (from Workspace location) to the required Libraries and Frameworks.
+
+![alt tag](https://raw.github.com/andpor/react-native-sqlite-storage/master/instructions/addlibs.png)
+
+Step 4. Add var SQLite = require('react-native-sqlite-storage') to your index.ios.js
+
+![alt tag](https://raw.github.com/andpor/react-native-sqlite-storage/master/instructions/require.png)
+
+Step 5. Add JS application code to use SQLite API in your index.ios.js etc.
 
 Enjoy!
 
-# Original Cordova SQLite Bindings from Chris Brody
+#Original Cordova SQLite Bindings from Chris Brody
 https://github.com/litehelpers/Cordova-sqlite-storage
 
 The issues and limitations for the actual SQLite can be found on this site.
