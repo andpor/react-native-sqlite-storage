@@ -5,6 +5,8 @@ Inspired by fantastic work done by Chris Brody I did not want to re-invent the w
 
 This is iOS binding only for now. Initial release - fully working. Tested so far with Simulators.
 
+Supports transactions
+
 How to use:
 
 1. npm install --save react-native-sqlite-storage
@@ -14,3 +16,8 @@ How to use:
 5. Add JS application code to use SQLite API in your index.ios.js etc.
 
 Enjoy!
+
+# Original Cordova SQLite Bindings from Chris Brody
+https://github.com/litehelpers/Cordova-sqlite-storage
+
+The issues and limitations for the actual SQLite can be found on this site.
