@@ -9,7 +9,7 @@ How to use:
 
 1. npm install --save react-native-sqlite-storage
 2. Drag the SQLite Xcode project as a dependency project into your React Native XCode project
-3. Add libSQL.a (from Workspace location) to the required Libraries and Frameworks.
+3. Add libSQLite.a (from Workspace location) to the required Libraries and Frameworks.
 4. Add var SQLite = require('react-native-sqlite-storage') to your index.ios.js
 5. Add JS application code to use SQLite API in your index.ios.js etc.
 
