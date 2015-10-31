@@ -23,7 +23,33 @@ Step 4. Add var SQLite = require('react-native-sqlite-storage') to your index.io
 
 ![alt tag](https://raw.github.com/andpor/react-native-sqlite-storage/master/instructions/require.png)
 
-Step 5. Add JS application code to use SQLite API in your index.ios.js etc.
+Step 5. Add JS application code to use SQLite API in your index.ios.js etc. Here is some sample code. For full working example see index.ios.js
+
+```javascript
+errorCB(err) {
+  console.log("SQL Error: " + err);
+},
+
+successCB() {
+  console.log("SQL executed fine");
+},
+
+openCB() {
+  console.log("Database OPENED");
+},
+
+var db = SQLite.openDatabase("test.db", "1.0", "Test Database", 200000, openCB, errorCB);
+db.transaction((tx) => {
+  tx.executeSql('SELECT * FROM Employees a, Departments b WHERE a.department = b.department_id', [], (tx, results) => {
+      console.log("Query completed");
+      var len = results.rows.length;
+      for (let i = 0; i < len; i++) {
+        let row = results.rows.item(i);
+        console.log(`Employee name: ${row.name}, Dept Name: ${row.deptName}`);
+      }
+    });
+});
+```
 
 Enjoy!
 
