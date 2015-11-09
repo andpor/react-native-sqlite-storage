@@ -19,7 +19,7 @@
     "sqlite",
     "sqlite3",
     "ios",
-    "promise"
+    "promise",
     "cordova-sqlite-storage"
   ],
   "author": "Andrzej Porebski",
