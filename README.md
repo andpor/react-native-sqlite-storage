@@ -7,6 +7,10 @@ This is iOS binding only for now. Initial release - fully working. Tested so far
 
 Supports transactions.
 
+#Version History
+v2.0 - Upcoming - full support for Promise API. Backward compatible with Callbacks.
+v1.0 - Intial release with full support of all operations based on plan JavaScript callbacks.
+
 #How to use:
 
 Step 1. npm install --save react-native-sqlite-storage
@@ -23,7 +27,7 @@ Step 4. Add var SQLite = require('react-native-sqlite-storage') to your index.io
 
 ![alt tag](https://raw.github.com/andpor/react-native-sqlite-storage/master/instructions/require.png)
 
-Step 5. Add JS application code to use SQLite API in your index.ios.js etc. Here is some sample code. For full working example see index.ios.js
+Step 5. Add JS application code to use SQLite API in your index.ios.js etc. Here is some sample code. For full working example see test/index.ios.callback.js. Please note that Promise based API is now supported as well with full examples in the working React Native app under test/index.ios.promise.js
 
 ```javascript
 errorCB(err) {
