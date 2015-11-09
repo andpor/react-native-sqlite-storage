@@ -1,6 +1,6 @@
 {
   "name": "react-native-sqlite-storage",
-  "version": "0.0.2",
+  "version": "2.0",
   "description": "SQLite bindings for React Native",
   "main": "sqlite.ios.js",
   "scripts": {
@@ -19,6 +19,7 @@
     "sqlite",
     "sqlite3",
     "ios",
+    "promise"
     "cordova-sqlite-storage"
   ],
   "author": "Andrzej Porebski",
@@ -28,6 +29,6 @@
   },
   "homepage": "https://github.com/andpor/react-native-sqlite-storage",
   "peerDependencies": {
-    "react-native": ">=0.13.0"
+    "react-native": ">=0.11.0"
   }
 }
