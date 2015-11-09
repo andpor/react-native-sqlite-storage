@@ -1,7 +1,7 @@
 {
   "name": "react-native-sqlite-storage",
   "version": "2.0",
-  "description": "SQLite bindings for React Native",
+  "description": "SQLite3 bindings for React Native (++Promise)",
   "main": "sqlite.ios.js",
   "scripts": {
     "test": "echo \"Error: no test specified yet\" && exit 1"
