@@ -9,6 +9,7 @@ Supports transactions.
 
 #Version History
 v2.0 - Upcoming - full support for Promise API. Backward compatible with Callbacks.
+
 v1.0 - Intial release with full support of all operations based on plan JavaScript callbacks.
 
 #How to use:
