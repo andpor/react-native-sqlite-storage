@@ -8,13 +8,16 @@
 
 var React = require('react-native');
 var SQLite = require('react-native-sqlite-storage');
+SQLite.DEBUG(true);
+SQLite.enablePromise(true);
+SQLite.enablePromise(false);
 
 var {
   AppRegistry,
   StyleSheet,
   Text,
   View,
-  ListView,
+  ListView
 } = React;
 
 var database_name = "Test.db";
@@ -34,18 +37,18 @@ var SQLiteDemo = React.createClass({
     },
 
     componentWillUnmount(){
-        console.log("Closing database ...");
-        if (db) {
-            db.close(this.closeCB, this.errorCB);
-        }
+        this.closeDatabase();
     },
 
     errorCB(err) {
-        this.state.progress.push("SQL Error: " + err);
+        console.log("error: ",err);
+        this.state.progress.push("Error: "+ (err.message || err));
         this.setState(this.state);
+        return false;
     },
 
     successCB() {
+        console.log("SQL executed ...");
     },
 
     openCB() {
@@ -54,7 +57,8 @@ var SQLiteDemo = React.createClass({
     },
 
     closeCB() {
-        console.log("Database CLOSED.");
+        this.state.progress.push("Database CLOSED");
+        this.setState(this.state);
     },
 
     deleteCB() {
@@ -71,18 +75,26 @@ var SQLiteDemo = React.createClass({
             function () {
                 that.state.progress.push("Database is ready ... executing query ...");
                 that.setState(that.state);
-                db.transaction(that.queryEmployees);
+                db.transaction(that.queryEmployees,that.errorCB,function() {
+                    that.state.progress.push("Processing completed");
+                    that.setState(that.state);
+                });
             },
             function (error) {
-                console.log("received error:", error)
+                console.log("received version error:", error);
                 that.state.progress.push("Database not yet ready ... populating data");
                 that.setState(that.state);
                 db.transaction(that.populateDB, that.errorCB, function () {
                     that.state.progress.push("Database populated ... executing query ...");
                     that.setState(that.state);
-                    db.transaction(that.queryEmployees);
+                    db.transaction(that.queryEmployees,that.errorCB, function () {
+                        console.log("Transaction is now finished"); 
+                        that.state.progress.push("Processing completed");
+                        that.setState(that.state);
+                        that.closeDatabase();
+                    });
                 });
-            })
+            });
     },
 
     populateDB(tx) {
@@ -115,47 +127,48 @@ var SQLiteDemo = React.createClass({
             + 'office INTEGER, '
             + 'department INTEGER, '
             + 'FOREIGN KEY ( office ) REFERENCES Offices ( office_id ) '
-            + 'FOREIGN KEY ( department ) REFERENCES Departments ( department_id ));', [], this.successCB, this.errorCB);
+            + 'FOREIGN KEY ( department ) REFERENCES Departments ( department_id ));', []);
 
         this.state.progress.push("Executing INSERT stmts");
         this.setState(this.state);
 
+        tx.executeSql('INSERT INTO Departments (name) VALUES ("Client Services");', []);
+        tx.executeSql('INSERT INTO Departments (name) VALUES ("Investor Services");', []);
+        tx.executeSql('INSERT INTO Departments (name) VALUES ("Shipping");', []);
+        tx.executeSql('INSERT INTO Departments (name) VALUES ("Direct Sales");', []);
 
-        tx.executeSql('INSERT INTO Departments (name) VALUES ("Client Services");', [], this.successCB, this.errorCB);
-        tx.executeSql('INSERT INTO Departments (name) VALUES ("Investor Services");', [], this.successCB, this.errorCB);
-        tx.executeSql('INSERT INTO Departments (name) VALUES ("Shipping");', [], this.successCB, this.errorCB);
-        tx.executeSql('INSERT INTO Departments (name) VALUES ("Direct Sales");', [], this.successCB, this.errorCB);
+        tx.executeSql('INSERT INTO Offices (name, longtitude, latitude) VALUES ("Denver", 59.8,  34.);', []);
+        tx.executeSql('INSERT INTO Offices (name, longtitude, latitude) VALUES ("Warsaw", 15.7, 54.);', []);
+        tx.executeSql('INSERT INTO Offices (name, longtitude, latitude) VALUES ("Berlin", 35.3, 12.);', []);
+        tx.executeSql('INSERT INTO Offices (name, longtitude, latitude) VALUES ("Paris", 10.7, 14.);', []);
 
-        tx.executeSql('INSERT INTO Offices (name, longtitude, latitude) VALUES ("Denver", 59.8,  34.);', [], this.successCB, this.errorCB);
-        tx.executeSql('INSERT INTO Offices (name, longtitude, latitude) VALUES ("Warsaw", 15.7, 54.);', [], this.successCB, this.errorCB);
-        tx.executeSql('INSERT INTO Offices (name, longtitude, latitude) VALUES ("Berlin", 35.3, 12.);', [], this.successCB, this.errorCB);
-        tx.executeSql('INSERT INTO Offices (name, longtitude, latitude) VALUES ("Paris", 10.7, 14.);', [], this.successCB, this.errorCB);
-
-        tx.executeSql('INSERT INTO Employees (name, office, department) VALUES ("Sylvester Stallone", 2,  4);', [], this.successCB, this.errorCB);
-        tx.executeSql('INSERT INTO Employees (name, office, department) VALUES ("Elvis Presley", 2, 4);', [], this.successCB, this.errorCB);
-        tx.executeSql('INSERT INTO Employees (name, office, department) VALUES ("Leslie Nelson", 3,  2);', [], this.successCB, this.errorCB);
-        tx.executeSql('INSERT INTO Employees (name, office, department) VALUES ("Fidel Castro", 3, 1);', [], this.successCB, this.errorCB);
-        tx.executeSql('INSERT INTO Employees (name, office, department) VALUES ("Bill Clinton", 1, 3);', [], this.successCB, this.errorCB);
-        tx.executeSql('INSERT INTO Employees (name, office, department) VALUES ("Margaret Thatcher", 1, 2);', [], this.successCB, this.errorCB);
-        tx.executeSql('INSERT INTO Employees (name, office, department) VALUES ("Donald Trump", 1, 3);', [], this.successCB, this.errorCB);
-        tx.executeSql('INSERT INTO Employees (name, office, department) VALUES ("Dr DRE", 2, 2);', [], this.successCB, this.errorCB);
-        tx.executeSql('INSERT INTO Employees (name, office, department) VALUES ("Samantha Fox", 2, 1);', [], this.successCB, this.errorCB);
-
+        tx.executeSql('INSERT INTO Employees (name, office, department) VALUES ("Sylvester Stallone", 2,  4);', []);
+        tx.executeSql('INSERT INTO Employees (name, office, department) VALUES ("Elvis Presley", 2, 4);', []);
+        tx.executeSql('INSERT INTO Employees (name, office, department) VALUES ("Leslie Nelson", 3,  4);', []);
+        tx.executeSql('INSERT INTO Employees (name, office, department) VALUES ("Fidel Castro", 3, 3);', []);
+        tx.executeSql('INSERT INTO Employees (name, office, department) VALUES ("Bill Clinton", 1, 3);', []);
+        tx.executeSql('INSERT INTO Employees (name, office, department) VALUES ("Margaret Thatcher", 1, 3);', []);
+        tx.executeSql('INSERT INTO Employees (name, office, department) VALUES ("Donald Trump", 1, 3);', []);
+        tx.executeSql('INSERT INTO Employees (name, office, department) VALUES ("Dr DRE", 2, 2);', []);
+        tx.executeSql('INSERT INTO Employees (name, office, department) VALUES ("Samantha Fox", 2, 1);', []);
+        console.log("all config SQL done");
     },
 
     queryEmployees(tx) {
-        tx.executeSql('SELECT a.name, b.name as deptName FROM Employees a, Departments b WHERE a.department = b.department_id', [], this.queryEmployeesSuccess);
+        console.log("Executing sql...");
+        tx.executeSql('SELECT a.name, b.name as deptName FROM Employees a, Departments b WHERE a.department = b.department_id and a.department=?', [3], 
+            this.queryEmployeesSuccess,this.errorCB);
+        //tx.executeSql('SELECT a.name, from TEST', [],() => {},this.errorCB);
     },
 
-    queryEmployeesSuccess(tx, results) {
+    queryEmployeesSuccess(tx,results) {
         this.state.progress.push("Query completed");
         this.setState(this.state);
         var len = results.rows.length;
         for (let i = 0; i < len; i++) {
             let row = results.rows.item(i);
-            this.state.progress.push(`Dept Id: ${row.name}, Dept Name: ${row.deptName}`);
+            this.state.progress.push(`Empl Name: ${row.name}, Dept Name: ${row.deptName}`);
         }
-        ;
         this.setState(this.state);
     },
 
@@ -170,6 +183,19 @@ var SQLiteDemo = React.createClass({
         this.state.progress = ["Deleting database"];
         this.setState(this.state);
         SQLite.deleteDatabase(database_name, this.deleteCB, this.errorCB);
+    },
+
+    closeDatabase(){
+        var that = this;
+        if (db) {
+            console.log("Closing database ...");
+            that.state.progress.push("Closing database");
+            that.setState(that.state);
+            db.close(that.closeCB,that.errorCB);
+        } else {
+            that.state.progress.push("Database was not OPENED");
+            that.setState(that.state);
+        }
     },
 
     runDemo(){
@@ -191,10 +217,13 @@ var SQLiteDemo = React.createClass({
         return (<View style={styles.mainContainer}>
             <View style={styles.toolbar}>
                 <Text style={styles.toolbarButton} onPress={this.runDemo}>
-                    Run Demo!
+                    Run Demo
+                </Text>
+                <Text style={styles.toolbarButton} onPress={this.closeDatabase}>
+                    Close DB
                 </Text>
                 <Text style={styles.toolbarButton} onPress={this.deleteDatabase}>
-                    Delete DB!
+                    Delete DB
                 </Text>
             </View>
             <ListView
