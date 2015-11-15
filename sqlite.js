@@ -1,5 +1,5 @@
 /*
- * sqlite.ios.js
+ * sqlite.js
  *
  * Created by Andrzej Porebski on 10/29/15.
  * Copyright (c) 2015 Andrzej Porebski.
@@ -7,7 +7,7 @@
  * This library is available under the terms of the MIT License (2008).
  * See http://opensource.org/licenses/alphabetical for full text.
  */
-var plugin = {SQLiteFactory} = require('./lib/sqlite.ios.core.js');
+var plugin = {SQLiteFactory} = require('./lib/sqlite.core.js');
 
 var config = [
   [false,"SQLitePlugin","transaction",false,true],
