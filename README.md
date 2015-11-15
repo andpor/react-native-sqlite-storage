@@ -1,18 +1,21 @@
 # react-native-sqlite-storage
-SQLite Native Plugin for React Native
+SQLite3 Native Plugin for React Native for both Android and iOS
 
 Inspired by fantastic work done by Chris Brody I did not want to re-invent the wheel. The original Cordova plugin was written so well and adhered to latest WebSQL API that there was no need to come up with anything much different. So the Cordova plugin was ported to React Native.
 
-This is iOS binding only for now. Initial release - fully working. Tested so far with Simulators.
+Current release support both iOS and Android
 
 Supports transactions.
 
 #Version History
+
+v2.1 - Android support
+
 v2.0 - Full support for Promise API. Backward compatible with Callbacks.
 
-v1.0 - Intial release with full support of all operations based on plan JavaScript callbacks.
+v1.0 - Intial release for iOS with full support of all operations based on plan JavaScript callbacks.
 
-#How to use:
+#How to use (iOS):
 
 Step 1. npm install --save react-native-sqlite-storage
 
@@ -56,6 +59,76 @@ db.transaction((tx) => {
 });
 ```
 
+#How to use (Android):
+
+#### Step 1 - NPM Install 
+
+```shell
+npm install --save react-native-sqlite-storage
+```
+#### Step 2 - Update Gradle Settings
+
+```gradle
+// file: android/settings.gradle
+...
+
+include ':react-native-sqlite-storage', ':app'
+project(':react-native-sqlite-storage').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-sqlite-storage/src/android')
+```
+
+#### Step 3 - Update app Gradle Build
+
+```gradle
+// file: android/app/build.gradle
+...
+
+dependencies {
+    ...
+    compile project(':react-native-sqlite-storage')
+}
+```
+
+#### Step 4 - Register React Package
+
+```java
+...
+import org.pgsqlite.SQLitePlugin
+import android.support.v4.app.FragmentActivity;
+
+public class MainActivity extends FragmentActivity implements DefaultHardwareBackBtnHandler { // ! extends from FragmentActivity
+
+    private ReactInstanceManager mReactInstanceManager;
+    private ReactRootView mReactRootView;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        mReactRootView = new ReactRootView(this);
+        mReactInstanceManager = ReactInstanceManager.builder()
+                .setApplication(getApplication())
+                .setBundleAssetName("index.android.bundle")
+                .setJSMainModuleName("index.android")
+                .addPackage(new MainReactPackage())
+                .addPackage(new SQLitePlugin(this)) // register react date package here
+                .setUseDeveloperSupport(BuildConfig.DEBUG)
+                .setInitialLifecycleState(LifecycleState.RESUMED)
+                .build();
+        mReactRootView.startReactApplication(mReactInstanceManager, "AwesomeProject", null);
+        setContentView(mReactRootView);
+    }
+...
+
+```
+
+#### Step 5 - Require and use in Javascript - see full examples (callbacks and Promise) in test directory.
+
+```js
+// file: index.android.js
+
+var React = require('react-native');
+var SQLite = require('react-native-sqlite-storage')
+...
+```
 Enjoy!
 
 #Original Cordova SQLite Bindings from Chris Brody
