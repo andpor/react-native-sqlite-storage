@@ -157,11 +157,11 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
      * Executes the request and returns PluginResult.
      *
      * @param actionAsString The action to execute.
-     * @param args   JSONArry of arguments for the plugin.
+     * @param args   JSONArray of arguments for the plugin.
      * @param cbc    Callback context from Cordova API
      * @return       Whether the action was valid.
      */
-    public boolean execute(String actionAsString, JSONArray args, CallbackContext cbc) throws Exception{
+    protected boolean execute(String actionAsString, JSONArray args, CallbackContext cbc) throws Exception{
 
         Action action;
         try {
