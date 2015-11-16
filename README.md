@@ -9,7 +9,9 @@ Supports transactions.
 
 #Version History
 
-v2.1.1 - Upcoming - Fixes issues with XCode path and React Native version compatibility
+v2.1.2 - Upcoming - Android Native SQLite connectivity
+
+v2.1.1 - Fixes issues with XCode path and React Native version compatibility
 
 v2.1 - Android support
 
