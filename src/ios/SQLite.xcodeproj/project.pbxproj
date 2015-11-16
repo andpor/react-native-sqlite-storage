@@ -229,12 +229,12 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
-					"$(SRCROOT)/../react-native/React/**",
+					"$(SRCROOT)/../../../react-native/React/**",
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = SQLite;
 				SKIP_INSTALL = YES;
-				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)/../react-native/React/**";
+				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)/../../../react-native/React/**";
 			};
 			name = Debug;
 		};
@@ -245,12 +245,12 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
-					"$(SRCROOT)/../react-native/React/**",
+					"$(SRCROOT)/../../../react-native/React/**",
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = SQLite;
 				SKIP_INSTALL = YES;
-				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)/../react-native/React/**";
+				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)/../../../react-native/React/**";
 			};
 			name = Release;
 		};
