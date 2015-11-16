@@ -7,6 +7,8 @@ Current release support both iOS and Android via identical JavaScript API.
 
 Supports transactions.
 
+Please let me know your projects that use these SQLite React Native modules. I will list them in the reference section.
+
 #Version History
 
 v2.1.2 - Upcoming - Android Native SQLite connectivity
