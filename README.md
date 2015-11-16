@@ -150,9 +150,6 @@ The issues and limitations for the actual SQLite can be found on this site.
 
 ##Issues
 
-#### Issue 1
-Android implemetation is not able to accept doubles as input into the queries for now. This is due to the underlying React Native limitation where only a Numeric type is available on the interface point making it ambiguous to distinguish intgeres from doubles. Once I figure out the proper way to do this I will update the codebase.
-#### Issue 2
-Android implementation is based on the simple Android plugin implementation from Chris Brody. The support for the other plugin version will be done over time.
-#### Issue 3
-Automatic close for the database when main activity is destroyed is not yet implemented.
+1. Android implemetation is not able to accept doubles as input into the queries for now. This is due to the underlying React Native limitation where only a Numeric type is available on the interface point making it ambiguous to distinguish intgeres from doubles. Once I figure out the proper way to do this I will update the codebase [(Issue #4141)] (https://github.com/facebook/react-native/issues/4141).
+2. Android implementation is based on the simple Android plugin implementation from Chris Brody. The support for the other plugin version will be done over time.
+3. Automatic close for the database when main activity is destroyed is not yet implemented.
