@@ -9,6 +9,8 @@ Supports transactions.
 
 #Version History
 
+v2.1.1 - Upcoming - Fixes issues with XCode path and React Native version compatibility
+
 v2.1 - Android support
 
 v2.0 - Full support for Promise API. Backward compatible with Callbacks.
