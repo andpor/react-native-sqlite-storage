@@ -6,7 +6,8 @@
 package org.pgsqlite;
 
 
-import android.support.v4.app.FragmentActivity;
+
+import android.app.Activity;
 
 import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.JavaScriptModule;
@@ -16,12 +17,13 @@ import com.facebook.react.uimanager.ViewManager;
 
 import java.util.ArrayList;
 import java.util.Collections;
+
 import java.util.List;
 
 public class SQLitePluginPackage implements ReactPackage {
-    private FragmentActivity activity = null;
+    private Activity activity = null;
 
-    public SQLitePluginPackage(FragmentActivity activity){
+    public SQLitePluginPackage(Activity activity){
         this.activity = activity;
     }
 

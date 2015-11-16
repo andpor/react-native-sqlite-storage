@@ -8,15 +8,13 @@
 package org.pgsqlite;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.database.Cursor;
 import android.database.CursorWindow;
 import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteStatement;
-
-
-import android.support.v4.app.FragmentActivity;
 import android.util.Base64;
 import android.util.Log;
 
@@ -61,7 +59,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
     private static final Pattern DELETE_TABLE_NAME = Pattern.compile("^\\s*DELETE\\s+FROM\\s+(\\S+)",
             Pattern.CASE_INSENSITIVE);
 
-    protected FragmentActivity activity = null;
+    protected Activity activity = null;
     protected ExecutorService threadPool;
 
     /**
@@ -71,7 +69,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
      */
     static ConcurrentHashMap<String, DBRunner> dbrmap = new ConcurrentHashMap<String, DBRunner>();
 
-    public SQLitePlugin(ReactApplicationContext reactContext, FragmentActivity activity) {
+    public SQLitePlugin(ReactApplicationContext reactContext, Activity activity) {
         super(reactContext);
         this.activity = activity;
         this.threadPool = Executors.newCachedThreadPool();
@@ -149,7 +147,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
         return this.threadPool;
     }
 
-    protected FragmentActivity getActivity(){
+    protected Activity getActivity(){
         return this.activity;
     }
 
