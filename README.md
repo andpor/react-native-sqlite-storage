@@ -127,7 +127,7 @@ public class MainActivity extends FragmentActivity implements DefaultHardwareBac
                 .setBundleAssetName("index.android.bundle")
                 .setJSMainModuleName("index.android")
                 .addPackage(new MainReactPackage())
-                .addPackage(new SQLitePlugin(this)) // register SQLite Plugin here
+                .addPackage(new SQLitePluginPackage(this)) // register SQLite Plugin here
                 .setUseDeveloperSupport(BuildConfig.DEBUG)
                 .setInitialLifecycleState(LifecycleState.RESUMED)
                 .build();
