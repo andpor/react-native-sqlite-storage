@@ -701,7 +701,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                     mydb.executeSqlBatch(dbq.queries, dbq.jsonparams, dbq.queryIDs, dbq.cbc);
 
                     // NOTE: androidLock[Bug]Workaround is not necessary and IGNORED for sqlite4java (NDK version).
-                    if (this.bugWorkaround && dbq.queries.length == 1 && dbq.queries[0] == "COMMIT")
+                    if (this.bugWorkaround && dbq.queries.length == 1 && dbq.queries[0].equals("COMMIT"))
                         mydb.bugWorkaround();
 
                     dbq = q.take();
