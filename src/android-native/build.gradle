@@ -23,6 +23,10 @@ android {
     lintOptions {
         abortOnError false
     }
+    sourceSets.main {
+        jni.srcDirs = [] // This prevents the auto generation of Android.mk
+        jniLibs.srcDir 'libs' 
+    }
 }
 
 repositories {
