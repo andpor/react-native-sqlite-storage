@@ -90,7 +90,7 @@ npm install --save react-native-sqlite-storage
 // file: android/settings.gradle
 ...
 
-include ':react-native-sqlite-storage', ':app'
+include ':react-native-sqlite-storage'
 project(':react-native-sqlite-storage').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-sqlite-storage/src/android')
 ```
 
@@ -157,5 +157,5 @@ The issues and limitations for the actual SQLite can be found on this site.
 ##Issues
 
 1. Android implemetation is not able to accept doubles as input into the queries for now. This is due to the underlying React Native limitation where only a Numeric type is available on the interface point making it ambiguous to distinguish intgeres from doubles. Once I figure out the proper way to do this I will update the codebase [(Issue #4141)] (https://github.com/facebook/react-native/issues/4141).
-2. Android implementation is based on the simple Android plugin implementation from Chris Brody. The support for the other plugin version will be done over time.
+2. Android implementation is based on the simple Android plugin implementation from Chris Brody. The android native version of the plugin is also ported but is currently in testing and verification.
 3. Automatic close for the database when main activity is destroyed is not yet implemented.
