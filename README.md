@@ -11,8 +11,10 @@ Please let me know your projects that use these SQLite React Native modules. I w
 
 #Version History
 
-v2.1.2 - Upcoming - Android Native SQLite connectivity
-
+v2.1.2 - Upcoming
+ 1. Android Native SQLite connectivity
+ 2. Change how React parameters are processed to map a Number to Java Double
+ 
 v2.1.1 - Fixes issues with XCode path and React Native version compatibility
 
 v2.1 - Android support
