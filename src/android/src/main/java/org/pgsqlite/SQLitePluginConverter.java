@@ -64,7 +64,7 @@ public abstract class SQLitePluginConverter {
                     jsonArray.put(readableArray.getBoolean(i));
                     break;
                 case Number:
-                    jsonArray.put(readableArray.getInt(i));
+                    jsonArray.put(readableArray.getDouble(i));
                     break;
                 case String:
                     jsonArray.put(readableArray.getString(i));
