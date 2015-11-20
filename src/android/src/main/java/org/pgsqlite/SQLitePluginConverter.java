@@ -35,7 +35,7 @@ public abstract class SQLitePluginConverter {
                     jsonObject.put(key, readableMap.getBoolean(key));
                     break;
                 case Number:
-                    jsonObject.put(key, readableMap.getInt(key));
+                    jsonObject.put(key, readableMap.getDouble(key));
                     break;
                 case String:
                     jsonObject.put(key, readableMap.getString(key));
