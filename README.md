@@ -112,10 +112,9 @@ dependencies {
 
 ```java
 ...
-import org.pgsqlite.SQLitePlugin
-import android.support.v4.app.FragmentActivity;
+import org.pgsqlite.SQLitePluginPackage;
 
-public class MainActivity extends FragmentActivity implements DefaultHardwareBackBtnHandler { // ! extends from FragmentActivity
+public class MainActivity extends Activity implements DefaultHardwareBackBtnHandler {
 
     private ReactInstanceManager mReactInstanceManager;
     private ReactRootView mReactRootView;
