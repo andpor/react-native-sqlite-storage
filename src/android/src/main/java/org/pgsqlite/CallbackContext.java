@@ -15,7 +15,7 @@ import org.json.JSONObject;
 
 public class CallbackContext {
 
-    private static final String LOG_TAG = "SQLitePlugin";
+    private static final String LOG_TAG = CallbackContext.class.getSimpleName();
 
     private Callback successCallback;
     private Callback errorCallback;

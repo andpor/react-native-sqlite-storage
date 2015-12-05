@@ -9,12 +9,14 @@ package org.pgsqlite;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.Application;
 import android.database.Cursor;
 import android.database.CursorWindow;
 import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteStatement;
+import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
 
@@ -45,7 +47,11 @@ import java.io.OutputStream;
 import java.io.IOException;
 
 
-public class SQLitePlugin extends ReactContextBaseJavaModule {
+public class SQLitePlugin extends ReactContextBaseJavaModule implements Application.ActivityLifecycleCallbacks {
+
+    private static final String PLUGIN_NAME = "SQLitePlugin";
+
+    private static final String LOG_TAG = SQLitePlugin.class.getSimpleName();
 
     private static final Pattern FIRST_WORD = Pattern.compile("^\\s*(\\S+)",
             Pattern.CASE_INSENSITIVE);
@@ -62,6 +68,46 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
     protected Activity activity = null;
     protected ExecutorService threadPool;
 
+    @Override
+    public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
+
+    }
+
+    @Override
+    public void onActivityStarted(Activity activity) {
+
+    }
+
+    @Override
+    public void onActivityResumed(Activity activity) {
+
+    }
+
+    @Override
+    public void onActivityPaused(Activity activity) {
+
+    }
+
+    @Override
+    public void onActivityStopped(Activity activity) {
+
+    }
+
+    @Override
+    public void onActivitySaveInstanceState(Activity activity, Bundle outState) {
+
+    }
+
+    @Override
+    public void onActivityDestroyed(Activity activity) {
+        Activity myActivity = this.getActivity();
+        if (activity == myActivity){
+            myActivity.getApplication().unregisterActivityLifecycleCallbacks(this);
+            Log.d(LOG_TAG, "linked activity destroyed - closing all open databases");
+            this.closeAllOpenDatabases();
+        }
+    }
+
     /**
      * Multiple database runner map (static).
      * NOTE: no public static accessor to db (runner) map since it would not work with db threading.
@@ -72,15 +118,16 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
     public SQLitePlugin(ReactApplicationContext reactContext, Activity activity) {
         super(reactContext);
         this.activity = activity;
+        this.activity.getApplication().registerActivityLifecycleCallbacks(this);
         this.threadPool = Executors.newCachedThreadPool();
     }
 
     /**
-     * Required React Native method
+     * Required React Native method - returns the name of this Plugin - SQLitePlugin
      */
     @Override
     public String getName() {
-        return "SQLite";
+        return PLUGIN_NAME;
     }
 
     @ReactMethod
@@ -143,10 +190,18 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
         }
     }
 
+    /**
+     *
+     * @return the thread pool available for scheduling background execution
+     */
     protected ExecutorService getThreadPool(){
         return this.threadPool;
     }
 
+    /**
+     *
+     * @return linked activity
+     */
     protected Activity getActivity(){
         return this.activity;
     }
@@ -182,7 +237,6 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
     private boolean executeAndPossiblyThrow(Action action, JSONArray args, CallbackContext cbc)
             throws JSONException {
 
-        boolean status = true;
         JSONObject o;
         String dbname;
 
@@ -211,11 +265,10 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
 
             case executeSqlBatch:
             case backgroundExecuteSqlBatch:
-                String[] queries = null;
+                String[] queries;
                 String[] queryIDs = null;
 
-                JSONArray jsonArr = null;
-                int paramLen = 0;
+                JSONArray jsonArr;
                 JSONArray[] jsonparams = null;
 
                 JSONObject allargs = args.getJSONObject(0);
@@ -236,7 +289,6 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                         queries[i] = a.getString("sql");
                         queryIDs[i] = a.getString("qid");
                         jsonArr = a.getJSONArray("params");
-                        paramLen = jsonArr.length();
                         jsonparams[i] = jsonArr;
                     }
                 }
@@ -257,14 +309,13 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                 break;
         }
 
-        return status;
+        return true;
     }
 
     /**
      * Clean up and close all open databases.
-     * //TODO how to handle this     @Override
      */
-    public void onDestroy() {
+    public void closeAllOpenDatabases() {
         while (!dbrmap.isEmpty()) {
             String dbname = dbrmap.keySet().iterator().next();
 
@@ -274,8 +325,8 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
             try {
                 // stop the db runner thread:
                 r.q.put(new DBQuery());
-            } catch(Exception e) {
-                Log.e(SQLitePlugin.class.getSimpleName(), "couldn't stop db thread", e);
+            } catch(Exception ex) {
+                Log.e(SQLitePlugin.class.getSimpleName(), "couldn't stop db thread for db: " + dbname,ex);
             }
             dbrmap.remove(dbname);
         }
@@ -507,8 +558,8 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
         }
 
 
-        String query = "";
-        String query_id = "";
+        String query;
+        String query_id;
         int len = queryarr.length;
         JSONArray batchResults = new JSONArray();
 
@@ -571,7 +622,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
 
                     bindArgsToStatement(myStatement, jsonparams[i]);
 
-                    long insertId = -1; // (invalid)
+                    long insertId; // (invalid) = -1
 
                     try {
                         insertId = myStatement.executeInsert();
@@ -673,7 +724,6 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
             } catch (JSONException ex) {
                 ex.printStackTrace();
                 Log.v("executeSqlBatch", "SQLitePlugin.executeSql[Batch](): Error=" + ex.getMessage());
-                // TODO what to do?
             }
         }
 
@@ -784,10 +834,10 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
     /**
      * Execute Sql Statement Query
      *
-     * @param mydb
-     * @param query
-     * @param paramsAsJson
-     * @param cbc
+     * @param mydb - database
+     * @param query - SQL query to execute
+     * @param paramsAsJson - parameters to the query
+     * @param cbc - callback object
      *
      * @return results in string form
      */
@@ -796,9 +846,9 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                                                 CallbackContext cbc) throws Exception {
         JSONObject rowsResult = new JSONObject();
 
-        Cursor cur = null;
+        Cursor cur;
         try {
-            String[] params = null;
+            String[] params;
 
             params = new String[paramsAsJson.length()];
 
@@ -819,13 +869,13 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
 
         // If query result has rows
         if (cur != null && cur.moveToFirst()) {
-            JSONArray rowsArrayResult = new JSONArray();
-            String key = "";
+            JSONArray rowsArrayResult = new SQLiteArray(cur.getCount());
+            String key;
             int colCount = cur.getColumnCount();
 
             // Build up JSON result object for each row
             do {
-                JSONObject row = new JSONObject();
+                JSONObject row = new SQLiteObject(colCount);
                 try {
                     for (int i = 0; i < colCount; ++i) {
                         key = cur.getColumnName(i);
@@ -946,7 +996,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                     executeSqlBatch(dbname, dbq.queries, dbq.jsonparams, dbq.queryIDs, dbq.cbc);
 
                     // XXX workaround for Android locking/closing issue:
-                    if (androidLockWorkaround && dbq.queries.length == 1 && dbq.queries[0] == "COMMIT") {
+                    if (androidLockWorkaround && dbq.queries.length == 1 && dbq.queries[0].equals("COMMIT")) {
                         // Log.v(SQLitePlugin.class.getSimpleName(), "close and reopen db");
                         closeDatabaseNow(dbname);
                         this.mydb = openDatabase(dbname, false, null);
@@ -1050,4 +1100,4 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
         rollback,
         other
     }
-} /* vim: set expandtab : */
+}
