@@ -49,7 +49,7 @@ import java.io.IOException;
 
 public class SQLitePlugin extends ReactContextBaseJavaModule implements Application.ActivityLifecycleCallbacks {
 
-    private static final String PLUGIN_NAME = "SQLitePlugin";
+    private static final String PLUGIN_NAME = "SQLite";
 
     private static final String LOG_TAG = SQLitePlugin.class.getSimpleName();
 
@@ -65,7 +65,21 @@ public class SQLitePlugin extends ReactContextBaseJavaModule implements Applicat
     private static final Pattern DELETE_TABLE_NAME = Pattern.compile("^\\s*DELETE\\s+FROM\\s+(\\S+)",
             Pattern.CASE_INSENSITIVE);
 
+    /**
+     * Multiple database runner map (static).
+     * NOTE: no public static accessor to db (runner) map since it would not work with db threading.
+     * FUTURE put DBRunner into a public class that can provide external accessor.
+     */
+    static ConcurrentHashMap<String, DBRunner> dbrmap = new ConcurrentHashMap<String, DBRunner>();
+
+    /**
+     * Linked activity
+     */
     protected Activity activity = null;
+
+    /**
+     * Thread pool for database operations
+     */
     protected ExecutorService threadPool;
 
     @Override
@@ -98,6 +112,11 @@ public class SQLitePlugin extends ReactContextBaseJavaModule implements Applicat
 
     }
 
+    /**
+     * If activity matche linked Activity of this plugin, all open databases are closed.
+     *
+     * @param activity
+     */
     @Override
     public void onActivityDestroyed(Activity activity) {
         Activity myActivity = this.getActivity();
@@ -107,13 +126,6 @@ public class SQLitePlugin extends ReactContextBaseJavaModule implements Applicat
             this.closeAllOpenDatabases();
         }
     }
-
-    /**
-     * Multiple database runner map (static).
-     * NOTE: no public static accessor to db (runner) map since it would not work with db threading.
-     * FUTURE put DBRunner into a public class that can provide external accessor.
-     */
-    static ConcurrentHashMap<String, DBRunner> dbrmap = new ConcurrentHashMap<String, DBRunner>();
 
     public SQLitePlugin(ReactApplicationContext reactContext, Activity activity) {
         super(reactContext);
@@ -336,6 +348,12 @@ public class SQLitePlugin extends ReactContextBaseJavaModule implements Applicat
     // LOCAL METHODS
     // --------------------------------------------------------------------------
 
+    /**
+     *
+     * @param dbname
+     * @param options
+     * @param cbc
+     */
     private void startDatabase(String dbname, JSONObject options, CallbackContext cbc) {
         // TODO: is it an issue that we can orphan an existing thread?  What should we do here?
         // If we re-use the existing DBRunner it might be in the process of closing...
@@ -356,7 +374,11 @@ public class SQLitePlugin extends ReactContextBaseJavaModule implements Applicat
     /**
      * Open a database.
      *
-     * @param dbname   The name of the database file
+     * @param dbname
+     * @param createFromAssets
+     * @param cbc
+     * @return
+     * @throws Exception
      */
     private SQLiteDatabase openDatabase(String dbname, boolean createFromAssets, CallbackContext cbc) throws Exception {
         try {
@@ -392,6 +414,9 @@ public class SQLitePlugin extends ReactContextBaseJavaModule implements Applicat
     /**
      * If a prepopulated DB file exists in the assets folder it is copied to the dbPath.
      * Only runs the first time the app runs.
+     *
+     * @param myDBName
+     * @param dbfile
      */
     private void createFromAssets(String myDBName, File dbfile)
     {
@@ -440,7 +465,8 @@ public class SQLitePlugin extends ReactContextBaseJavaModule implements Applicat
     /**
      * Close a database (in another thread).
      *
-     * @param dbName   The name of the database file
+     * @param dbName
+     * @param cbc
      */
     private void closeDatabase(String dbName, CallbackContext cbc) {
         DBRunner r = dbrmap.get(dbName);
@@ -473,6 +499,11 @@ public class SQLitePlugin extends ReactContextBaseJavaModule implements Applicat
         }
     }
 
+    /**
+     *
+     * @param dbname
+     * @param cbc
+     */
     private void deleteDatabase(String dbname, CallbackContext cbc) {
         DBRunner r = dbrmap.get(dbname);
         if (r != null) {
@@ -493,6 +524,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule implements Applicat
             }
         }
     }
+
     /**
      * Delete a database.
      *
