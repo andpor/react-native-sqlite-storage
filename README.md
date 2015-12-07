@@ -14,6 +14,8 @@ Please let me know your projects that use these SQLite React Native modules. I w
 v2.1.2 - Upcoming
  1. Android Native SQLite connectivity
  2. Change how React parameters are processed to map a Number to Java Double
+ 3. Implent hooks for activity lifecycle and automatic db closing on destroy 
+ 4. Fix How To Get Started instructions for Android
  
 v2.1.1 - Fixes issues with XCode path and React Native version compatibility
 
