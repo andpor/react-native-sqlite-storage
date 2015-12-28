@@ -20,7 +20,7 @@ public class SQLiteObject extends JSONObject {
         try {
             Field valuesField = JSONObject.class.getDeclaredField("nameValuePairs");
             valuesField.setAccessible(true);
-            valuesField.set(valuesField, new LinkedHashMap<String, Object>(size));
+            valuesField.set(this, new LinkedHashMap<String, Object>(size));
         } catch (NoSuchFieldException e) {
             e.printStackTrace();
         } catch (IllegalAccessException e) {
