@@ -5,7 +5,7 @@ Inspired by fantastic work done by Chris Brody I did not want to re-invent the w
 
 Current release support both iOS and Android via identical JavaScript API.
 
-Supports transactions.
+This library supports SQL transactions and the interface from JavaScript can be either simple JavaScript callbacks or Promises.
 
 Please let me know your projects that use these SQLite React Native modules. I will list them in the reference section.
 
@@ -163,5 +163,4 @@ The issues and limitations for the actual SQLite can be found on this site.
 ##Issues
 
 1. Android binds all numeric SQL input values to double. This is due to the underlying React Native limitation where only a Numeric type is available on the interface point making it ambiguous to distinguish intgeres from doubles. Once I figure out the proper way to do this I will update the codebase [(Issue #4141)] (https://github.com/facebook/react-native/issues/4141).
-2. Android implementation is based on the simple Android plugin implementation from Chris Brody. The android native version of the plugin is also ported but is currently in testing and verification.
-3. Automatic close for the database when main activity is destroyed is not yet implemented.
+3. Automatic close for the database when main activity is destroyed is implemented in the pure Java Android version which is most likely to be obsoleted in the near future leaving native impl only.
