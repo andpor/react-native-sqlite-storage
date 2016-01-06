@@ -3,11 +3,14 @@ SQLite3 Native Plugin for React Native for both Android (Classic and Native) and
 
 Inspired by fantastic work done by Chris Brody I did not want to re-invent the wheel. The original Cordova plugin was written so well and adhered to latest WebSQL API that there was no need to come up with anything much different. So the Cordova plugin was ported to React Native.
 
-Current release support both iOS and Android via identical JavaScript API.
+Features:
+  1. iOS and Android supported via identical JavaScript API.
+  2. Android in pure Java and Native modes
+  3. SQL transactions 
+  4. JavaScript interface via plain callbacks or Promises.
+  5. Pre-populated SQLite database import from application sandbox
 
-This library supports SQL transactions and the interface from JavaScript can be either simple JavaScript callbacks or Promises.
-
-Please let me know your projects that use these SQLite React Native modules. I will list them in the reference section.
+Please let me know your projects that use these SQLite React Native modules. I will list them in the reference section. If there are any features that you think would benefit this library please post them.
 
 #Version History
 
