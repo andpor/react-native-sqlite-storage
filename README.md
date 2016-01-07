@@ -161,7 +161,7 @@ var SQLite = require('react-native-sqlite-storage')
 
 #### Step 1 - Create 'www' folder.
 
-Create a folder called 'www' (yes must be called precisely that else things won't work) in the app folder via Finder
+Create a folder called 'www' (yes must be called precisely that else things won't work) in the project folder via Finder
 
 #### Step 2 - Create the database file
 
