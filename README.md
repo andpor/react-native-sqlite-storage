@@ -156,6 +156,46 @@ var React = require('react-native');
 var SQLite = require('react-native-sqlite-storage')
 ...
 ```
+
+## Setting up your project to import a pre-populated SQLite database from application for iOS
+
+#### Step 1 - Create 'www' folder.
+
+Create a folder called 'www' (yes must be called precisely that else things won't work) in the app folder via Finder
+
+#### Step 2 - Create the database file
+
+Copy/paste your pre-populated database file into the 'www' folder. Give it the same name you are going to use in openDatabase call in your application
+
+#### Step 3 - Add file to project
+
+in XCode, right click on the main folder and select Add Files to 'your project name'
+
+![alt tag](https://raw.github.com/andpor/react-native-sqlite-storage/master/instructions/addFilesToProject.png)
+
+#### Step 4 - Choose files to add
+
+In the Add Files dialog, navigate to the 'www' directory you created in Step 1, select it, make sure you check the option to Create Folder Reference
+
+![alt tag](https://raw.github.com/andpor/react-native-sqlite-storage/master/instructions/addFilesToProjectSelect.png)
+
+#### Step 5 - Verify project structure
+
+Ensure your project structure after previous steps are executed looks like this
+
+![alt tag](https://raw.github.com/andpor/react-native-sqlite-storage/master/instructions/projectStructureAfter.png)
+
+### Step 6 - Adjust openDatabase call
+
+Modify you openDatabase call in your application adding createFromLocation param. If you named your database file in step 2 'testDB' the openDatabase call should look like something like this:
+```js
+
+  ...
+  SQLite.openDatabase({name : "testDB", createFromLocation : 1}, okCallback,errorCallback);
+  ...
+
+```
+
 Enjoy!
 
 #Original Cordova SQLite Bindings from Chris Brody
