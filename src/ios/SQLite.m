@@ -168,9 +168,13 @@ RCT_EXPORT_METHOD(open: (NSDictionary *) options success:(RCTResponseSenderBlock
       
       /* Option to create from resource (pre-populated) if db does not exist: */
       if (![[NSFileManager defaultManager] fileExistsAtPath:dbname]) {
-        NSString *createFromResource = [options objectForKey:@"createFromResource"];
-        if (createFromResource != NULL)
-          [self createFromResource:dbfilename withDbname:dbname];
+        NSString *assetFilename = [options objectForKey:@"assetFilename"];
+        if (assetFilename != NULL) {
+          if ([assetFilename isEqualToString:@"*default"]) {
+            assetFilename = [@"assets" stringByAppendingPathComponent: dbfilename];
+          }
+          [self createFromResource:assetFilename withDbname:dbname];
+        }
       }
       
       if (sqlite3_open(name, &db) != SQLITE_OK) {
@@ -213,8 +217,7 @@ RCT_EXPORT_METHOD(open: (NSDictionary *) options success:(RCTResponseSenderBlock
 
 -(void)createFromResource:(NSString *)dbfile withDbname:(NSString *)dbname {
   NSString *bundleRoot = [[NSBundle mainBundle] resourcePath];
-  NSString *www = [bundleRoot stringByAppendingPathComponent:@"www"];
-  NSString *prepopulatedDb = [www stringByAppendingPathComponent: dbfile];
+  NSString *prepopulatedDb = [bundleRoot stringByAppendingPathComponent: dbfile];
   // NSLog(@"Look for prepopulated DB at: %@", prepopulatedDb);
   
   if ([[NSFileManager defaultManager] fileExistsAtPath:prepopulatedDb]) {

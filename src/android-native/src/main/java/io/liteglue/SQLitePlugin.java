@@ -292,14 +292,14 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
      *
      * @param dbname   The name of the database file
      */
-    private SQLiteAndroidDatabase openDatabase(String dbname, boolean createFromAssets, CallbackContext cbc, boolean old_impl) throws Exception {
+    private SQLiteAndroidDatabase openDatabase(String dbname, String assetFilename, CallbackContext cbc, boolean old_impl) throws Exception {
         try {
             // ASSUMPTION: no db (connection/handle) is already stored in the map
             // [should be true according to the code in DBRunner.run()]
 
             File dbfile = this.getActivity().getDatabasePath(dbname);
 
-            if (!dbfile.exists() && createFromAssets) this.createFromAssets(dbname, dbfile);
+            if (!dbfile.exists() && assetFilename != null) this.createFromAssets(dbname, assetFilename, dbfile);
 
             if (!dbfile.exists()) {
                 dbfile.getParentFile().mkdirs();
@@ -325,13 +325,13 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
      * If a prepopulated DB file exists in the assets folder it is copied to the dbPath.
      * Only runs the first time the app runs.
      */
-    private void createFromAssets(String myDBName, File dbfile)
+    private void createFromAssets(String myDBName, String assetFilename, File dbfile)
     {
         InputStream in = null;
         OutputStream out = null;
 
             try {
-                in = this.getActivity().getAssets().open("www/" + myDBName);
+                in = this.getActivity().getAssets().open(assetFilename);
                 String dbPath = dbfile.getAbsolutePath();
                 dbPath = dbPath.substring(0, dbPath.lastIndexOf("/") + 1);
 
@@ -661,7 +661,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
 
     private class DBRunner implements Runnable {
         final String dbname;
-        private boolean createFromAssets;
+        private String assetFilename;
         private boolean oldImpl;
         private boolean bugWorkaround;
 
@@ -672,7 +672,18 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
 
         DBRunner(final String dbname, JSONObject options, CallbackContext cbc) {
             this.dbname = dbname;
-            this.createFromAssets = options.has("createFromResource");
+            this.assetFilename = null;
+            if (options.has("assetFilename")) {
+              try {
+                this.assetFilename = options.getString("assetFilename");
+                if (this.assetFileName == "*default") {
+                  this.assetFilename = dbname;
+                }
+              }
+              catch (JSONException e) {
+                Log.v(SQLitePlugin.class.getSimpleName(), "Unexpected value for 'options.assetFilename':", e);
+              }
+            }
             this.oldImpl = options.has("androidOldDatabaseImplementation");
             Log.v(SQLitePlugin.class.getSimpleName(), "Android db implementation: " + (oldImpl ? "OLD" : "sqlite4java (NDK)"));
             this.bugWorkaround = this.oldImpl && options.has("androidBugWorkaround");
@@ -685,7 +696,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
 
         public void run() {
             try {
-                this.mydb = openDatabase(dbname, this.createFromAssets, this.openCbc, this.oldImpl);
+                this.mydb = openDatabase(dbname, this.assetFilename, this.openCbc, this.oldImpl);
             } catch (Exception e) {
                 Log.e(SQLitePlugin.class.getSimpleName(), "unexpected error, stopping db thread", e);
                 dbrmap.remove(dbname);
