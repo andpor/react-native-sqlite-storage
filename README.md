@@ -6,7 +6,7 @@ Inspired by fantastic work done by Chris Brody I did not want to re-invent the w
 Features:
   1. iOS and Android supported via identical JavaScript API.
   2. Android in pure Java and Native modes
-  3. SQL transactions 
+  3. SQL transactions
   4. JavaScript interface via plain callbacks or Promises.
   5. Pre-populated SQLite database import from application sandbox
 
@@ -20,9 +20,9 @@ v2.1.3
 v2.1.2
  1. Android Native SQLite connectivity
  2. Change how React parameters are processed to map a Number to Java Double
- 3. Implent hooks for activity lifecycle and automatic db closing on destroy 
+ 3. Implent hooks for activity lifecycle and automatic db closing on destroy
  4. Fix How To Get Started instructions for Android
- 
+
 v2.1.1 - Fixes issues with XCode path and React Native version compatibility
 
 v2.1 - Android support
@@ -78,18 +78,29 @@ var db = SQLite.openDatabase("test.db", "1.0", "Test Database", 200000, openCB, 
 db.transaction((tx) => {
   tx.executeSql('SELECT * FROM Employees a, Departments b WHERE a.department = b.department_id', [], (tx, results) => {
       console.log("Query completed");
+      
+      // Get rows with Web SQL Database spec compliance.
+      
       var len = results.rows.length;
       for (let i = 0; i < len; i++) {
         let row = results.rows.item(i);
         console.log(`Employee name: ${row.name}, Dept Name: ${row.deptName}`);
       }
+
+      // Alternatively, you can use the non-standard raw method.
+      
+      /*
+        let rows = results.rows.raw(); // shallow copy of rows Array
+
+        rows.map(row => console.log(`Employee name: ${row.name}, Dept Name: ${row.deptName}`));
+      */
     });
 });
 ```
 
 #How to use (Android):
 
-#### Step 1 - NPM Install 
+#### Step 1 - NPM Install
 
 ```shell
 npm install --save react-native-sqlite-storage
