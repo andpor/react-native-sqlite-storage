@@ -130,30 +130,29 @@ dependencies {
 #### Step 4 - Register React Package
 
 ```java
+//file: android/app/src/main/java/com/<yourApp>/MainActivity.java
 ...
 import org.pgsqlite.SQLitePluginPackage;
 
-public class MainActivity extends Activity implements DefaultHardwareBackBtnHandler {
-
-    private ReactInstanceManager mReactInstanceManager;
-    private ReactRootView mReactRootView;
+public class MainActivity extends ReactActivity {
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        mReactRootView = new ReactRootView(this);
-        mReactInstanceManager = ReactInstanceManager.builder()
-                .setApplication(getApplication())
-                .setBundleAssetName("index.android.bundle")
-                .setJSMainModuleName("index.android")
-                .addPackage(new MainReactPackage())
-                .addPackage(new SQLitePluginPackage(this)) // register SQLite Plugin here
-                .setUseDeveloperSupport(BuildConfig.DEBUG)
-                .setInitialLifecycleState(LifecycleState.RESUMED)
-                .build();
-        mReactRootView.startReactApplication(mReactInstanceManager, "AwesomeProject", null);
-        setContentView(mReactRootView);
+    protected String getMainComponentName() {
+        return "<yourApp>";
     }
+
+    @Override
+    protected boolean getUseDeveloperSupport() {
+        return BuildConfig.DEBUG;
+    }
+
+    @Override
+    protected List<ReactPackage> getPackages() {
+      return Arrays.<ReactPackage>asList(
+        new MainReactPackage(),
+        new SQLitePluginPackage(this));
+    }
+}
 ...
 
 ```
