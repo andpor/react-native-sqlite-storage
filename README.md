@@ -146,14 +146,14 @@ public class MainActivity extends Activity implements DefaultHardwareBackBtnHand
         mReactRootView = new ReactRootView(this);
         mReactInstanceManager = ReactInstanceManager.builder()
                 .setApplication(getApplication())
-                .setBundleAssetName("index.android.bundle")
-                .setJSMainModuleName("index.android")
+                .setBundleAssetName("index.android.bundle")  // this is dependant on how you name you JS files
+                .setJSMainModuleName("index.android")        // this is dependant on how you name you JS files
                 .addPackage(new MainReactPackage())
-                .addPackage(new SQLitePluginPackage(this)) // register SQLite Plugin here
+                .addPackage(new SQLitePluginPackage(this))   // register SQLite Plugin here
                 .setUseDeveloperSupport(BuildConfig.DEBUG)
                 .setInitialLifecycleState(LifecycleState.RESUMED)
                 .build();
-        mReactRootView.startReactApplication(mReactInstanceManager, "AwesomeProject", null);
+        mReactRootView.startReactApplication(mReactInstanceManager, "AwesomeProject", null); //change "AwesomeProject" to name of your app
         setContentView(mReactRootView);
     }
 ...
