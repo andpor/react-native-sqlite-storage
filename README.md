@@ -129,7 +129,7 @@ dependencies {
 }
 ```
 
-#### Step 4 - Register React Package
+#### Step 4 - Register React Package (this should work on React version but if it does not , try the ReactActivity based approach
 
 ```java
 ...
@@ -146,8 +146,8 @@ public class MainActivity extends Activity implements DefaultHardwareBackBtnHand
         mReactRootView = new ReactRootView(this);
         mReactInstanceManager = ReactInstanceManager.builder()
                 .setApplication(getApplication())
-                .setBundleAssetName("index.android.bundle")  // this is dependant on how you name you JS files
-                .setJSMainModuleName("index.android")        // this is dependant on how you name you JS files
+                .setBundleAssetName("index.android.bundle")  // this is dependant on how you name you JS files, example assumes index.android.js
+                .setJSMainModuleName("index.android")        // this is dependant on how you name you JS files, example assumes index.android.js
                 .addPackage(new MainReactPackage())
                 .addPackage(new SQLitePluginPackage(this))   // register SQLite Plugin here
                 .setUseDeveloperSupport(BuildConfig.DEBUG)
@@ -158,6 +158,27 @@ public class MainActivity extends Activity implements DefaultHardwareBackBtnHand
     }
 ...
 
+```
+
+Alternative approach on newer versions of React Native (0.18+):
+
+```java
+import org.pgsqlite.SQLitePluginPackage;
+
+public class MainActivity extends ReactActivity {
+  ......
+  
+  /**
+   * A list of packages used by the app. If the app uses additional views
+   * or modules besides the default ones, add more packages here.
+   */
+    @Override
+    protected List<ReactPackage> getPackages() {
+      return Arrays.<ReactPackage>asList(
+        new SQLitePluginPackage(this))   // register SQLite Plugin here
+        new MainReactPackage());
+    }
+}
 ```
 
 #### Step 5 - Require and use in Javascript - see full examples (callbacks and Promise) in test directory.
