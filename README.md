@@ -12,6 +12,8 @@ Features:
 
 Please let me know your projects that use these SQLite React Native modules. I will list them in the reference section. If there are any features that you think would benefit this library please post them.
 
+The library had been developed for React 14 using XCode 6. It is not been tested or adjusted on and newer versions of React Native or XCode 7 yet.
+
 #Version History
 
 v2.1.3
