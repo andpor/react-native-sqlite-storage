@@ -12,7 +12,7 @@ Features:
 
 Please let me know your projects that use these SQLite React Native modules. I will list them in the reference section. If there are any features that you think would benefit this library please post them.
 
-The library had been developed for React 14 using XCode 6. It is not been tested or adjusted on any newer versions of React Native or XCode 7 yet.
+The library had been developed for React 14 using XCode 6. It has been tested with React 0.18.1 and XCode 7 - it works fine out of the box without any need for tweaks or code changes. For XCode 7 the only difference is that sqlite ios library name suffix is tbd instead of dynlib.
 
 #Version History
 
