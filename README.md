@@ -12,7 +12,7 @@ Features:
 
 Please let me know your projects that use these SQLite React Native modules. I will list them in the reference section. If there are any features that you think would benefit this library please post them.
 
-The library had been developed for React 14 using XCode 6. It has been tested with React 0.18.1 and XCode 7 - it works fine out of the box without any need for tweaks or code changes. For XCode 7 the only difference is that sqlite ios library name suffix is tbd instead of dynlib.
+The library had been developed for React 14 using XCode 6. It has been tested with React 0.18.1 and XCode 7 - it works fine out of the box without any need for tweaks or code changes. For XCode 7 the only difference is that sqlite ios library name suffix is tbd instead of dylib.
 
 #Version History
 
@@ -47,9 +47,9 @@ Drag the SQLite Xcode project as a dependency project into your React Native XCo
 
 ![alt tag](https://raw.github.com/andpor/react-native-sqlite-storage/master/instructions/libs.png)
 
-#### Step 3. XCode SQLite library dependency set up
+#### Step 3. XCode SQLite libraries dependency set up
 
-Add libSQLite.a (from Workspace location) to the required Libraries and Frameworks.
+Add libSQLite.a (from Workspace location) to the required Libraries and Frameworks. Also add sqlite3.0.tbd (XCode 7) or libsqlite3.0.dylib (XCode 6 and earlier) in the same fashion using Required Libraries view (Do not just add them manually as the build paths will not be properly set)
 
 ![alt tag](https://raw.github.com/andpor/react-native-sqlite-storage/master/instructions/addlibs.png)
 
