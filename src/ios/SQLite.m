@@ -65,6 +65,7 @@ static void sqlite_regexp(sqlite3_context* context, int argc, sqlite3_value** va
 }
 
 
+
 @implementation SQLite
 
 RCT_EXPORT_MODULE();
@@ -147,8 +148,28 @@ RCT_EXPORT_METHOD(open: (NSDictionary *) options success:(RCTResponseSenderBlock
   NSString *dblocation = [options objectForKey:@"dblocation"];
   if (dblocation == NULL) dblocation = @"docs";
   NSLog(@"using db location: %@", dblocation);
+
+  int sqlOpenFlags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
+  if ([options objectForKey:@"readOnly"]) {
+    sqlOpenFlags = SQLITE_OPEN_READONLY;
+  }
+
+  NSString* dbname = [self getDBPath:dbfilename at:dblocation];
   
-  NSString *dbname = [self getDBPath:dbfilename at:dblocation];
+  NSString *assetFilename = [options objectForKey:@"assetFilename"];
+  if (assetFilename) {
+    if ([assetFilename isEqualToString:@"*default"]) {
+      assetFilename = [@"assets" stringByAppendingPathComponent: dbfilename];
+    }
+    
+    NSString *bundleRoot = [[NSBundle mainBundle] resourcePath];
+    assetFilename = [bundleRoot stringByAppendingPathComponent: assetFilename];
+    
+    if (sqlOpenFlags == SQLITE_OPEN_READONLY) {
+      // Directly open the read-only DB asset instead of copying it, since we're only reading.
+      dbname = assetFilename;
+    }
+  }
   
   if (dbname == NULL) {
     NSLog(@"No db name specified for open");
@@ -165,19 +186,20 @@ RCT_EXPORT_METHOD(open: (NSDictionary *) options success:(RCTResponseSenderBlock
       sqlite3 *db;
       
       NSLog(@"open full db path: %@", dbname);
+
       
-      /* Option to create from resource (pre-populated) if db does not exist: */
-      if (![[NSFileManager defaultManager] fileExistsAtPath:dbname]) {
-        NSString *assetFilename = [options objectForKey:@"assetFilename"];
-        if (assetFilename != NULL) {
-          if ([assetFilename isEqualToString:@"*default"]) {
-            assetFilename = [@"assets" stringByAppendingPathComponent: dbfilename];
-          }
-          [self createFromResource:assetFilename withDbname:dbname];
-        }
+      /* Option to create from resource (pre-populated). Only if:
+         1. DB does not already exist.
+         2. Read-only mode is not used (if read-only mode is used,
+            we can use the original file directly without copying it)
+         3. createFromLocation flag / asset filename is specied
+      */
+      if ((assetFilename != NULL) && (sqlOpenFlags != SQLITE_OPEN_READONLY) &&
+          ![[NSFileManager defaultManager] fileExistsAtPath:dbname]) {
+        [self createFromResource:assetFilename withDbname:dbname];
       }
       
-      if (sqlite3_open(name, &db) != SQLITE_OK) {
+      if (sqlite3_open_v2(name, &db, sqlOpenFlags, NULL) != SQLITE_OK) {
         pluginResult = [SQLiteResult resultWithStatus:SQLiteStatus_ERROR messageAsString:@"Unable to open DB"];
         return;
       } else {
@@ -215,9 +237,7 @@ RCT_EXPORT_METHOD(open: (NSDictionary *) options success:(RCTResponseSenderBlock
 }
 
 
--(void)createFromResource:(NSString *)dbfile withDbname:(NSString *)dbname {
-  NSString *bundleRoot = [[NSBundle mainBundle] resourcePath];
-  NSString *prepopulatedDb = [bundleRoot stringByAppendingPathComponent: dbfile];
+-(void)createFromResource:(NSString *)prepopulatedDb withDbname:(NSString *)dbname {
   // NSLog(@"Look for prepopulated DB at: %@", prepopulatedDb);
   
   if ([[NSFileManager defaultManager] fileExistsAtPath:prepopulatedDb]) {
