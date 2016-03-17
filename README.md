@@ -17,7 +17,7 @@ The library had been developed for React 14 using XCode 6. It has been tested wi
 #Version History
 
 v2.1.4 - tested with React 0.21.0
- 1. Expose a buld data retrieval interface from JS
+ 1. Expose a bulk data retrieval interface from JS
  2. Fix JS 'strict' mode execution errors
  
 v2.1.3
