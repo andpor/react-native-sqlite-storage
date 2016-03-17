@@ -12,10 +12,14 @@ Features:
 
 Please let me know your projects that use these SQLite React Native modules. I will list them in the reference section. If there are any features that you think would benefit this library please post them.
 
-The library had been developed for React 14 using XCode 6. It has been tested with React 0.18.1 and XCode 7 - it works fine out of the box without any need for tweaks or code changes. For XCode 7 the only difference is that sqlite ios library name suffix is tbd instead of dylib.
+The library had been developed for React 14 using XCode 6. It has been tested with React 0.21.0 and XCode 7 - it works fine out of the box without any need for tweaks or code changes. For XCode 7 the only difference is that sqlite ios library name suffix is tbd instead of dylib.
 
 #Version History
 
+v2.1.4 - tested with React 0.21.0
+ 1. Expose a buld data retrieval interface from JS
+ 2. Fix JS 'strict' mode execution errors
+ 
 v2.1.3
  1. Fix the runtime error in reflection.
 
@@ -241,4 +245,4 @@ The issues and limitations for the actual SQLite can be found on this site.
 
 1. Android binds all numeric SQL input values to double. This is due to the underlying React Native limitation where only a Numeric type is available on the interface point making it ambiguous to distinguish intgeres from doubles. Once I figure out the proper way to do this I will update the codebase [(Issue #4141)] (https://github.com/facebook/react-native/issues/4141).
 2. Automatic close for the database when main activity is destroyed is implemented in the pure Java Android version which is most likely to be obsoleted in the near future leaving native impl only.
-3. There seem to be some issues with the native implementation for iPhone related to XCode 7. I hope to be able to resolve this sooner rather than later.
+
