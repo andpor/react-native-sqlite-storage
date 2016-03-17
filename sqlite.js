@@ -7,7 +7,8 @@
  * This library is available under the terms of the MIT License (2008).
  * See http://opensource.org/licenses/alphabetical for full text.
  */
-var plugin = {SQLiteFactory} = require('./lib/sqlite.core.js');
+var plugin = require('./lib/sqlite.core.js');
+var {SQLiteFactory} = plugin;
 
 var config = [
   [false,"SQLitePlugin","transaction",false,true],
