@@ -21,6 +21,7 @@ import android.util.Base64;
 import android.util.Log;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.lang.IllegalArgumentException;
 import java.lang.Number;
 import java.util.concurrent.ConcurrentHashMap;
@@ -375,12 +376,12 @@ public class SQLitePlugin extends ReactContextBaseJavaModule implements Applicat
      * Open a database.
      *
      * @param dbname
-     * @param createFromAssets
+     * @param assetFilePath
      * @param cbc
      * @return
      * @throws Exception
      */
-    private SQLiteDatabase openDatabase(String dbname, boolean createFromAssets, CallbackContext cbc) throws Exception {
+    private SQLiteDatabase openDatabase(String dbname, String assetFilePath, CallbackContext cbc) throws Exception {
         try {
             if (this.getDatabase(dbname) != null) {
                 // this should not happen - should be blocked at the execute("open") level
@@ -390,7 +391,8 @@ public class SQLitePlugin extends ReactContextBaseJavaModule implements Applicat
 
             File dbfile = this.getActivity().getDatabasePath(dbname);
 
-            if (!dbfile.exists() && createFromAssets) this.createFromAssets(dbname, dbfile);
+            if (!dbfile.exists() && assetFilePath != null && assetFilePath.length() > 0)
+                this.createFromAssets(dbname, dbfile, assetFilePath);
 
             if (!dbfile.exists()) {
                 dbfile.getParentFile().mkdirs();
@@ -418,13 +420,26 @@ public class SQLitePlugin extends ReactContextBaseJavaModule implements Applicat
      * @param myDBName
      * @param dbfile
      */
-    private void createFromAssets(String myDBName, File dbfile)
+    private void createFromAssets(String myDBName, File dbfile, String assetFilePath)
     {
         InputStream in = null;
         OutputStream out = null;
 
         try {
-            in = this.getActivity().getAssets().open("www/" + myDBName);
+            if (assetFilePath.compareTo("1") == 0) {
+                assetFilePath = "www/" + myDBName;
+                in = this.getActivity().getAssets().open(assetFilePath);
+                Log.v("info", "Copying pre-populated DB asset from app bundle www subdirectory: " + assetFilePath);
+            } else if (assetFilePath.charAt(0) == '~'){
+                assetFilePath = assetFilePath.substring(1);
+                in = this.getActivity().getAssets().open(assetFilePath);
+                Log.v("info", "Copying pre-populated DB asset from app bundle subdirectory: " + assetFilePath);
+            } else {
+                File filesDir = this.getActivity().getFilesDir();
+                File assetFile = new File(filesDir,assetFilePath);
+                in = new FileInputStream(assetFile);
+                Log.v("info", "Copying pre-populated DB asset from: " + assetFile.getCanonicalPath());
+            }
             String dbPath = dbfile.getAbsolutePath();
             dbPath = dbPath.substring(0, dbPath.lastIndexOf("/") + 1);
 
@@ -992,7 +1007,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule implements Applicat
 
     private class DBRunner implements Runnable {
         final String dbname;
-        private boolean createFromAssets;
+        private String assetFilename;
         private boolean androidLockWorkaround;
         final BlockingQueue<DBQuery> q;
         final CallbackContext openCbc;
@@ -1001,7 +1016,11 @@ public class SQLitePlugin extends ReactContextBaseJavaModule implements Applicat
 
         DBRunner(final String dbname, JSONObject options, CallbackContext cbc) {
             this.dbname = dbname;
-            this.createFromAssets = options.has("createFromResource");
+            try {
+                this.assetFilename = options.has("assetFilename") ? options.getString("assetFilename") : null;
+            } catch (JSONException ex){
+                Log.v(SQLitePlugin.class.getSimpleName(),"Error retrieving assetFilename from options:",ex);
+            }
             this.androidLockWorkaround = options.has("androidLockWorkaround");
             if (this.androidLockWorkaround)
                 Log.v(SQLitePlugin.class.getSimpleName(), "Android db closing/locking workaround applied");
@@ -1012,7 +1031,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule implements Applicat
 
         public void run() {
             try {
-                this.mydb = openDatabase(dbname, this.createFromAssets, this.openCbc);
+                this.mydb = openDatabase(dbname, this.assetFilename, this.openCbc);
             } catch (Exception e) {
                 Log.e(SQLitePlugin.class.getSimpleName(), "unexpected error, stopping db thread", e);
                 dbrmap.remove(dbname);
@@ -1031,7 +1050,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule implements Applicat
                     if (androidLockWorkaround && dbq.queries.length == 1 && dbq.queries[0].equals("COMMIT")) {
                         // Log.v(SQLitePlugin.class.getSimpleName(), "close and reopen db");
                         closeDatabaseNow(dbname);
-                        this.mydb = openDatabase(dbname, false, null);
+                        this.mydb = openDatabase(dbname, "", null);
                         // Log.v(SQLitePlugin.class.getSimpleName(), "close and reopen db finished");
                     }
 

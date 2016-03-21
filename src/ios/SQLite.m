@@ -168,9 +168,32 @@ RCT_EXPORT_METHOD(open: (NSDictionary *) options success:(RCTResponseSenderBlock
       
       /* Option to create from resource (pre-populated) if db does not exist: */
       if (![[NSFileManager defaultManager] fileExistsAtPath:dbname]) {
-        NSString *createFromResource = [options objectForKey:@"createFromResource"];
-        if (createFromResource != NULL)
-          [self createFromResource:dbfilename withDbname:dbname];
+        NSString *assetFilePath = [options objectForKey:@"assetFilename"];
+        if (assetFilePath != NULL && assetFilePath.length > 0) {
+          @try {
+            if ([assetFilePath isEqualToString:@"1"]){
+              NSString *targetBundleDirPath = [[NSBundle mainBundle] resourcePath];
+              targetBundleDirPath = [targetBundleDirPath stringByAppendingPathComponent: @"www"];
+              assetFilePath = [targetBundleDirPath stringByAppendingPathComponent: dbfilename];
+              NSLog(@"Copying pre-populated DB asset from app bundle www subdirectory: %@",assetFilePath);
+            } else if ([assetFilePath characterAtIndex:0 == '~']) {
+              assetFilePath = [assetFilePath substringFromIndex:1];
+              NSString *targetBundleDirPath = [[NSBundle mainBundle] resourcePath];
+              assetFilePath = [targetBundleDirPath stringByAppendingPathComponent: assetFilePath];
+              NSLog(@"Copying pre-populated DB asset from app bundle subdirectory: %@",assetFilePath);
+            } else {
+              NSURL * documentsDirUrl = [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory
+                                                                                inDomains:NSUserDomainMask] lastObject];
+              assetFilePath = [documentsDirUrl.path stringByAppendingPathComponent:assetFilePath];
+              NSLog(@"Copying pre-populated DB asset from app sandbox documents directory: %@",assetFilePath);
+            }
+            
+            [self createFromResource:assetFilePath withDbname:dbname];
+            
+          } @catch(NSException *ex){
+            NSLog(@"Error creating db from provided asset %@",ex.reason);
+          }
+        }
       }
       
       if (sqlite3_open(name, &db) != SQLITE_OK) {
@@ -207,15 +230,12 @@ RCT_EXPORT_METHOD(open: (NSDictionary *) options success:(RCTResponseSenderBlock
   
   [pluginResult.status intValue] == SQLiteStatus_OK ? success(@[pluginResult.message]) : error(@[pluginResult.message]);
   
-  //NSLog(@"open cb finished ok");
+  NSLog(@"open cb finished ok");
 }
 
 
--(void)createFromResource:(NSString *)dbfile withDbname:(NSString *)dbname {
-  NSString *bundleRoot = [[NSBundle mainBundle] resourcePath];
-  NSString *www = [bundleRoot stringByAppendingPathComponent:@"www"];
-  NSString *prepopulatedDb = [www stringByAppendingPathComponent: dbfile];
-  // NSLog(@"Look for prepopulated DB at: %@", prepopulatedDb);
+-(void)createFromResource:(NSString *)prepopulatedDb withDbname:(NSString *)dbname {
+  NSLog(@"Looking for prepopulated DB at: %@", prepopulatedDb);
   
   if ([[NSFileManager defaultManager] fileExistsAtPath:prepopulatedDb]) {
     NSLog(@"Found prepopulated DB: %@", prepopulatedDb);
