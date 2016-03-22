@@ -8,13 +8,15 @@ Features:
   2. Android in pure Java and Native modes
   3. SQL transactions
   4. JavaScript interface via plain callbacks or Promises.
-  5. Pre-populated SQLite database import from application sandbox
+  5. Pre-populated SQLite database import from application bundle and sandbox
 
 Please let me know your projects that use these SQLite React Native modules. I will list them in the reference section. If there are any features that you think would benefit this library please post them.
 
 The library had been developed for React 14 using XCode 6. It has been tested with React 0.21.0 and XCode 7 - it works fine out of the box without any need for tweaks or code changes. For XCode 7 the only difference is that sqlite ios library name suffix is tbd instead of dylib.
 
 #Version History
+v2.1.5 - upcoming
+ 1. Allow retrieval of pre-populated db files from user defined locations in application bundle as well as the sandbox.
 
 v2.1.4 - tested with React 0.21.0
  1. Expose a bulk data retrieval interface from JS
