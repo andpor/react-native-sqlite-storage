@@ -253,5 +253,4 @@ The issues and limitations for the actual SQLite can be found on this site.
 ##Issues
 
 1. Android binds all numeric SQL input values to double. This is due to the underlying React Native limitation where only a Numeric type is available on the interface point making it ambiguous to distinguish intgeres from doubles. Once I figure out the proper way to do this I will update the codebase [(Issue #4141)] (https://github.com/facebook/react-native/issues/4141).
-2. Automatic close for the database when main activity is destroyed is implemented in the pure Java Android version which is most likely to be obsoleted in the near future leaving native impl only.
 
