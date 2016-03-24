@@ -351,9 +351,9 @@ public class SQLitePlugin extends ReactContextBaseJavaModule implements Applicat
 
     /**
      *
-     * @param dbname
-     * @param options
-     * @param cbc
+     * @param dbname - The name of the database file
+     * @param options - options passed in from JS
+     * @param cbc - JS callback context
      */
     private void startDatabase(String dbname, JSONObject options, CallbackContext cbc) {
         // TODO: is it an issue that we can orphan an existing thread?  What should we do here?
@@ -375,10 +375,10 @@ public class SQLitePlugin extends ReactContextBaseJavaModule implements Applicat
     /**
      * Open a database.
      *
-     * @param dbname
-     * @param assetFilePath
-     * @param cbc
-     * @return
+     * @param dbname - The name of the database file
+     * @param assetFilePath - path to the pre-populated database file
+     * @param cbc - JS callback
+     * @return instance of SQLite database
      * @throws Exception
      */
     private SQLiteDatabase openDatabase(String dbname, String assetFilePath, CallbackContext cbc) throws Exception {
@@ -417,17 +417,17 @@ public class SQLitePlugin extends ReactContextBaseJavaModule implements Applicat
      * If a prepopulated DB file exists in the assets folder it is copied to the dbPath.
      * Only runs the first time the app runs.
      *
-     * @param myDBName
+     * @param dbName The name of the database file - could be used as filename for imported asset
      * @param dbfile
      */
-    private void createFromAssets(String myDBName, File dbfile, String assetFilePath)
+    private void createFromAssets(String dbName, File dbfile, String assetFilePath)
     {
         InputStream in = null;
         OutputStream out = null;
 
         try {
             if (assetFilePath.compareTo("1") == 0) {
-                assetFilePath = "www/" + myDBName;
+                assetFilePath = "www/" + dbName;
                 in = this.getActivity().getAssets().open(assetFilePath);
                 Log.v("info", "Copying pre-populated DB asset from app bundle www subdirectory: " + assetFilePath);
             } else if (assetFilePath.charAt(0) == '~'){
@@ -447,7 +447,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule implements Applicat
             if (!dbPathFile.exists())
                 dbPathFile.mkdirs();
 
-            File newDbFile = new File(dbPath + myDBName);
+            File newDbFile = new File(dbPath + dbName);
             out = new FileOutputStream(newDbFile);
 
             // XXX TODO: this is very primitive, other alternatives at:
@@ -480,8 +480,8 @@ public class SQLitePlugin extends ReactContextBaseJavaModule implements Applicat
     /**
      * Close a database (in another thread).
      *
-     * @param dbName
-     * @param cbc
+     * @param dbName - The name of the database file
+     * @param cbc - JS callback
      */
     private void closeDatabase(String dbName, CallbackContext cbc) {
         DBRunner r = dbrmap.get(dbName);
@@ -516,7 +516,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule implements Applicat
 
     /**
      *
-     * @param dbname
+     * @param dbname - The name of the database file
      * @param cbc
      */
     private void deleteDatabase(String dbname, CallbackContext cbc) {
@@ -1133,7 +1133,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule implements Applicat
         }
     }
 
-    private static enum Action {
+    private enum Action {
         open,
         close,
         delete,
@@ -1141,7 +1141,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule implements Applicat
         backgroundExecuteSqlBatch,
     }
 
-    private static enum QueryType {
+    private enum QueryType {
         update,
         insert,
         delete,
