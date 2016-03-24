@@ -17,6 +17,8 @@ The library had been developed for React 14 using XCode 6. It has been tested wi
 #Version History
 v2.1.5 - upcoming
  1. Allow retrieval of pre-populated db files from user defined locations in application bundle as well as the sandbox.
+ 2. Implement Activity lifecycle mgmt in Android native
+ 3. Fix issue [#37] (https://github.com/andpor/react-native-sqlite-storage/issues/37) - Int Column type value overflow
 
 v2.1.4 - tested with React 0.21.0
  1. Expose a bulk data retrieval interface from JS
