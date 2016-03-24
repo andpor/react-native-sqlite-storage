@@ -89,7 +89,7 @@ public abstract class SQLitePluginConverter {
             if (value instanceof Float || value instanceof Double) {
                 writableMap.putDouble(key, jsonObject.getDouble(key));
             } else if (value instanceof Number) {
-                writableMap.putInt(key, jsonObject.getInt(key));
+                writableMap.putDouble(key, jsonObject.getLong(key));
             } else if (value instanceof String) {
                 writableMap.putString(key, jsonObject.getString(key));
             } else if (value instanceof JSONObject) {
@@ -111,7 +111,7 @@ public abstract class SQLitePluginConverter {
             if (value instanceof Float || value instanceof Double) {
                 writableArray.pushDouble(jsonArray.getDouble(i));
             } else if (value instanceof Number) {
-                writableArray.pushInt(jsonArray.getInt(i));
+                writableArray.pushDouble(jsonArray.getLong(i));
             } else if (value instanceof String) {
                 writableArray.pushString(jsonArray.getString(i));
             } else if (value instanceof JSONObject) {
