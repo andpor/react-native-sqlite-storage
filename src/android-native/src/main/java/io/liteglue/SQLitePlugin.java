@@ -131,6 +131,18 @@ public class SQLitePlugin extends ReactContextBaseJavaModule implements Applicat
         }
     }
 
+    @ReactMethod
+    public void echoStringValue(ReadableMap args, Callback success, Callback error) {
+        String actionAsString = "echoStringValue";
+        try {
+            JSONArray params = new JSONArray();
+            params.put(SQLitePluginConverter.reactToJSON(args));
+            this.execute(actionAsString, params, new CallbackContext(success, error));
+        } catch (Exception ex){
+            error.invoke("Unexpected error:"+ex.getMessage());
+        }
+    }
+
     protected ExecutorService getThreadPool(){
         return this.threadPool;
     }
@@ -219,6 +231,12 @@ public class SQLitePlugin extends ReactContextBaseJavaModule implements Applicat
         String dbname;
 
         switch (action) {
+            case echoStringValue:
+                o = args.getJSONObject(0);
+                String echo_value = o.getString("value");
+                cbc.success(echo_value);
+                break;
+
             case open:
                 o = args.getJSONObject(0);
                 dbname = o.getString("name");
@@ -866,6 +884,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule implements Applicat
         delete,
         executeSqlBatch,
         backgroundExecuteSqlBatch,
+        echoStringValue
     }
 }
 

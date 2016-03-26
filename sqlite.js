@@ -17,7 +17,8 @@ var config = [
   [false,"SQLitePlugin","executeSql",true,false],
   [false,"SQLitePluginTransaction","executeSql",true,false],
   [false,"SQLiteFactory","deleteDatabase",false,false],
-  [true,"SQLiteFactory","openDatabase",false,false]
+  [true, "SQLiteFactory","openDatabase",false,false],
+  [false,"SQLiteFactory","echoTest",false,false]
 ];
 
 var originalFns = {};

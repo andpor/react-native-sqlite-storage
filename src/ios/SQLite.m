@@ -138,6 +138,14 @@ RCT_EXPORT_MODULE();
   return dbPath;
 }
 
+RCT_EXPORT_METHOD(echoStringValue: (NSDictionary *) options success:(RCTResponseSenderBlock)success error:(RCTResponseSenderBlock)error)
+{
+  NSString * string_value = [options objectForKey:@"value"];
+  NSLog(@"echo string value: %@", string_value);
+  
+  SQLiteResult* pluginResult = [SQLiteResult resultWithStatus:SQLiteStatus_OK messageAsString:string_value];
+  [pluginResult.status intValue] == SQLiteStatus_OK ? success(@[pluginResult.message]) : error(@[pluginResult.message]);
+}
 
 RCT_EXPORT_METHOD(open: (NSDictionary *) options success:(RCTResponseSenderBlock)success error:(RCTResponseSenderBlock)error)
 {
