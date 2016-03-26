@@ -163,15 +163,24 @@ var SQLiteDemo = React.createClass({
 
     loadAndQueryDB(){
         var that = this;
-        that.state.progress.push("Opening database ...");
+        that.state.progress.push("Plugin integrity check ...");
         that.setState(that.state);
-        SQLite.openDatabase(database_name, database_version, database_displayname, database_size).then((DB) => {
-            db = DB;
-            that.state.progress.push("Database OPEN");
+        SQLite.echoTest().then(() => {
+            that.state.progress.push("Integrity check passed ...");
             that.setState(that.state);
-            that.populateDatabase(DB);
-        }).catch((error) => {
-            console.log(error);
+            that.state.progress.push("Opening database ...");
+            that.setState(that.state);
+            SQLite.openDatabase({name : "test5.db", createFromLocation : "~/db/andrew.db"}).then((DB) => {
+                db = DB;
+                that.state.progress.push("Database OPEN");
+                that.setState(that.state);
+                that.populateDatabase(DB);
+            }).catch((error) => {
+                console.log(error);
+            });
+        }).catch(error => {
+            that.state.progress.push("echoTest failed - plugin not functional");
+            that.setState(that.state);
         });
     },
 
