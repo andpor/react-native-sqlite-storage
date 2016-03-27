@@ -19,7 +19,8 @@ v2.1.5 - upcoming
  1. Allow retrieval of pre-populated db files from user defined locations in application bundle as well as the sandbox.
  2. Implement Activity lifecycle mgmt in Android native
  3. Fix issue [#37] (https://github.com/andpor/react-native-sqlite-storage/issues/37) - Int Column type value overflow
- 4. Backfill fixes from Cordova SQLite Storage
+ 4. Fix issue [#38] (https://github.com/andpor/react-native-sqlite-storage/issues/38) - Transactions not aborted with Promise runtime
+ 5. Backfill fixes from Cordova SQLite Storage
     - add sqlBatch to facilitate batch exec of simple SQL statements (Android + iOS)
     - add echoTest for plugin integrity test
 
