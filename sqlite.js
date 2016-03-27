@@ -11,14 +11,14 @@ var plugin = require('./lib/sqlite.core.js');
 var {SQLiteFactory} = plugin;
 
 var config = [
-  [false,"SQLitePlugin","transaction",false,true],
-  [false,"SQLitePlugin","readTransaction",false,true],
-  [false,"SQLitePlugin","close",false,false],
-  [false,"SQLitePlugin","executeSql",true,false],
-  [false,"SQLitePluginTransaction","executeSql",true,false],
-  [false,"SQLiteFactory","deleteDatabase",false,false],
-  [true, "SQLiteFactory","openDatabase",false,false],
-  [false,"SQLiteFactory","echoTest",false,false]
+  [false,"SQLitePlugin","transaction",false,true,true],
+  [false,"SQLitePlugin","readTransaction",false,true,true],
+  [false,"SQLitePlugin","close",false,false,true],
+  [false,"SQLitePlugin","executeSql",true,false,true],
+  [false,"SQLitePluginTransaction","executeSql",true,false,false],
+  [false,"SQLiteFactory","deleteDatabase",false,false,true],
+  [true, "SQLiteFactory","openDatabase",false,false,true],
+  [false,"SQLiteFactory","echoTest",false,false,true]
 ];
 
 var originalFns = {};
@@ -38,7 +38,7 @@ function enablePromiseRuntime(enable){
 
 function createCallbackRuntime() {
   config.forEach(entry => {
-    let [returnValueExpected,prototype,fn,argsNeedPadding,reverseCallbacks]= entry;
+    let [returnValueExpected,prototype,fn,argsNeedPadding,reverseCallbacks,rejectOnError]= entry;
     plugin[prototype].prototype[fn] = originalFns[prototype + "." + fn];
   });
   console.log("Callback based runtime ready");
@@ -46,13 +46,13 @@ function createCallbackRuntime() {
 
 function createPromiseRuntime() {
   config.forEach(entry => {
-    let [returnValueExpected,prototype,fn,argsNeedPadding,reverseCallbacks]= entry;
+    let [returnValueExpected,prototype,fn,argsNeedPadding,reverseCallbacks,rejectOnError]= entry;
     let originalFn = plugin[prototype].prototype[fn]
     plugin[prototype].prototype[fn] = function(...args){
       if (argsNeedPadding && args.length == 1){
         args.push([]);
       }
-      var promise = new Promise(function(resolve,reject){
+      var promise = new Promise((resolve,reject) => {
         let success = function(...args){
           if (!returnValueExpected) {
            return resolve(args);
@@ -60,14 +60,16 @@ function createPromiseRuntime() {
         };
         let error = function(err){
           console.log('error: ',fn,...args,arguments);
-          reject(err);
+          if (rejectOnError) {
+            reject(err);
+          }
           return false;
         };
         var retValue = originalFn.call(this,...args,reverseCallbacks ? error : success, reverseCallbacks ? success : error);
         if (returnValueExpected){
           return resolve(retValue);
         }
-      }.bind(this));
+      });
 
       return promise;
     }
