@@ -240,7 +240,7 @@ Modify you openDatabase call in your application adding createFromLocation param
   1.SQLite.openDatabase({name : "testDB", createFromLocation : 1}, okCallback,errorCallback); 
   // default - if your folder is called www and data file is named the same as the dbName - testDB in this example
   2.SQLite.openDatabase({name : "testDB", createFromLocation : "~data/mydbfile.sqlite"}, okCallback,errorCallback); 
-  // if your folder is called data rather than www
+  // if your folder is called data rather than www or your filename does not match the name of the db
   3.SQLite.openDatabase({name : "testDB", createFromLocation : "/data/mydbfile.sqlite"}, okCallback,errorCallback); 
   // if your folder is not in app bundle but in app sanbox i.e. downloaded from some remote location.
   ...
