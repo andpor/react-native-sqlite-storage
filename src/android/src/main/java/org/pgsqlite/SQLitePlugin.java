@@ -450,11 +450,12 @@ public class SQLitePlugin extends ReactContextBaseJavaModule implements Applicat
                 in = this.getActivity().getAssets().open(assetFilePath);
                 Log.v("info", "Copying pre-populated DB asset from app bundle www subdirectory: " + assetFilePath);
             } else if (assetFilePath.charAt(0) == '~'){
-                assetFilePath = assetFilePath.substring(1);
+                assetFilePath = assetFilePath.startsWith("~/") ? assetFilePath.substring(2) : assetFilePath.substring(1);
                 in = this.getActivity().getAssets().open(assetFilePath);
                 Log.v("info", "Copying pre-populated DB asset from app bundle subdirectory: " + assetFilePath);
             } else {
                 File filesDir = this.getActivity().getFilesDir();
+                assetFilePath = assetFilePath.startsWith("/") ? assetFilePath.substring(1) : assetFilePath;
                 File assetFile = new File(filesDir,assetFilePath);
                 in = new FileInputStream(assetFile);
                 Log.v("info", "Copying pre-populated DB asset from: " + assetFile.getCanonicalPath());
