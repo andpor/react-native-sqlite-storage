@@ -15,7 +15,7 @@ Please let me know your projects that use these SQLite React Native modules. I w
 The library had been developed for React 14 using XCode 6. It has been tested with React 0.21.0 and XCode 7 - it works fine out of the box without any need for tweaks or code changes. For XCode 7 the only difference is that sqlite ios library name suffix is tbd instead of dylib.
 
 #Version History
-v2.1.5 - upcoming
+v2.1.5
  1. Allow retrieval of pre-populated db files from user defined locations in application bundle as well as the sandbox.
  2. Implement Activity lifecycle mgmt in Android native
  3. Fix issue [#37] (https://github.com/andpor/react-native-sqlite-storage/issues/37) - Int Column type value overflow
