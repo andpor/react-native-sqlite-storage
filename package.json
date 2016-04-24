@@ -41,7 +41,7 @@
       "postlink": "node_modules/react-native-sqlite-storage/rnpm-postlink.js"
     },
     "ios": {
-      "project": "react-native-sqlite-storage/src/ios/SQLite.xcodeproj"
+      "project": "src/ios/SQLite.xcodeproj"
     }
   }
 }
