@@ -55,7 +55,7 @@ rnpm link
 ```
 If rnpm is not already installed you can install it as follows:
 ```shell
-npm -g install rnpm
+npm -g install rnpm xcode
 ```
 After linking project should like this:
 
