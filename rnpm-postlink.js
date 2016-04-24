@@ -6,7 +6,7 @@ var fs = require('fs');
 var rnpm = require('rnpm/src/config');
 var xcode = require('xcode');
 
-// The current working directory should be project root of the app that is linking Realm.
+// The current working directory should be project root of the app that is linking react-native-sqlite.
 var config = rnpm.getProjectConfig();
 
 if (config.ios) {
