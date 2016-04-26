@@ -51,27 +51,23 @@ v1.0 - Intial release for iOS with full support of all operations based on plan 
 
 ```shell
 npm install --save react-native-sqlite-storage
+rnpm link
 ```
+If rnpm is not already installed you can install it as follows:
+```shell
+npm -g install rnpm xcode
+```
+After linking project should like this:
 
-#### Step 2. XCode SQLite project dependency set up
+![alt tag](instructions/after-rnpm.png)
 
-Drag the SQLite Xcode project as a dependency project into your React Native XCode project
-
-![alt tag](https://raw.github.com/andpor/react-native-sqlite-storage/master/instructions/libs.png)
-
-#### Step 3. XCode SQLite libraries dependency set up
-
-Add libSQLite.a (from Workspace location) to the required Libraries and Frameworks. Also add sqlite3.0.tbd (XCode 7) or libsqlite3.0.dylib (XCode 6 and earlier) in the same fashion using Required Libraries view (Do not just add them manually as the build paths will not be properly set)
-
-![alt tag](https://raw.github.com/andpor/react-native-sqlite-storage/master/instructions/addlibs.png)
-
-#### Step 4. Application JavaScript require
+#### Step 2. Application JavaScript require
 
 Add var SQLite = require('react-native-sqlite-storage') to your index.ios.js
 
-![alt tag](https://raw.github.com/andpor/react-native-sqlite-storage/master/instructions/require.png)
+![alt tag](instructions/require.png)
 
-#### Step 5. Applicatin JavaScript code using the SQLite plugin
+#### Step 3. Applicatin JavaScript code using the SQLite plugin
 
 Add JS application code to use SQLite API in your index.ios.js etc. Here is some sample code. For full working example see test/index.ios.callback.js. Please note that Promise based API is now supported as well with full examples in the working React Native app under test/index.ios.promise.js
 
