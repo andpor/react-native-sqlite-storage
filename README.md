@@ -58,7 +58,7 @@ v1.0 - Intial release for iOS with full support of all operations based on plan 
 npm install --save react-native-sqlite-storage
 rnpm link
 ```
-If there are issue running rnpm link and rnpm/xcode are not already installed you can install it as follows:
+rnpm and xcode are dependencies of this project and should get installed with the module but in case there are issue running rnpm link and rnpm/xcode are not already installed you can try to install it globally as follows:
 ```shell
 npm -g install rnpm xcode
 ```
