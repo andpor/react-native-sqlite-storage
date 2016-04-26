@@ -69,6 +69,16 @@ After linking project should like this:
 #### Step 1a. If rnpm link does not work for you you can try manul linking according to the instructions below:
 
 
+##### Drag the SQLite Xcode project as a dependency project into your React Native XCode project
+
+![alt tag](https://raw.github.com/andpor/react-native-sqlite-storage/master/instructions/libs.png)
+
+##### XCode SQLite libraries dependency set up
+
+Add libSQLite.a (from Workspace location) to the required Libraries and Frameworks. Also add sqlite3.0.tbd (XCode 7) or libsqlite3.0.dylib (XCode 6 and earlier) in the same fashion using Required Libraries view (Do not just add them manually as the build paths will not be properly set)
+
+![alt tag](https://raw.github.com/andpor/react-native-sqlite-storage/master/instructions/addlibs.png)
+
 #### Step 2. Application JavaScript require
 
 Add var SQLite = require('react-native-sqlite-storage') to your index.ios.js
