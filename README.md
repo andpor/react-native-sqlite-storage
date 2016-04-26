@@ -85,7 +85,7 @@ Add var SQLite = require('react-native-sqlite-storage') to your index.ios.js
 
 ![alt tag](instructions/require.png)
 
-#### Step 3. Applicatin JavaScript code using the SQLite plugin
+#### Step 3. Write application JavaScript code using the SQLite plugin
 
 Add JS application code to use SQLite API in your index.ios.js etc. Here is some sample code. For full working example see test/index.ios.callback.js. Please note that Promise based API is now supported as well with full examples in the working React Native app under test/index.ios.promise.js
 
