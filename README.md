@@ -16,7 +16,7 @@ The library had been developed for React 14 using XCode 6. It has been tested wi
 
 #Version History
 
-v2.1.6 - Upcoming
+v2.1.6
  1. rnpm linking for iOS - contributed by @clozr
  2. Backfill Cordova read transaction bug fix.
  
