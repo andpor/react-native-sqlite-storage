@@ -402,8 +402,10 @@ public class SQLitePlugin extends ReactContextBaseJavaModule implements Applicat
      */
     private SQLiteDatabase openDatabase(String dbname, String assetFilePath, CallbackContext cbc) throws Exception {
         try {
-            if (this.getDatabase(dbname) != null) {
-                // this should not happen - should be blocked at the execute("open") level
+            SQLiteDatabase database = this.getDatabase(dbname);
+            if (database != null && database.isOpen()) {
+                //this only happens when DBRunner is cycling the db for the locking work around.
+                // otherwise, this should not happen - should be blocked at the execute("open") level
                 if (cbc != null) cbc.error("database already open");
                 throw new Exception("database already open");
             }
