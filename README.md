@@ -18,7 +18,7 @@ The library had been developed for React 14 using XCode 6. It has been tested wi
 
 v3.0.0 - upcoming
  1. Default location changes - backward incompatible release
-
+ 2. Check if db is open before throwing an exception (triggered in android lock workaround)
 
 v2.1.6
  1. rnpm linking for iOS - contributed by @clozr
