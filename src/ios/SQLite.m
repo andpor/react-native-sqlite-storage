@@ -134,7 +134,6 @@ RCT_EXPORT_MODULE();
   }
   
   NSString *dbdir = appDBPaths[atkey];
-  //NSString *dbPath = [NSString stringWithFormat:@"%@/%@", dbdir, dbFile];
   NSString *dbPath = [dbdir stringByAppendingPathComponent: dbFile];
   return dbPath;
 }
@@ -194,7 +193,7 @@ RCT_EXPORT_METHOD(open: (NSDictionary *) options success:(RCTResponseSenderBlock
       } else {
         NSString *dblocation = options[@"dblocation"];
         if (dblocation == NULL) dblocation = @"nosync";
-        NSLog(@"using db location: %@", dblocation);
+        NSLog(@"target database location: %@", dblocation);
         
         dbname = [self getDBPath:dbfilename at:dblocation];
         
@@ -204,8 +203,8 @@ RCT_EXPORT_METHOD(open: (NSDictionary *) options success:(RCTResponseSenderBlock
           [self createFromResource:assetFilePath withDbname:dbname];
         }
       }
-    
-      NSLog(@"opening DB %@, full path: %@", (sqlOpenFlags == SQLITE_OPEN_READONLY) ? @"READ ONLY" : @"READ_WRITE",dbname);
+      
+      NSLog(@"Opening db in mode %@, full path: %@", (sqlOpenFlags == SQLITE_OPEN_READONLY) ? @"READ ONLY" : @"READ_WRITE",dbname);
       
       const char *name = [dbname UTF8String];
       sqlite3 *db;
@@ -415,7 +414,7 @@ RCT_EXPORT_METHOD(executeSql: (NSDictionary *) options success:(RCTResponseSende
   }
   
   sqlite3 *db = [((NSValue *) dbInfo[@"dbPointer"]) pointerValue];
-
+  
   NSString *sql = options[@"sql"];
   if (sql == NULL) {
     return [SQLiteResult resultWithStatus:SQLiteStatus_ERROR messageAsString:@"You must specify a sql query to execute"];
@@ -474,7 +473,7 @@ RCT_EXPORT_METHOD(executeSql: (NSDictionary *) options success:(RCTResponseSende
               break;
             case SQLITE_BLOB:
               columnValue = [SQLite getBlobAsBase64String: sqlite3_column_blob(statement, i)
-                                                   withLength: sqlite3_column_bytes(statement, i)];
+                                               withLength: sqlite3_column_bytes(statement, i)];
 #ifdef INCLUDE_SQL_BLOB_BINDING // TBD subjet to change:
               columnValue = [@"sqlblob:;base64," stringByAppendingString:columnValue];
 #endif
