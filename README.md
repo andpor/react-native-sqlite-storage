@@ -17,8 +17,8 @@ The library had been developed for React 14 using XCode 6. It has been tested wi
 #Version History
 
 v3.0.0 - upcoming
- 1. Default location changes for iOS - backward incompatible release. Default now is no-sync location instead of docs.
- 2. Ability to point to read-only db file in app bundle wdirectly ithout requiring it to be copied elsewhere
+ 1. Default location changes for iOS for App Store iCloude compliance - backward incompatible release. Default now is no-sync location instead of docs.
+ 2. Ability to point to read-only db file in app bundle directly without requiring it to be copied elsewhere.
  2. Check if db is open before throwing an exception (triggered in android lock workaround)
  3. Fix for issue #57. Can't find variable: Blob
 
