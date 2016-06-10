@@ -193,7 +193,7 @@ RCT_EXPORT_METHOD(open: (NSDictionary *) options success:(RCTResponseSenderBlock
         dbname = assetFilePath;
       } else {
         NSString *dblocation = options[@"dblocation"];
-        if (dblocation == NULL) dblocation = @"docs";
+        if (dblocation == NULL) dblocation = @"nosync";
         NSLog(@"using db location: %@", dblocation);
         
         dbname = [self getDBPath:dbfilename at:dblocation];
@@ -320,7 +320,7 @@ RCT_EXPORT_METHOD(delete: (NSDictionary *) options success:(RCTResponseSenderBlo
     NSLog(@"No db name specified for delete");
     pluginResult = [SQLiteResult resultWithStatus:SQLiteStatus_ERROR messageAsString:@"You must specify database path"];
   } else {
-    if (dblocation == NULL) dblocation = @"docs";
+    if (dblocation == NULL) dblocation = @"nosync";
     NSString *dbPath = [self getDBPath:dbfilename at:dblocation];
     
     if ([[NSFileManager defaultManager] fileExistsAtPath:dbPath]) {
