@@ -47,7 +47,7 @@ class SQLiteAndroidDatabase
             Pattern.CASE_INSENSITIVE);
 
     File dbFile;
-
+    int openFlags;
     SQLiteDatabase mydb;
 
     /**
@@ -60,8 +60,18 @@ class SQLiteAndroidDatabase
      * @param dbfile   The database File specification
      */
     void open(File dbfile) throws Exception {
-        dbFile = dbfile; // for possible bug workaround
-        mydb = SQLiteDatabase.openOrCreateDatabase(dbfile, null);
+        this.open(dbfile,SQLiteOpenFlags.READWRITE | SQLiteOpenFlags.CREATE);
+    }
+
+    /**
+     * Open a database.
+     *
+     * @param dbfile   The database File specification
+     */
+    void open(File dbfile, int openFlags) throws Exception {
+        this.dbFile = dbfile; // for possible bug workaround
+        this.openFlags = openFlags;
+        this.mydb = SQLiteDatabase.openDatabase(dbfile.getAbsolutePath(), null, openFlags);
     }
 
     /**
@@ -76,7 +86,7 @@ class SQLiteAndroidDatabase
 
     void bugWorkaround() throws Exception {
         this.closeDatabaseNow();
-        this.open(dbFile);
+        this.open(this.dbFile,this.openFlags);
     }
 
     /**
