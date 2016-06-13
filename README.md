@@ -318,7 +318,7 @@ Use this flavor of openDatabase call if your folder is called data rather than w
 SQLite.openDatabase({name : "testDB", createFromLocation : "~data/mydbfile.sqlite"}, okCallback,errorCallback); 
 ```
 
-Use this flavor of openDatabase call if your folder is not in application bundle but in app sanbox i.e. downloaded from some remote location. In this case the source file is located in data subdirectory of Documents location.
+Use this flavor of openDatabase call if your folder is not in application bundle but in app sanbox i.e. downloaded from some remote location. In this case the source file is located in data subdirectory of Documents location (iOS) or FilesDir (Android).
 
 ```js 
 SQLite.openDatabase({name : "testDB", createFromLocation : "/data/mydbfile.sqlite"}, okCallback,errorCallback); 
@@ -332,7 +332,8 @@ You can provide additional instructions to sqlite-storage to tell it how to hand
 SQLite.openDatabase({name : "testDB", readOnly: true, createFromLocation : "/data/mydbfile.sqlite"}, okCallback,errorCallback); 
 ```
 
-Note that in this case, the source db file will be open in read-only mode and no updates will be allowed. You cannot delete a database that was open with readOnly option.
+Note that in this case, the source db file will be open in read-only mode and no updates will be allowed. You cannot delete a database that was open with readOnly option. For Android, the read only option works with pre-populated db files located in FilesDir directory because all other assets are never physically located on the file system but rather read directly from the app bundle.
+
 
 
 
