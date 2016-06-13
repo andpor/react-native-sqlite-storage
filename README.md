@@ -301,6 +301,40 @@ var db = window.sqlitePlugin.openDatabase("myDatabase.db", "1.0", "Demo", -1);
 ```
 
 
+## Importing a pre-populated database.
+
+You can import an existing - prepopulated database file into your application. Depending on your instructions in openDatabase call, the sqlite-storage will look at different places to locate you pre-populated database file. 
+
+
+Use this flavor of openDatabase call, if your folder is called www and data file is named the same as the dbName - testDB in this example
+
+```js
+SQLite.openDatabase({name : "testDB", createFromLocation : 1}, okCallback,errorCallback); 
+```
+
+Use this flavor of openDatabase call if your folder is called data rather than www or your filename does not match the name of the db. In this case db is named testDB but the file is mydbfile.sqlite which is located in a data subdirectory of www
+
+```js  
+SQLite.openDatabase({name : "testDB", createFromLocation : "~data/mydbfile.sqlite"}, okCallback,errorCallback); 
+```
+
+Use this flavor of openDatabase call if your folder is not in application bundle but in app sanbox i.e. downloaded from some remote location. In this case the source file is located in data subdirectory of Documents location.
+
+```js 
+SQLite.openDatabase({name : "testDB", createFromLocation : "/data/mydbfile.sqlite"}, okCallback,errorCallback); 
+```
+  
+## Additional options for pre-populated database file (iOS only)
+
+You can provide additional instructions to sqlite-storage to tell it how to handle your pre-populated database file. By default, the source file is copied over to the internal location which works in most cases but sometimes this is not really an option particularly when the source db file is large. In such situations you can tell sqlite-storage you do not want to copy the file but rather use it in read-only fashion via direct access. You accomplish this by providing an additional optional readOnly parameter to openDatabase call
+
+```js 
+SQLite.openDatabase({name : "testDB", readOnly: true, createFromLocation : "/data/mydbfile.sqlite"}, okCallback,errorCallback); 
+```
+
+Note that in this case, the source db file will be open in read-only mode and no updates will be allowed. You cannot delete a database that was open with readOnly option.
+
+
 
 #Original Cordova SQLite Bindings from Chris Brody
 https://github.com/litehelpers/Cordova-sqlite-storage
