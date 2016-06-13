@@ -270,6 +270,38 @@ For Android, the www directory is always relative to the assets directory for th
 
 Enjoy!
 
+## Opening a database
+
+Opening a database is slightly different between iOS and Android. Where as on Android the location of the database file is fixed, there are three choices of where the database file can be located on iOS. The 'location' parameter you provide to openDatabase call indicated where you would like the file to be created. This parameter is neglected on Android.
+
+WARNING: the default location on iOS has changed in version 3.0.0 - it is now a no-sync location as mandated by Apple so the release is backward incompatible.
+
+
+To open a database access handle object (affects iOS *only*)::
+
+```js
+var db = window.sqlitePlugin.openDatabase({name: 'my.db', location: 'default'}, successcb, errorcb);
+```
+
+To specify a different location (affects iOS *only*):
+
+```js
+var db = window.sqlitePlugin.openDatabase({name: 'my.db', location: 'Library'}, successcb, errorcb);
+```
+
+where the `location` option may be set to one of the following choices:
+- `default`: `Library/LocalDatabase` subdirectory - *NOT* visible to iTunes and *NOT* backed up by iCloud
+- `Library`: `Library` subdirectory - backed up by iCloud, *NOT* visible to iTunes
+- `Documents`: `Documents` subdirectory - visible to iTunes and backed up by iCloud
+
+The original webSql style openDatabase still works and the location will implicitly default to 'default' option:
+
+```js
+var db = window.sqlitePlugin.openDatabase("myDatabase.db", "1.0", "Demo", -1);
+```
+
+
+
 #Original Cordova SQLite Bindings from Chris Brody
 https://github.com/litehelpers/Cordova-sqlite-storage
 
