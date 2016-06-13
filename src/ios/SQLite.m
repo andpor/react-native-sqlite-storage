@@ -150,6 +150,9 @@ RCT_EXPORT_METHOD(echoStringValue: (NSDictionary *) options success:(RCTResponse
 RCT_EXPORT_METHOD(open: (NSDictionary *) options success:(RCTResponseSenderBlock)success error:(RCTResponseSenderBlock)error)
 {
   SQLiteResult* pluginResult = nil;
+  NSString *dbname;
+  int sqlOpenFlags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
+  
   NSString *dbfilename = options[@"name"];
   if (dbfilename == NULL) {
     NSLog(@"No db name specified for open");
@@ -185,9 +188,8 @@ RCT_EXPORT_METHOD(open: (NSDictionary *) options success:(RCTResponseSenderBlock
         }
       }
       
-      NSString *dbname;
-      int sqlOpenFlags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
-      if (options[@"readOnly"]){
+
+      if (options[@"readOnly"] && assetFilePath != NULL){
         sqlOpenFlags = SQLITE_OPEN_READONLY;
         dbname = assetFilePath;
       } else {
