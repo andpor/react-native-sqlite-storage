@@ -277,16 +277,16 @@ Opening a database is slightly different between iOS and Android. Where as on An
 WARNING: the default location on iOS has changed in version 3.0.0 - it is now a no-sync location as mandated by Apple so the release is backward incompatible.
 
 
-To open a database access handle object (affects iOS *only*)::
+To open a database in default no-sync location (affects iOS *only*)::
 
 ```js
-var db = window.sqlitePlugin.openDatabase({name: 'my.db', location: 'default'}, successcb, errorcb);
+SQLite.openDatabase({name: 'my.db', location: 'default'}, successcb, errorcb);
 ```
 
 To specify a different location (affects iOS *only*):
 
 ```js
-var db = window.sqlitePlugin.openDatabase({name: 'my.db', location: 'Library'}, successcb, errorcb);
+SQLite.openDatabase({name: 'my.db', location: 'Library'}, successcb, errorcb);
 ```
 
 where the `location` option may be set to one of the following choices:
@@ -297,7 +297,7 @@ where the `location` option may be set to one of the following choices:
 The original webSql style openDatabase still works and the location will implicitly default to 'default' option:
 
 ```js
-var db = window.sqlitePlugin.openDatabase("myDatabase.db", "1.0", "Demo", -1);
+SQLite.openDatabase("myDatabase.db", "1.0", "Demo", -1);
 ```
 
 
