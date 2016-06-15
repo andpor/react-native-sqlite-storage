@@ -324,7 +324,7 @@ Use this flavor of openDatabase call if your folder is not in application bundle
 SQLite.openDatabase({name : "testDB", createFromLocation : "/data/mydbfile.sqlite"}, okCallback,errorCallback); 
 ```
   
-## Additional options for pre-populated database file (iOS only)
+## Additional options for pre-populated database file
 
 You can provide additional instructions to sqlite-storage to tell it how to handle your pre-populated database file. By default, the source file is copied over to the internal location which works in most cases but sometimes this is not really an option particularly when the source db file is large. In such situations you can tell sqlite-storage you do not want to copy the file but rather use it in read-only fashion via direct access. You accomplish this by providing an additional optional readOnly parameter to openDatabase call
 
