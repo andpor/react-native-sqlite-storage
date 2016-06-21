@@ -6,8 +6,6 @@
 package io.liteglue;
 
 
-import android.app.Activity;
-
 import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.JavaScriptModule;
 import com.facebook.react.bridge.NativeModule;
@@ -19,19 +17,15 @@ import java.util.Collections;
 import java.util.List;
 
 public class SQLitePluginPackage implements ReactPackage {
-    private Activity activity = null;
 
-    public SQLitePluginPackage(Activity activity){
-        this.activity = activity;
+    public SQLitePluginPackage(){
     }
 
     @Override
     public List<NativeModule> createNativeModules(
                                 ReactApplicationContext reactContext) {
       List<NativeModule> modules = new ArrayList<>();
-
-      modules.add(new SQLitePlugin(reactContext, activity));
-
+      modules.add(new SQLitePlugin(reactContext));
       return modules;
     }
 
