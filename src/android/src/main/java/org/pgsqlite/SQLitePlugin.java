@@ -8,14 +8,13 @@
 package org.pgsqlite;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
-import android.app.Application;
 import android.database.Cursor;
 import android.database.CursorWindow;
 import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteStatement;
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
@@ -48,7 +47,7 @@ import java.io.OutputStream;
 import java.io.IOException;
 
 
-public class SQLitePlugin extends ReactContextBaseJavaModules {
+public class SQLitePlugin extends ReactContextBaseJavaModule {
 
     private static final String PLUGIN_NAME = "SQLite";
 
@@ -433,8 +432,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModules {
      * @param dbfile The File of the destination db
      * @param assetFileInputStream input file stream for pre-populated db asset
      */
-    private void createFromAssets(String dbName, File dbfile, InputStream assetFileInputStream)
-    {
+    private void createFromAssets(String dbName, File dbfile, InputStream assetFileInputStream) {
         OutputStream out = null;
 
         try {
