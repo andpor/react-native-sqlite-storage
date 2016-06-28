@@ -18,6 +18,7 @@ The library had been developed for React 14 using XCode 6. It has been tested wi
 
 v3.1.0
  1. Backward incompatible change. Boolean params will now be coverted and stored as int type, 0 and 1, in compliance with SQLite specifications. Issue [#63] (https://github.com/andpor/react-native-sqlite-storage/issues/63)
+ 2. Database decoupled from the Activity lifecycle on Android. With this change, the database will not be closed without explicit instructions to close it. Pull Request [#62] (https://github.com/andpor/react-native-sqlite-storage/pull/62)
  
 v3.0.0
  1. Default location changes for iOS for App Store iCloude compliance - backward incompatible release. Default now is no-sync location instead of docs.
@@ -184,7 +185,7 @@ public class MainActivity extends Activity implements DefaultHardwareBackBtnHand
                 .setBundleAssetName("index.android.bundle")  // this is dependant on how you name you JS files, example assumes index.android.js
                 .setJSMainModuleName("index.android")        // this is dependant on how you name you JS files, example assumes index.android.js
                 .addPackage(new MainReactPackage())
-                .addPackage(new SQLitePluginPackage(this))   // register SQLite Plugin here
+                .addPackage(new SQLitePluginPackage())       // register SQLite Plugin here
                 .setUseDeveloperSupport(BuildConfig.DEBUG)
                 .setInitialLifecycleState(LifecycleState.RESUMED)
                 .build();
@@ -210,7 +211,7 @@ public class MainActivity extends ReactActivity {
     @Override
     protected List<ReactPackage> getPackages() {
       return Arrays.<ReactPackage>asList(
-        new SQLitePluginPackage(this),   // register SQLite Plugin here
+        new SQLitePluginPackage(),   // register SQLite Plugin here
         new MainReactPackage());
     }
 }
