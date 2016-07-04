@@ -165,7 +165,7 @@ dependencies {
 }
 ```
 
-#### Step 4 - Register React Package (this should work on React version but if it does not , try the ReactActivity based approach
+#### Step 4 - Register React Package (this should work on React version but if it does not , try the ReactActivity based approach. Note: for version 3.0.0 and below you would have to pass in the instance of your Activity to the SQLitePluginPackage constructor
 
 ```java
 ...
@@ -196,7 +196,7 @@ public class MainActivity extends Activity implements DefaultHardwareBackBtnHand
 
 ```
 
-Alternative approach on newer versions of React Native (0.18+):
+Alternative approach on newer versions of React Native (0.18+). Note: for version 3.0.0 and below you would have to pass in the instance of your Activity to the SQLitePluginPackage constructor
 
 ```java
 import org.pgsqlite.SQLitePluginPackage;
