@@ -20,6 +20,7 @@ v3.1.0
  1. Backward incompatible change. Boolean params will now be coverted and stored as int type, 0 and 1, in compliance with SQLite specifications. Issue [#63] (https://github.com/andpor/react-native-sqlite-storage/issues/63)
  2. Database decoupled from the Activity lifecycle on Android. With this change, the database will not be closed without explicit instructions to close it. SQLitePluginPackage constructor change. Pull Request [#62] (https://github.com/andpor/react-native-sqlite-storage/pull/62)
  3. Correct handling for executeSql with object as sql value (solves a possible crash on iOS)
+ 4. Backfill cordova-sqlite-storage fix - readTransaction allows modification in case of extra semicolon before SQL. Issue [#460] ((https://github.com/litehelpers/Cordova-sqlite-storage/issues/460))
  
 v3.0.0
  1. Default location changes for iOS for App Store iCloude compliance - backward incompatible release. Default now is no-sync location instead of docs.
