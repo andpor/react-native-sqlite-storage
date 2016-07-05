@@ -12,13 +12,14 @@ Features:
 
 Please let me know your projects that use these SQLite React Native modules. I will list them in the reference section. If there are any features that you think would benefit this library please post them.
 
-The library had been developed for React 14 using XCode 6. It has been tested with React 0.21.0 and XCode 7 - it works fine out of the box without any need for tweaks or code changes. For XCode 7 the only difference is that sqlite ios library name suffix is tbd instead of dylib.
+The library has been tested with React 0.21.0 (and earlier) and XCode 7 - it works fine out of the box without any need for tweaks or code changes. For XCode 7 vs. XCode 6 the only difference is that sqlite ios library name suffix is tbd instead of dylib.
 
 #Version History
 
 v3.1.0
  1. Backward incompatible change. Boolean params will now be coverted and stored as int type, 0 and 1, in compliance with SQLite specifications. Issue [#63] (https://github.com/andpor/react-native-sqlite-storage/issues/63)
- 2. Database decoupled from the Activity lifecycle on Android. With this change, the database will not be closed without explicit instructions to close it. Pull Request [#62] (https://github.com/andpor/react-native-sqlite-storage/pull/62)
+ 2. Database decoupled from the Activity lifecycle on Android. With this change, the database will not be closed without explicit instructions to close it. SQLitePluginPackage constructor change. Pull Request [#62] (https://github.com/andpor/react-native-sqlite-storage/pull/62)
+ 3. Correct handling for executeSql with object as sql value (solves a possible crash on iOS)
  
 v3.0.0
  1. Default location changes for iOS for App Store iCloude compliance - backward incompatible release. Default now is no-sync location instead of docs.
