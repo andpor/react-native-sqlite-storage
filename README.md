@@ -80,7 +80,7 @@ rnpm link
 pod 'react-native-sqlite-storage', :path => './node_modules/react-native-sqlite-storage'
 ```
 
-Done, skip to Step 3.
+Done, skip to Step 2.
 
 ##### Without CoacoaPods:
 
