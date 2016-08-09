@@ -24,7 +24,7 @@ v3.1.0
  2. Database decoupled from the Activity lifecycle on Android. With this change, the database will not be closed without explicit instructions to close it. SQLitePluginPackage constructor change. Pull Request [#62] (https://github.com/andpor/react-native-sqlite-storage/pull/62)
  3. Correct handling for executeSql with object as sql value (solves a possible crash on iOS)
  4. Backfill cordova-sqlite-storage fix - readTransaction allows modification in case of extra semicolon before SQL. Issue [#460] (https://github.com/litehelpers/Cordova-sqlite-storage/issues/460)
- 
+
 v3.0.0
  1. Default location changes for iOS for App Store iCloude compliance - backward incompatible release. Default now is no-sync location instead of docs.
  2. Ability to point to read-only db file in app bundle directly without requiring it to be copied elsewhere.
@@ -34,7 +34,7 @@ v3.0.0
 v2.1.6
  1. rnpm linking for iOS - contributed by @clozr
  2. Backfill Cordova read transaction bug fix.
- 
+
 v2.1.5
  1. Allow retrieval of pre-populated db files from user defined locations in application bundle as well as the sandbox.
  2. Implement Activity lifecycle mgmt in Android native
@@ -47,7 +47,7 @@ v2.1.5
 v2.1.4 - tested with React 0.21.0
  1. Expose a bulk data retrieval interface from JS
  2. Fix JS 'strict' mode execution errors
- 
+
 v2.1.3
  1. Fix the runtime error in reflection.
 
@@ -73,6 +73,17 @@ v1.0 - Intial release for iOS with full support of all operations based on plan 
 npm install --save react-native-sqlite-storage
 rnpm link
 ```
+
+##### With CoacoaPods add:
+
+```ruby
+pod 'react-native-sqlite-storage', :path => './node_modules/react-native-sqlite-storage'
+```
+
+Done, skip to Step 2.
+
+##### Without CoacoaPods:
+
 rnpm and xcode are dependencies of this project and should get installed with the module but in case there are issue running rnpm link and rnpm/xcode are not already installed you can try to install it globally as follows:
 ```shell
 npm -g install rnpm xcode
@@ -121,9 +132,9 @@ var db = SQLite.openDatabase("test.db", "1.0", "Test Database", 200000, openCB, 
 db.transaction((tx) => {
   tx.executeSql('SELECT * FROM Employees a, Departments b WHERE a.department = b.department_id', [], (tx, results) => {
       console.log("Query completed");
-      
+
       // Get rows with Web SQL Database spec compliance.
-      
+
       var len = results.rows.length;
       for (let i = 0; i < len; i++) {
         let row = results.rows.item(i);
@@ -131,7 +142,7 @@ db.transaction((tx) => {
       }
 
       // Alternatively, you can use the non-standard raw method.
-      
+
       /*
         let rows = results.rows.raw(); // shallow copy of rows Array
 
@@ -208,7 +219,7 @@ import org.pgsqlite.SQLitePluginPackage;
 
 public class MainActivity extends ReactActivity {
   ......
-  
+
   /**
    * A list of packages used by the app. If the app uses additional views
    * or modules besides the default ones, add more packages here.
@@ -266,11 +277,11 @@ Modify you openDatabase call in your application adding createFromLocation param
 ```js
 
   ...
-  1.SQLite.openDatabase({name : "testDB", createFromLocation : 1}, okCallback,errorCallback); 
+  1.SQLite.openDatabase({name : "testDB", createFromLocation : 1}, okCallback,errorCallback);
   // default - if your folder is called www and data file is named the same as the dbName - testDB in this example
-  2.SQLite.openDatabase({name : "testDB", createFromLocation : "~data/mydbfile.sqlite"}, okCallback,errorCallback); 
+  2.SQLite.openDatabase({name : "testDB", createFromLocation : "~data/mydbfile.sqlite"}, okCallback,errorCallback);
   // if your folder is called data rather than www or your filename does not match the name of the db
-  3.SQLite.openDatabase({name : "testDB", createFromLocation : "/data/mydbfile.sqlite"}, okCallback,errorCallback); 
+  3.SQLite.openDatabase({name : "testDB", createFromLocation : "/data/mydbfile.sqlite"}, okCallback,errorCallback);
   // if your folder is not in app bundle but in app sanbox i.e. downloaded from some remote location.
   ...
 
@@ -312,33 +323,33 @@ SQLite.openDatabase("myDatabase.db", "1.0", "Demo", -1);
 
 ## Importing a pre-populated database.
 
-You can import an existing - prepopulated database file into your application. Depending on your instructions in openDatabase call, the sqlite-storage will look at different places to locate you pre-populated database file. 
+You can import an existing - prepopulated database file into your application. Depending on your instructions in openDatabase call, the sqlite-storage will look at different places to locate you pre-populated database file.
 
 
 Use this flavor of openDatabase call, if your folder is called www and data file is named the same as the dbName - testDB in this example
 
 ```js
-SQLite.openDatabase({name : "testDB", createFromLocation : 1}, okCallback,errorCallback); 
+SQLite.openDatabase({name : "testDB", createFromLocation : 1}, okCallback,errorCallback);
 ```
 
 Use this flavor of openDatabase call if your folder is called data rather than www or your filename does not match the name of the db. In this case db is named testDB but the file is mydbfile.sqlite which is located in a data subdirectory of www
 
-```js  
-SQLite.openDatabase({name : "testDB", createFromLocation : "~data/mydbfile.sqlite"}, okCallback,errorCallback); 
+```js
+SQLite.openDatabase({name : "testDB", createFromLocation : "~data/mydbfile.sqlite"}, okCallback,errorCallback);
 ```
 
 Use this flavor of openDatabase call if your folder is not in application bundle but in app sanbox i.e. downloaded from some remote location. In this case the source file is located in data subdirectory of Documents location (iOS) or FilesDir (Android).
 
-```js 
-SQLite.openDatabase({name : "testDB", createFromLocation : "/data/mydbfile.sqlite"}, okCallback,errorCallback); 
+```js
+SQLite.openDatabase({name : "testDB", createFromLocation : "/data/mydbfile.sqlite"}, okCallback,errorCallback);
 ```
-  
+
 ## Additional options for pre-populated database file
 
 You can provide additional instructions to sqlite-storage to tell it how to handle your pre-populated database file. By default, the source file is copied over to the internal location which works in most cases but sometimes this is not really an option particularly when the source db file is large. In such situations you can tell sqlite-storage you do not want to copy the file but rather use it in read-only fashion via direct access. You accomplish this by providing an additional optional readOnly parameter to openDatabase call
 
-```js 
-SQLite.openDatabase({name : "testDB", readOnly: true, createFromLocation : "/data/mydbfile.sqlite"}, okCallback,errorCallback); 
+```js
+SQLite.openDatabase({name : "testDB", readOnly: true, createFromLocation : "/data/mydbfile.sqlite"}, okCallback,errorCallback);
 ```
 
 Note that in this case, the source db file will be open in read-only mode and no updates will be allowed. You cannot delete a database that was open with readOnly option. For Android, the read only option works with pre-populated db files located in FilesDir directory because all other assets are never physically located on the file system but rather read directly from the app bundle.
