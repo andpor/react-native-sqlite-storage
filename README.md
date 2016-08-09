@@ -15,6 +15,11 @@ Please let me know your projects that use these SQLite React Native modules. I w
 The library has been tested with React 0.21.0 (and earlier) and XCode 7 - it works fine out of the box without any need for tweaks or code changes. For XCode 7 vs. XCode 6 the only difference is that sqlite ios library name suffix is tbd instead of dylib.
 
 #Version History
+
+v3.1.2 (upcoming)
+ 1. Add support for Cocoa Pods (thanks to JAStanton for this contribution) 
+ 2. Set based iOS build to 8.0
+ 
 v3.1.1
  1.  Fix for Cordova issue #517: reject ALTER, REINDEX and REPLACE operations in readTransactions
  2.  Stop remaining transaction callback in case of an error with no error handler returning false
