@@ -16,7 +16,7 @@ The library has been tested with React 0.21.0 (and earlier) and XCode 7 - it wor
 
 #Version History
 
-v3.1.2 (upcoming)
+v3.1.2
  1. Add support for Cocoa Pods (thanks to JAStanton for this contribution) 
  2. Set base iOS build to 8.0
  
