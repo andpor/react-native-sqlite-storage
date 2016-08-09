@@ -18,7 +18,7 @@ The library has been tested with React 0.21.0 (and earlier) and XCode 7 - it wor
 
 v3.1.2 (upcoming)
  1. Add support for Cocoa Pods (thanks to JAStanton for this contribution) 
- 2. Set based iOS build to 8.0
+ 2. Set base iOS build to 8.0
  
 v3.1.1
  1.  Fix for Cordova issue #517: reject ALTER, REINDEX and REPLACE operations in readTransactions
