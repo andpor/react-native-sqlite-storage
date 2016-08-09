@@ -17,7 +17,7 @@ The library has been tested with React 0.21.0 (and earlier) and XCode 7 - it wor
 #Version History
 
 v3.1.2
- 1. Add support for Cocoa Pods (thanks to JAStanton for this contribution) 
+ 1. Add support for CocoaPods (thanks to JAStanton for this contribution) 
  2. Set base iOS build to 8.0
  
 v3.1.1
@@ -72,15 +72,14 @@ v1.0 - Intial release for iOS with full support of all operations based on plan 
 
 #How to use (iOS):
 
-#### Step 1. NPM install
+#### Step 1. Install Dependencies
+
+##### With CoacoaPods:
 
 ```shell
 npm install --save react-native-sqlite-storage
-rnpm link
 ```
-
-##### With CoacoaPods add:
-
+Then add this to your Podfile
 ```ruby
 pod 'react-native-sqlite-storage', :path => './node_modules/react-native-sqlite-storage'
 ```
@@ -88,6 +87,11 @@ pod 'react-native-sqlite-storage', :path => './node_modules/react-native-sqlite-
 Done, skip to Step 2.
 
 ##### Without CoacoaPods:
+
+```shell
+npm install --save react-native-sqlite-storage
+rnpm link
+```
 
 rnpm and xcode are dependencies of this project and should get installed with the module but in case there are issue running rnpm link and rnpm/xcode are not already installed you can try to install it globally as follows:
 ```shell
