@@ -17,9 +17,9 @@ The library has been tested with React 0.21.0 (and earlier) and XCode 7 - it wor
 #Version History
 
 v3.1.2
- 1. Add support for CocoaPods (thanks to JAStanton for this contribution) 
+ 1. Add support for CocoaPods (thanks to JAStanton for this contribution)
  2. Set base iOS build to 8.0
- 
+
 v3.1.1
  1.  Fix for Cordova issue #517: reject ALTER, REINDEX and REPLACE operations in readTransactions
  2.  Stop remaining transaction callback in case of an error with no error handler returning false
@@ -226,7 +226,7 @@ Alternative approach on newer versions of React Native (0.18+). Note: for versio
 ```java
 import org.pgsqlite.SQLitePluginPackage;
 
-public class MainActivity extends ReactActivity {
+public class MainApplication extends Application implements ReactApplication {
   ......
 
   /**
@@ -374,4 +374,3 @@ The issues and limitations for the actual SQLite can be found on this site.
 ##Issues
 
 1. Android binds all numeric SQL input values to double. This is due to the underlying React Native limitation where only a Numeric type is available on the interface point making it ambiguous to distinguish intgeres from doubles. Once I figure out the proper way to do this I will update the codebase [(Issue #4141)] (https://github.com/facebook/react-native/issues/4141).
-
