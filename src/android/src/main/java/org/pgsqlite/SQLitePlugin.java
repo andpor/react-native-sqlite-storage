@@ -357,6 +357,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
     private SQLiteDatabase openDatabase(String dbname, String assetFilePath, int openFlags, CallbackContext cbc) throws Exception {
         InputStream in = null;
         File dbfile = null;
+
         try {
             SQLiteDatabase database = this.getDatabase(dbname);
             if (database != null && database.isOpen()) {
@@ -1003,6 +1004,12 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
         final BlockingQueue<DBQuery> q;
         final CallbackContext openCbc;
 
+        // Name of Database, that shall be attached to "this" database
+        private String attachDatabase;
+
+        // Alias of ATTACH DATABASE Statement
+        private String attachAlias;
+
         SQLiteDatabase mydb;
 
         DBRunner(final String dbname, JSONObject options, CallbackContext cbc) {
@@ -1022,6 +1029,19 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
             if (this.androidLockWorkaround)
                 Log.v(SQLitePlugin.class.getSimpleName(), "Android db closing/locking workaround applied");
 
+                if(options.has("attachDatabase")) {
+                  try {
+                    this.attachDatabase = options.getString("attachDatabase");
+                    this.attachAlias = options.getString("attachAlias");
+                  } catch(JSONException ex) {
+                    Log.e("Error", ex.getMessage());
+                  }
+
+                  Log.v("Attach Database", this.attachDatabase);
+                  Log.v("with Alias", this.attachAlias);
+                }
+
+
             this.q = new LinkedBlockingQueue<DBQuery>();
             this.openCbc = cbc;
         }
@@ -1029,6 +1049,16 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
         public void run() {
             try {
                 this.mydb = openDatabase(dbname, this.assetFilename, this.openFlags, this.openCbc);
+
+                if(!this.attachAlias.isEmpty() ) {
+                    File dbFileToAttached = getContext().getDatabasePath(this.attachDatabase);
+                    String filePathToAttached = dbFileToAttached.getAbsolutePath();
+                    String stmt = "ATTACH DATABASE '" + filePathToAttached + "' AS " + this.attachAlias;
+                    
+                    SQLiteStatement myStatement = mydb.compileStatement(stmt);
+                    myStatement.execute();
+                }
+
             } catch (Exception e) {
                 Log.e(SQLitePlugin.class.getSimpleName(), "unexpected error, stopping db thread", e);
                 dbrmap.remove(dbname);
