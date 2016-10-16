@@ -10,7 +10,7 @@ export function doTest() {
     name: 'master',
   }, openCB, errorCB);
 
-  dbMaster.attach( "second2", "second", () => console.log("Database Attached successfully"), () => console.log("ERROR"))
+  dbMaster.attach( "second", "second", () => console.log("Database Attached successfully"), () => console.log("ERROR"))
 
   dbMaster.executeSql('CREATE TABLE IF NOT EXISTS bar (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, data TEXT)');
   dbMaster.executeSql("INSERT INTO bar (data) VALUES ('bar-test')")
