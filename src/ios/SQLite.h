@@ -32,16 +32,15 @@ typedef int WebSQLError;
 
 @interface SQLite : NSObject <RCTBridgeModule> {
     NSMutableDictionary *openDBs;
-    NSMutableDictionary *openDBsFilePaths;
 }
 
 @property (nonatomic, copy) NSMutableDictionary *openDBs;
-@property (nonatomic, copy) NSMutableDictionary *openDBsFilePaths;
 @property (nonatomic, copy) NSMutableDictionary *appDBPaths;
 
 // Open / Close
 -(void) open: (NSDictionary *) options success:(RCTResponseSenderBlock)success error:(RCTResponseSenderBlock)error;
 -(void) close: (NSDictionary *) options success:(RCTResponseSenderBlock)success error:(RCTResponseSenderBlock)error;
+-(void) attach: (NSDictionary *) options success:(RCTResponseSenderBlock)success error:(RCTResponseSenderBlock)error;
 -(void) delete: (NSDictionary *) options success:(RCTResponseSenderBlock)success error:(RCTResponseSenderBlock)error;
 
 // Batch processing interface
