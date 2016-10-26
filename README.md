@@ -363,8 +363,26 @@ SQLite.openDatabase({name : "testDB", readOnly: true, createFromLocation : "/dat
 
 Note that in this case, the source db file will be open in read-only mode and no updates will be allowed. You cannot delete a database that was open with readOnly option. For Android, the read only option works with pre-populated db files located in FilesDir directory because all other assets are never physically located on the file system but rather read directly from the app bundle.
 
+## Attaching another database
 
+Sqlite3 allows you to add another database file to the current database connection with the sql-command "ATTACH DATABASE". Then you're able to SELECT and JOIN tables over multiple databases with only one statement and only one database connection.
+To archieve this, you need to open both databases and to call the attach()-method of the destination (or master) -database to the other ones.
 
+```js
+let dbMaster, dbSecond;
+
+dbSecond = SQLite.openDatabase({name: 'second'},
+  (db) => {
+    dbMaster = SQLite.openDatabase({name: 'master'},
+      (db) => {
+        dbMaster.attach( "second", "second", () => console.log("Database attached successfully"), () => console.log("ERROR"))
+      },
+      (err) => console.log("Error on opening database 'master'", err)
+    );
+  },
+  (err) => console.log("Error on opening database 'second'", err)
+);
+```
 
 #Original Cordova SQLite Bindings from Chris Brody
 https://github.com/litehelpers/Cordova-sqlite-storage
