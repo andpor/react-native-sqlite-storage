@@ -384,6 +384,14 @@ dbSecond = SQLite.openDatabase({name: 'second'},
 );
 ```
 
+The first argument of attach() is the name of the database, which is used in SQLite.openDatabase(). The second argument is the alias, that is used to query on tables of the attached database:
+
+The following statement would select data from the master database and include the "second"-database within a simple SELECT/JOIN-statement:
+
+```sql
+SELECT * FROM user INNER JOIN second.subscriptions s ON s.user_id = user.id
+``` 
+ 
 #Original Cordova SQLite Bindings from Chris Brody
 https://github.com/litehelpers/Cordova-sqlite-storage
 
