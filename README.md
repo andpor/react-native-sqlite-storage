@@ -391,6 +391,13 @@ The following statement would select data from the master database and include t
 ```sql
 SELECT * FROM user INNER JOIN second.subscriptions s ON s.user_id = user.id
 ``` 
+
+To detach a database, just use the detach()-method:
+ 
+```js
+dbMaster.detach( 'second', successCallback, errorCallback );
+``` 
+ 
  
 #Original Cordova SQLite Bindings from Chris Brody
 https://github.com/litehelpers/Cordova-sqlite-storage
