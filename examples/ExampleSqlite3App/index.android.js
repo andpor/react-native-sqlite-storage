@@ -12,9 +12,8 @@ import {
   View
 } from 'react-native';
 
-import {doTest} from './src/test.js';
-
-
+import {doTest} from './src/test.callback.js';
+//import {doTest} from './src/test.promise.js';
 
 export default class ExampleSqlite3App extends Component {
 
