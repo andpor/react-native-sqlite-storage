@@ -11,5 +11,12 @@ npm install
 react-native link
 ```
 
-and then run. In case of success a record with a value called "Test" will be read from the database that
+and then run the application. In case of success a record with a value called "Test" will be read from the database that
 was created by prepopulation.
+
+# Good to now
+
+The origin database file, which should be used for prepopulation, exists twice:
+
+iOS: ./www/example.db
+Android: ./android/app/src/main/assets/example.db
