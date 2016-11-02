@@ -11,11 +11,16 @@ var plugin = require('./lib/sqlite.core.js');
 var {SQLiteFactory} = plugin;
 
 var config = [
+
+  // meaning: [returnValueExpected,prototype,fn,argsNeedPadding,reverseCallbacks,rejectOnError]
+
   [false,"SQLitePlugin","transaction",false,true,true],
   [false,"SQLitePlugin","readTransaction",false,true,true],
   [false,"SQLitePlugin","close",false,false,true],
   [false,"SQLitePlugin","executeSql",true,false,true],
   [false,"SQLitePlugin","sqlBatch",false,false,true],
+  [false,"SQLitePlugin","attach",true,false,true],
+  [false,"SQLitePlugin","detach",false,false,true],
   [false,"SQLitePluginTransaction","executeSql",true,false,false],
   [false,"SQLiteFactory","deleteDatabase",false,false,true],
   [true, "SQLiteFactory","openDatabase",false,false,true],
@@ -35,20 +40,18 @@ function enablePromiseRuntime(enable){
   } else {
     createCallbackRuntime();
   }
-};
-
+}
 function createCallbackRuntime() {
   config.forEach(entry => {
     let [returnValueExpected,prototype,fn,argsNeedPadding,reverseCallbacks,rejectOnError]= entry;
     plugin[prototype].prototype[fn] = originalFns[prototype + "." + fn];
   });
   console.log("Callback based runtime ready");
-};
-
+}
 function createPromiseRuntime() {
   config.forEach(entry => {
     let [returnValueExpected,prototype,fn,argsNeedPadding,reverseCallbacks,rejectOnError]= entry;
-    let originalFn = plugin[prototype].prototype[fn]
+    let originalFn = plugin[prototype].prototype[fn];
     plugin[prototype].prototype[fn] = function(...args){
       if (argsNeedPadding && args.length == 1){
         args.push([]);
@@ -76,8 +79,7 @@ function createPromiseRuntime() {
     }
   });
   console.log("Promise based runtime ready");
-};
-
+}
 SQLiteFactory.prototype.enablePromise = enablePromiseRuntime;
 
 module.exports = new SQLiteFactory();

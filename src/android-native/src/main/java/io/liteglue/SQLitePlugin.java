@@ -93,6 +93,18 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void attach(ReadableMap args, Callback success, Callback error) {
+        String actionAsString = "attach";
+        try {
+            JSONArray params = new JSONArray();
+            params.put(SQLitePluginConverter.reactToJSON(args));
+            this.execute(actionAsString, params, new CallbackContext(success, error));
+        } catch (Exception ex){
+            error.invoke("Unexpected error"+ex.getMessage());
+        }
+    }
+
+    @ReactMethod
     public void delete(ReadableMap args, Callback success, Callback error) {
         String actionAsString = "delete";
         try {
@@ -204,6 +216,14 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                 this.closeDatabase(dbname, cbc);
                 break;
 
+            case attach:
+                o = args.getJSONObject(0);
+                dbname = o.getString("path");
+
+                // attach database
+                this.attachDatabase(dbname, o.getString("dbName"), o.getString("dbAlias"), cbc);
+                break;
+
             case delete:
                 o = args.getJSONObject(0);
                 dbname = o.getString("path");
@@ -247,7 +267,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                 DBRunner r = dbrmap.get(dbname);
                 if (r != null) {
                     try {
-                        r.q.put(q); 
+                        r.q.put(q);
                     } catch(Exception e) {
                         Log.e(LOG_TAG, "couldn't add to queue", e);
                         cbc.error("couldn't add to queue");
@@ -464,6 +484,41 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
 
             if (mydb != null)
                 mydb.closeDatabaseNow();
+        }
+    }
+
+    /**
+     * Attach a database
+     *
+     * @param dbName - The name of the database file
+     * @param dbNameToAttach - The name of the database file to attach
+     * @param dbAlias - The alias of the attached database
+     * @param cbc - JS callback
+     */
+    private void attachDatabase(String dbName, String dbNameToAttach, String dbAlias, CallbackContext cbc) {
+        SQLiteDatabase currentDb = this.getDatabase(dbName);
+        SQLiteDatabase attachDb = this.getDatabase(dbNameToAttach);
+
+        if (attachDb == null || ! attachDb.isOpen()) {
+            if (cbc != null) cbc.error("Database to attach (" + dbNameToAttach + ") is not open");
+            return;
+        }
+
+        if (currentDb == null || ! currentDb.isOpen()) {
+            if (cbc != null) cbc.error("Database " + dbName + " is not open");
+            return;
+        }
+
+        File dbfile = this.getContext().getDatabasePath(dbNameToAttach);
+        String filePathToAttached = dbfile.getAbsolutePath();
+
+        String stmt = "ATTACH DATABASE '" + filePathToAttached + "' AS " + dbAlias;
+        try {
+            this.executeSqlStatementQuery( currentDb, stmt, new JSONArray(), cbc );
+        }
+        catch(Exception e) {
+            Log.e("attachDatabase", "" + e.getMessage());
+            if(cbc != null) cbc.error("Attach failed");
         }
     }
 
@@ -803,7 +858,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                             Log.e(LOG_TAG, "couldn't delete database", e);
                             dbq.cbc.error("couldn't delete database: " + e);
                         }
-                    }                    
+                    }
                 } catch (Exception e) {
                     Log.e(LOG_TAG, "couldn't close database", e);
                     if (dbq.cbc != null) {

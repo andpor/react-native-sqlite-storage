@@ -310,6 +310,52 @@ RCT_EXPORT_METHOD(close: (NSDictionary *) options success:(RCTResponseSenderBloc
   [pluginResult.status intValue] == SQLiteStatus_OK ? success(@[pluginResult.message]) : error(@[pluginResult.message]);
 }
 
+RCT_EXPORT_METHOD(attach: (NSDictionary *) options success:(RCTResponseSenderBlock)success error:(RCTResponseSenderBlock)error)
+{
+  SQLiteResult* pluginResult = nil;
+  
+  NSString *dbFileName = options[@"path"]; // path to current database instance
+
+  NSString *dbName = options[@"dbName"]; // dbName that should be attached to dbFileName
+  NSString *dbAlias = options[@"dbAlias"]; // the Alias that should be use with ATTACH DATABASE
+  
+  if (dbName == NULL || dbAlias == NULL) {
+    // Should not happen:
+    NSLog(@"No dbName or dbAlias specified for attach");
+    pluginResult = [SQLiteResult resultWithStatus:SQLiteStatus_ERROR messageAsString:@"You must specify dbName and dbAlias"];
+  } else {
+    
+    NSLog(@"Will attach %@ with alias %@", dbName, dbAlias);
+    
+    NSDictionary *dbInfo = openDBs[dbFileName];
+    NSDictionary *dbInfoToAttach = openDBs[dbName];
+    
+    if (dbInfo == NULL || dbInfo[@"dbPointer"] == NULL){
+      NSLog(@"attach: db name was not found in open databases: %@", dbFileName);
+      pluginResult = [SQLiteResult resultWithStatus:SQLiteStatus_ERROR messageAsString:@"Specified db was not open"];
+    }
+    else if (dbInfoToAttach == NULL || dbInfoToAttach[@"dbPointer"] == NULL){
+      NSLog(@"attach: db name was not found in open databases: %@", dbName);
+      pluginResult = [SQLiteResult resultWithStatus:SQLiteStatus_ERROR messageAsString:@"Specified db for ALIAS was not open"];
+    }
+    else {
+      sqlite3 *db = [((NSValue *) dbInfo[@"dbPointer"]) pointerValue];
+      NSString *dbPathToAttach = dbInfoToAttach[@"dbPath"];
+    
+      NSString* sql = [NSString stringWithFormat:@"ATTACH DATABASE '%@' AS %@", dbPathToAttach, dbAlias];
+      
+      if(sqlite3_exec(db, [sql UTF8String], NULL, NULL, NULL) == SQLITE_OK) {
+        pluginResult = [SQLiteResult resultWithStatus:SQLiteStatus_OK messageAsString:@"Database attached successfully."];
+      } else {
+        pluginResult = [SQLiteResult resultWithStatus:SQLiteStatus_ERROR messageAsString:@"Unable to attach DB"];
+      }
+    }
+  }
+  
+  [pluginResult.status intValue] == SQLiteStatus_OK ? success(@[pluginResult.message]) : error(@[pluginResult.message]);
+}
+
+
 RCT_EXPORT_METHOD(delete: (NSDictionary *) options success:(RCTResponseSenderBlock)success error:(RCTResponseSenderBlock)error)
 {
   SQLiteResult* pluginResult = nil;

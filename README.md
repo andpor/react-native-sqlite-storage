@@ -363,8 +363,44 @@ SQLite.openDatabase({name : "testDB", readOnly: true, createFromLocation : "/dat
 
 Note that in this case, the source db file will be open in read-only mode and no updates will be allowed. You cannot delete a database that was open with readOnly option. For Android, the read only option works with pre-populated db files located in FilesDir directory because all other assets are never physically located on the file system but rather read directly from the app bundle.
 
+## Attaching another database
 
+Sqlite3 offers the capability to attach another database to an existing database-instance, i.e. for making cross database JOINs available.
+This feature allows to SELECT and JOIN tables over multiple databases with only one statement and only one database connection.
+To archieve this, you need to open both databases and to call the attach()-method of the destination (or master) -database to the other ones.
 
+```js
+let dbMaster, dbSecond;
+
+dbSecond = SQLite.openDatabase({name: 'second'},
+  (db) => {
+    dbMaster = SQLite.openDatabase({name: 'master'},
+      (db) => {
+        dbMaster.attach( "second", "second", () => console.log("Database attached successfully"), () => console.log("ERROR"))
+      },
+      (err) => console.log("Error on opening database 'master'", err)
+    );
+  },
+  (err) => console.log("Error on opening database 'second'", err)
+);
+```
+
+The first argument of attach() is the name of the database, which is used in SQLite.openDatabase(). The second argument is the alias, that is used to query on tables of the attached database.
+
+The following statement would select data from the master database and include the "second"-database within a simple SELECT/JOIN-statement:
+
+```sql
+SELECT * FROM user INNER JOIN second.subscriptions s ON s.user_id = user.id
+```
+
+To detach a database, just use the detach()-method:
+
+```js
+dbMaster.detach( 'second', successCallback, errorCallback );
+```
+
+For sure, their is also Promise-support available for attach() and detach(), as shown in the example-application under the
+directory "examples".
 
 #Original Cordova SQLite Bindings from Chris Brody
 https://github.com/litehelpers/Cordova-sqlite-storage
