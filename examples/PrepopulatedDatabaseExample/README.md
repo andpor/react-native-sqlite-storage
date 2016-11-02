@@ -14,7 +14,7 @@ react-native link
 and then run the application. In case of success a record with a value called "Test" will be read from the database that
 was created by prepopulation.
 
-# Good to now
+# Good to know
 
 The origin database file, which should be used for prepopulation, exists twice:
 
