@@ -16,6 +16,11 @@ The library has been tested with React 0.21.0 (and earlier) and XCode 7 - it wor
 
 #Version History
 
+v3.1.3 (upcoming)
+ 1. Add support for ATTACH (thanks to itinance for this contribution)
+ 2. Example applications are now hosted in separate repo [react-native-sqlite-examples] (https://github.com/andpor/react-native-sqlite-storage-examples)
+ 
+ 
 v3.1.2
  1. Add support for CocoaPods (thanks to JAStanton for this contribution)
  2. Set base iOS build to 8.0
