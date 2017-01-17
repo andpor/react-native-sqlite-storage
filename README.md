@@ -19,8 +19,8 @@ The library has been tested with React 0.21.0 (and earlier) and XCode 7 - it wor
 v3.1.3 (upcoming)
  1. Add support for ATTACH (thanks to itinance for this contribution)
  2. Example applications are now hosted in separate repo [react-native-sqlite-examples] (https://github.com/andpor/react-native-sqlite-storage-examples)
- 
- 
+
+
 v3.1.2
  1. Add support for CocoaPods (thanks to JAStanton for this contribution)
  2. Set base iOS build to 8.0
@@ -30,13 +30,13 @@ v3.1.1
  2.  Stop remaining transaction callback in case of an error with no error handler returning false
 
 v3.1.0
- 1. Backward incompatible change. Boolean params will now be coverted and stored as int type, 0 and 1, in compliance with SQLite specifications. Issue [#63] (https://github.com/andpor/react-native-sqlite-storage/issues/63)
+ 1. Backward incompatible change. Boolean params will now be converted and stored as int type, 0 and 1, in compliance with SQLite specifications. Issue [#63] (https://github.com/andpor/react-native-sqlite-storage/issues/63)
  2. Database decoupled from the Activity lifecycle on Android. With this change, the database will not be closed without explicit instructions to close it. SQLitePluginPackage constructor change. Pull Request [#62] (https://github.com/andpor/react-native-sqlite-storage/pull/62)
  3. Correct handling for executeSql with object as sql value (solves a possible crash on iOS)
  4. Backfill cordova-sqlite-storage fix - readTransaction allows modification in case of extra semicolon before SQL. Issue [#460] (https://github.com/litehelpers/Cordova-sqlite-storage/issues/460)
 
 v3.0.0
- 1. Default location changes for iOS for App Store iCloude compliance - backward incompatible release. Default now is no-sync location instead of docs.
+ 1. Default location changes for iOS for App Store iCloud compliance - backward incompatible release. Default now is no-sync location instead of docs.
  2. Ability to point to read-only db file in app bundle directly without requiring it to be copied elsewhere.
  2. Check if db is open before throwing an exception (triggered in android lock workaround)
  3. Fix for issue #57. Can't find variable: Blob
@@ -64,7 +64,7 @@ v2.1.3
 v2.1.2
  1. Android Native SQLite connectivity
  2. Change how React parameters are processed to map a Number to Java Double
- 3. Implent hooks for activity lifecycle and automatic db closing on destroy
+ 3. Implement hooks for activity lifecycle and automatic db closing on destroy
  4. Fix How To Get Started instructions for Android
 
 v2.1.1 - Fixes issues with XCode path and React Native version compatibility
@@ -73,13 +73,13 @@ v2.1 - Android support
 
 v2.0 - Full support for Promise API. Backward compatible with Callbacks.
 
-v1.0 - Intial release for iOS with full support of all operations based on plan JavaScript callbacks.
+v1.0 - Initial release for iOS with full support of all operations based on plan JavaScript callbacks.
 
 #How to use (iOS):
 
 #### Step 1. Install Dependencies
 
-##### With CoacoaPods:
+##### With CocoaPods:
 
 ```shell
 npm install --save react-native-sqlite-storage
@@ -91,7 +91,7 @@ pod 'react-native-sqlite-storage', :path => './node_modules/react-native-sqlite-
 
 Done, skip to Step 2.
 
-##### Without CoacoaPods:
+##### Without CocoaPods:
 
 ```shell
 npm install --save react-native-sqlite-storage
@@ -106,7 +106,7 @@ After linking project should like this:
 
 ![alt tag](instructions/after-rnpm.png)
 
-#### Step 1a. If rnpm link does not work for you you can try manul linking according to the instructions below:
+#### Step 1a. If rnpm link does not work for you you can try manually linking according to the instructions below:
 
 
 ##### Drag the SQLite Xcode project as a dependency project into your React Native XCode project
@@ -296,7 +296,7 @@ Modify you openDatabase call in your application adding createFromLocation param
   2.SQLite.openDatabase({name : "testDB", createFromLocation : "~data/mydbfile.sqlite"}, okCallback,errorCallback);
   // if your folder is called data rather than www or your filename does not match the name of the db
   3.SQLite.openDatabase({name : "testDB", createFromLocation : "/data/mydbfile.sqlite"}, okCallback,errorCallback);
-  // if your folder is not in app bundle but in app sanbox i.e. downloaded from some remote location.
+  // if your folder is not in app bundle but in app sandbox i.e. downloaded from some remote location.
   ...
 
 ```
@@ -352,7 +352,7 @@ Use this flavor of openDatabase call if your folder is called data rather than w
 SQLite.openDatabase({name : "testDB", createFromLocation : "~data/mydbfile.sqlite"}, okCallback,errorCallback);
 ```
 
-Use this flavor of openDatabase call if your folder is not in application bundle but in app sanbox i.e. downloaded from some remote location. In this case the source file is located in data subdirectory of Documents location (iOS) or FilesDir (Android).
+Use this flavor of openDatabase call if your folder is not in application bundle but in app sandbox i.e. downloaded from some remote location. In this case the source file is located in data subdirectory of Documents location (iOS) or FilesDir (Android).
 
 ```js
 SQLite.openDatabase({name : "testDB", createFromLocation : "/data/mydbfile.sqlite"}, okCallback,errorCallback);
@@ -414,4 +414,4 @@ The issues and limitations for the actual SQLite can be found on this site.
 
 ##Issues
 
-1. Android binds all numeric SQL input values to double. This is due to the underlying React Native limitation where only a Numeric type is available on the interface point making it ambiguous to distinguish intgeres from doubles. Once I figure out the proper way to do this I will update the codebase [(Issue #4141)] (https://github.com/facebook/react-native/issues/4141).
+1. Android binds all numeric SQL input values to double. This is due to the underlying React Native limitation where only a Numeric type is available on the interface point making it ambiguous to distinguish integers from doubles. Once I figure out the proper way to do this I will update the codebase [(Issue #4141)] (https://github.com/facebook/react-native/issues/4141).
