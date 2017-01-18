@@ -552,6 +552,11 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
         String stmt = "ATTACH DATABASE '" + filePathToAttached + "' AS " + dbAlias;
         try {
             this.executeSqlStatementQuery( currentDb, stmt, new JSONArray(), cbc );
+            // if this previous statement fails, it will throw an exception
+            // otherwise it will never call the success handler because no valid
+            // cursor will be return from rawQuery.
+            // That's why we have to call the success handler here
+            if(cbc != null) cbc.success();            
         }
         catch(Exception e) {
             Log.e("attachDatabase", "" + e.getMessage());
