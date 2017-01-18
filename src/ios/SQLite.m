@@ -18,10 +18,10 @@
 #import "SQLite.h"
 #import "SQLiteResult.h"
 
-#import "RCTLog.h"
-#import "RCTUtils.h"
-#import "RCTBridge.h"
-#import "RCTEventDispatcher.h"
+#import <React/RCTLog.h>
+#import <React/RCTUtils.h>
+#import <React/RCTBridge.h>
+#import <React/RCTEventDispatcher.h>
 
 /*
  * Copyright (C) 2015-Present Andrzej Porebski
