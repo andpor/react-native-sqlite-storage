@@ -12,12 +12,15 @@ Features:
 
 Please let me know your projects that use these SQLite React Native modules. I will list them in the reference section. If there are any features that you think would benefit this library please post them.
 
-The library has been tested with React 0.21.0 (and earlier) and XCode 7 - it works fine out of the box without any need for tweaks or code changes. For XCode 7 vs. XCode 6 the only difference is that sqlite ios library name suffix is tbd instead of dylib. Version 3.1.3 is not compatible with RN 0.40.
+The library has been tested with React 0.40 (and earlier) and XCode 7 - it works fine out of the box without any need for tweaks or code changes. For XCode 7 vs. XCode 6 the only difference is that sqlite ios library name suffix is tbd instead of dylib. 
+
+Version 3.2 is the first version compatible with RN 0.40.
 
 #Version History
 
-v3.2 (upcoming)
- 1. React Native 0.40 compatibility
+v3.2 
+ 1. This is a backward incompatible release with baseline React Native 0.40 support.
+ 2. [React Native 0.40 compatibility fixes] (https://github.com/andpor/react-native-sqlite-storage/pull/110) - thanks K-Leon for this contribution
  
 v3.1.3
  1. Add support for ATTACH (thanks to itinance for this contribution)
