@@ -11,26 +11,28 @@
  */
 'use strict';
 
-var React = require('react-native');
-var SQLite = require('react-native-sqlite-storage');
+import React, { Component } from 'react';
+import {
+    AppRegistry,
+    StyleSheet,
+    Text,
+    View,
+    ListView
+} from 'react-native';
+
+
+import SQLite from 'react-native-sqlite-storage';
 SQLite.DEBUG(true);
 SQLite.enablePromise(true);
 
-var {
-  AppRegistry,
-  StyleSheet,
-  Text,
-  View,
-  ListView
-} = React;
 
-var database_name = "Test.db";
-var database_version = "1.0";
-var database_displayname = "SQLite Test Database";
-var database_size = 200000;
-var db;
+const database_name = "Test.db";
+const database_version = "1.0";
+const database_displayname = "SQLite Test Database";
+const database_size = 200000;
+let db;
 
-var SQLiteDemo = React.createClass({
+const SQLiteDemo = React.createClass({
     getInitialState(){
         return {
             progress: [],
@@ -216,7 +218,7 @@ var SQLiteDemo = React.createClass({
     },
 
     runDemo(){
-        this.state.progress = ["Starting SQLite Demo"];
+        this.state.progress = ["Starting SQLite Promise Demo"];
         this.setState(this.state);
         this.loadAndQueryDB();
     },
@@ -244,6 +246,7 @@ var SQLiteDemo = React.createClass({
                 </Text>
             </View>
             <ListView
+                enableEmptySections={true}
                 dataSource={ds.cloneWithRows(this.state.progress)}
                 renderRow={this.renderProgressEntry}
                 style={listStyles.liContainer}/>
@@ -309,4 +312,4 @@ var styles = StyleSheet.create({
   }
 });
 
-AppRegistry.registerComponent('SQLiteDemo', () => SQLiteDemo);
+AppRegistry.registerComponent('AwesomeProject', () => SQLiteDemo);
