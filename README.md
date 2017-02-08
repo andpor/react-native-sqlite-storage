@@ -95,18 +95,32 @@ v1.0 - Initial release for iOS with full support of all operations based on plan
 
 ##### With CocoaPods:
 
+This command should be executed in the root directory of your RN project
 ```shell
 npm install --save react-native-sqlite-storage
 ```
-Then add this to your Podfile
+Then add this to your Podfile which should be located inside the ios project subdirectory
 ```ruby
-pod 'react-native-sqlite-storage', :path => './node_modules/react-native-sqlite-storage'
+pod 'React', :path => '../node_modules/react-native'
+pod 'react-native-sqlite-storage', :path => '../node_modules/react-native-sqlite-storage'
 ```
+Or use the sample Podfile included in the package by copying it over to ios subdirectory and replacing AwesomeProject inside of it with the name of your RN project.
+
+Refresh the Pods installation
+```ruby
+pod install 
+```
+OR
+```ruby
+pod update 
+```
+
 
 Done, skip to Step 2.
 
 ##### Without CocoaPods:
 
+This command should be executed in the root directory of your RN project
 ```shell
 npm install --save react-native-sqlite-storage
 rnpm link
