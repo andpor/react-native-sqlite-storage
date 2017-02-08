@@ -21,7 +21,7 @@ Version 3.2 is the first version compatible with RN 0.40.
 #Version History
 
 v3.2.2
- 1. Corrects the CocoaPods based development set-up instructions and includes sample Podfile. [Issue #] (https://github.com/andpor/react-native-sqlite-storage/issues/84)
+ 1. Corrects the CocoaPods based development set-up instructions and includes sample Podfile. [Issue #125] (https://github.com/andpor/react-native-sqlite-storage/issues/125)
  
 v3.2.1
  1. Sample apps in test directory adjusted for React Native 0.41 and plugability in AwesomeProject
