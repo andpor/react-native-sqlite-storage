@@ -24,7 +24,7 @@ v3.2.2
  1. Corrects the CocoaPods based development set-up instructions and includes sample Podfile. [Issue #125] (https://github.com/andpor/react-native-sqlite-storage/issues/125)
  
 v3.2.1
- 1. Sample apps in test directory adjusted for React Native 0.41 and plugability in AwesomeProject
+ 1. Sample apps in test directory adjusted for React Native 0.41 and plugability in AwesomeProject. [Issue #120] (https://github.com/andpor/react-native-sqlite-storage/issues/120)
  
 v3.2 
  1. This is a backward incompatible release with baseline React Native 0.40 support.
