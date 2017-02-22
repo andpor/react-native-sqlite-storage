@@ -505,7 +505,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
             try {
                 r.q.put(query);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                cbc.error("Can't put querry into the queue");
             }
         } else {
             cbc.error("Can't attach to database - it's not open yet");
