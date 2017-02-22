@@ -19,6 +19,7 @@ import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.lang.IllegalArgumentException;
@@ -364,6 +365,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
             this.getThreadPool().execute(r);
         }
     }
+
     /**
      * Open a database.
      *
@@ -435,12 +437,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                 cbc.error("can't open database " + ex);
             throw ex;
         } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException ignored) {
-                }
-            }
+           closeQuietly(in);
         }
     }
 
@@ -478,12 +475,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
         } catch (IOException e) {
             Log.v("createFromAssets", "No pre-populated DB found, error=" + e.getMessage());
         } finally {
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException ignored) {
-                }
-            }
+            closeQuietly(out);
         }
     }
 
@@ -677,16 +669,16 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
 
                 if (queryType == QueryType.update || queryType == QueryType.delete) {
                     if (android.os.Build.VERSION.SDK_INT >= 11) {
-                        SQLiteStatement myStatement = mydb.compileStatement(query);
-
-                        if (jsonparams != null) {
-                            bindArgsToStatement(myStatement, jsonparams[i]);
-                        }
-
+                        SQLiteStatement myStatement = null;
                         int rowsAffected = -1; // (assuming invalid)
 
                         // Use try & catch just in case android.os.Build.VERSION.SDK_INT >= 11 is lying:
                         try {
+                            myStatement = mydb.compileStatement(query);
+                            if (jsonparams != null) {
+                                bindArgsToStatement(myStatement, jsonparams[i]);
+                            }
+
                             rowsAffected = myStatement.executeUpdateDelete();
                             // Indicate valid results:
                             needRawQuery = false;
@@ -699,6 +691,8 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                         } catch (Exception ex) {
                             // Assuming SDK_INT was lying & method not found:
                             // do nothing here & try again with raw query.
+                        } finally {
+                            closeQuietly(myStatement);
                         }
 
                         if (rowsAffected != -1) {
@@ -738,6 +732,8 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                         ex.printStackTrace();
                         errorMessage = ex.getMessage();
                         Log.v("executeSqlBatch", "SQLiteDatabase.executeInsert(): Error=" + errorMessage);
+                    } finally {
+                       closeQuietly(myStatement);
                     }
                 }
 
@@ -867,8 +863,9 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
             Matcher tableMatcher = UPDATE_TABLE_NAME.matcher(query);
             if (tableMatcher.find()) {
                 String table = tableMatcher.group(1);
+                SQLiteStatement statement = null;
                 try {
-                    SQLiteStatement statement = mydb.compileStatement(
+                     statement = mydb.compileStatement(
                             "SELECT count(*) FROM " + table + where);
 
                     if (subParams != null) {
@@ -879,22 +876,26 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                 } catch (Exception e) {
                     // assume we couldn't count for whatever reason, keep going
                     Log.e(SQLitePlugin.class.getSimpleName(), "uncaught", e);
+                } finally {
+                    closeQuietly(statement);
                 }
             }
         } else { // delete
             Matcher tableMatcher = DELETE_TABLE_NAME.matcher(query);
             if (tableMatcher.find()) {
                 String table = tableMatcher.group(1);
+                SQLiteStatement statement = null;
                 try {
-                    SQLiteStatement statement = mydb.compileStatement(
+                     statement = mydb.compileStatement(
                             "SELECT count(*) FROM " + table + where);
                     bindArgsToStatement(statement, subParams);
 
                     return (int)statement.simpleQueryForLong();
                 } catch (Exception e) {
                     // assume we couldn't count for whatever reason, keep going
-                    Log.e(SQLitePlugin.class.getSimpleName(), "uncaught", e);
-
+                    Log.e(LOG_TAG, "uncaught", e);
+                } finally {
+                    closeQuietly(statement);
                 }
             }
         }
@@ -943,69 +944,70 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                                                 CallbackContext cbc) throws Exception {
         JSONObject rowsResult = new JSONObject();
 
-        Cursor cur;
+        Cursor cur = null;
         try {
-            String[] params;
+            try {
+                String[] params;
 
-            params = new String[paramsAsJson.length()];
+                params = new String[paramsAsJson.length()];
 
-            for (int j = 0; j < paramsAsJson.length(); j++) {
-                if (paramsAsJson.isNull(j))
-                    params[j] = "";
-                else
-                    params[j] = paramsAsJson.getString(j);
+                for (int j = 0; j < paramsAsJson.length(); j++) {
+                    if (paramsAsJson.isNull(j)) {
+                        params[j] = "";
+                    } else {
+                        params[j] = paramsAsJson.getString(j);
+                    }
+                }
+
+                cur = mydb.rawQuery(query, params);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                String errorMessage = ex.getMessage();
+                Log.v("executeSqlBatch", "SQLitePlugin.executeSql[Batch](): Error=" + errorMessage);
+                throw ex;
             }
 
-            cur = mydb.rawQuery(query, params);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            String errorMessage = ex.getMessage();
-            Log.v("executeSqlBatch", "SQLitePlugin.executeSql[Batch](): Error=" + errorMessage);
-            throw ex;
-        }
+            // If query result has rows
+            if (cur != null && cur.moveToFirst()) {
+                JSONArray rowsArrayResult = new SQLiteArray(cur.getCount());
+                String key;
+                int colCount = cur.getColumnCount();
 
-        // If query result has rows
-        if (cur != null && cur.moveToFirst()) {
-            JSONArray rowsArrayResult = new SQLiteArray(cur.getCount());
-            String key;
-            int colCount = cur.getColumnCount();
+                // Build up JSON result object for each row
+                do {
+                    JSONObject row = new SQLiteObject(colCount);
+                    try {
+                        for (int i = 0; i < colCount; ++i) {
+                            key = cur.getColumnName(i);
 
-            // Build up JSON result object for each row
-            do {
-                JSONObject row = new SQLiteObject(colCount);
-                try {
-                    for (int i = 0; i < colCount; ++i) {
-                        key = cur.getColumnName(i);
+                            if (android.os.Build.VERSION.SDK_INT >= 11) {
 
-                        if (android.os.Build.VERSION.SDK_INT >= 11) {
-
-                            // Use try & catch just in case android.os.Build.VERSION.SDK_INT >= 11 is lying:
-                            try {
-                                bindPostHoneycomb(row, key, cur, i);
-                            } catch (Exception ex) {
+                                // Use try & catch just in case android.os.Build.VERSION.SDK_INT >= 11 is lying:
+                                try {
+                                    bindPostHoneycomb(row, key, cur, i);
+                                } catch (Exception ex) {
+                                    bindPreHoneycomb(row, key, cur, i);
+                                }
+                            } else {
                                 bindPreHoneycomb(row, key, cur, i);
                             }
-                        } else {
-                            bindPreHoneycomb(row, key, cur, i);
                         }
+
+                        rowsArrayResult.put(row);
+
+                    } catch (JSONException e) {
+                        Log.e(LOG_TAG, e.getMessage(), e);
                     }
+                } while (cur.moveToNext());
 
-                    rowsArrayResult.put(row);
-
+                try {
+                    rowsResult.put("rows", rowsArrayResult);
                 } catch (JSONException e) {
-                    e.printStackTrace();
+                   Log.e(LOG_TAG, e.getMessage(), e);
                 }
-            } while (cur.moveToNext());
-
-            try {
-                rowsResult.put("rows", rowsArrayResult);
-            } catch (JSONException e) {
-                e.printStackTrace();
             }
-        }
-
-        if (cur != null) {
-            cur.close();
+        } finally {
+            closeQuietly(cur);
         }
 
         return rowsResult;
@@ -1052,6 +1054,16 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
             row.put(key, new String(Base64.encode(cursor.getBlob(i), Base64.DEFAULT)));
         } else { // string
             row.put(key, cursor.getString(i));
+        }
+    }
+
+    private void closeQuietly(Closeable closeable) {
+        if (closeable != null) {
+            try {
+                closeable.close();
+            } catch (IOException e) {
+                // ignore
+            }
         }
     }
 
