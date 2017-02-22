@@ -74,6 +74,10 @@ class SQLiteAndroidDatabase
         this.mydb = SQLiteDatabase.openDatabase(dbfile.getAbsolutePath(), null, openFlags);
     }
 
+    boolean isOpen() {
+        return mydb != null && mydb.isOpen();
+    }
+
     /**
      * Close a database (in the current thread).
      */
