@@ -534,16 +534,6 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
     }
 
     /**
-     * Get a database from the db map.
-     *
-     * @param dbname The name of the database.
-     */
-    private SQLiteAndroidDatabase getDatabase(String dbname) {
-        DBRunner r = dbrmap.get(dbname);
-        return (r == null) ? null :  r.mydb;
-    }
-
-    /**
      * Delete a database.
      *
      * @param dbname   The name of the database file
