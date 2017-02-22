@@ -22,6 +22,7 @@ import android.util.Log;
 import java.io.File;
 import java.lang.IllegalArgumentException;
 import java.lang.Number;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -495,7 +496,7 @@ class SQLiteAndroidDatabase
         Matcher matcher = FIRST_WORD.matcher(query);
         if (matcher.find()) {
             try {
-                return QueryType.valueOf(matcher.group(1).toLowerCase());
+                return QueryType.valueOf(matcher.group(1).toLowerCase(Locale.US));
             } catch (IllegalArgumentException ignore) {
                 // unknown verb
             }

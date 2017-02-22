@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.lang.IllegalArgumentException;
 import java.lang.Number;
+import java.util.Locale;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
@@ -906,7 +907,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
         Matcher matcher = FIRST_WORD.matcher(query);
         if (matcher.find()) {
             try {
-                return QueryType.valueOf(matcher.group(1).toLowerCase());
+                return QueryType.valueOf(matcher.group(1).toLowerCase(Locale.US));
             } catch (IllegalArgumentException ignore) {
                 // unknown verb
             }
