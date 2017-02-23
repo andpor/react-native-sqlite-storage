@@ -534,34 +534,21 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
      * @param cbc - JS callback
      */
     private void attachDatabase(String dbName, String dbNameToAttach, String dbAlias, CallbackContext cbc) {
-        SQLiteDatabase currentDb = this.getDatabase(dbName);
-        SQLiteDatabase attachDb = this.getDatabase(dbNameToAttach);
-
-        if (currentDb == null || ! currentDb.isOpen()) {
-            if (cbc != null) cbc.error("Database " + dbName + " is not open");
-            return;
-        }
-
-        if (attachDb == null || ! attachDb.isOpen()) {
-            if (cbc != null) cbc.error("Database to attach (" + dbNameToAttach + ") is not open");
-            return;
-        }
-
-        File dbfile = this.getContext().getDatabasePath(dbNameToAttach);
-        String filePathToAttached = dbfile.getAbsolutePath();
-
-        String stmt = "ATTACH DATABASE '" + filePathToAttached + "' AS " + dbAlias;
-        try {
-            this.executeSqlStatementQuery( currentDb, stmt, new JSONArray(), cbc );
-            // if this previous statement fails, it will throw an exception
-            // otherwise it will never call the success handler because no valid
-            // cursor will be return from rawQuery.
-            // That's why we have to call the success handler here
-            if(cbc != null) cbc.success();            
-        }
-        catch(Exception e) {
-            Log.e("attachDatabase", "" + e.getMessage());
-            if(cbc != null) cbc.error("Attach failed");
+        DBRunner runner = dbrmap.get(dbName);
+        if (runner != null) {
+            File databasePath = this.getContext().getDatabasePath(dbNameToAttach);
+            String filePathToAttached = databasePath.getAbsolutePath();
+            String statement = "ATTACH DATABASE '" + filePathToAttached + "' AS " + dbAlias;
+            // TODO: get rid of qid as it's just hardcoded to 1111 in js layer
+            DBQuery query = new DBQuery(new String [] {statement},
+                    new String[] {"1111"}, new JSONArray[] {new JSONArray()}, cbc);
+            try {
+                runner.q.put(query);
+            } catch (InterruptedException e) {
+                cbc.error("Can't put query in the queue. Interrupted.");
+            }
+        } else {
+            cbc.error("Database " + dbName + "i s not created yet");
         }
     }
 
