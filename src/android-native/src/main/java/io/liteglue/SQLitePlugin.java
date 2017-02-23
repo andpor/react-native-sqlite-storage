@@ -684,83 +684,86 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
 
             boolean hasRows;
 
-            SQLiteStatement myStatement = mydb.prepareStatement(query);
-
+            SQLiteStatement myStatement = null;
             try {
-                for (int i = 0; i < paramsAsJson.length(); ++i) {
-                    if (paramsAsJson.isNull(i)) {
-                        myStatement.bindNull(i + 1);
-                    } else {
-                        Object p = paramsAsJson.get(i);
-                        if (p instanceof Float || p instanceof Double)
-                            myStatement.bindDouble(i + 1, paramsAsJson.getDouble(i));
-                        else if (p instanceof Number)
-                            myStatement.bindLong(i + 1, paramsAsJson.getLong(i));
-                        else
-                            myStatement.bindTextNativeString(i + 1, paramsAsJson.getString(i));
+                try {
+                    myStatement = mydb.prepareStatement(query);
+                    for (int i = 0; i < paramsAsJson.length(); ++i) {
+                        if (paramsAsJson.isNull(i)) {
+                            myStatement.bindNull(i + 1);
+                        } else {
+                            Object p = paramsAsJson.get(i);
+                            if (p instanceof Float || p instanceof Double)
+                                myStatement.bindDouble(i + 1, paramsAsJson.getDouble(i));
+                            else if (p instanceof Number)
+                                myStatement.bindLong(i + 1, paramsAsJson.getLong(i));
+                            else
+                                myStatement.bindTextNativeString(i + 1, paramsAsJson.getString(i));
+                        }
                     }
+
+                    hasRows = myStatement.step();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    String errorMessage = ex.getMessage();
+                    Log.v("executeSqlBatch", "SQLitePlugin.executeSql[Batch](): Error=" + errorMessage);
+
+
+                    throw ex;
                 }
 
-                hasRows = myStatement.step();
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                String errorMessage = ex.getMessage();
-                Log.v("executeSqlBatch", "SQLitePlugin.executeSql[Batch](): Error=" + errorMessage);
+                // If query result has rows
+                if (hasRows) {
+                    JSONArray rowsArrayResult = new JSONArray();
+                    String key;
+                    int colCount = myStatement.getColumnCount();
 
-                // cleanup statement and throw the exception:
-                myStatement.dispose();
-                throw ex;
-            }
+                    // Build up JSON result object for each row
+                    do {
+                        JSONObject row = new JSONObject();
+                        try {
+                            for (int i = 0; i < colCount; ++i) {
+                                key = myStatement.getColumnName(i);
 
-            // If query result has rows
-            if (hasRows) {
-                JSONArray rowsArrayResult = new JSONArray();
-                String key;
-                int colCount = myStatement.getColumnCount();
+                                switch (myStatement.getColumnType(i)) {
+                                    case SQLColumnType.NULL:
+                                        row.put(key, JSONObject.NULL);
+                                        break;
 
-                // Build up JSON result object for each row
-                do {
-                    JSONObject row = new JSONObject();
-                    try {
-                        for (int i = 0; i < colCount; ++i) {
-                            key = myStatement.getColumnName(i);
+                                    case SQLColumnType.REAL:
+                                        row.put(key, myStatement.getColumnDouble(i));
+                                        break;
 
-                            switch (myStatement.getColumnType(i)) {
-                                case SQLColumnType.NULL:
-                                    row.put(key, JSONObject.NULL);
-                                    break;
+                                    case SQLColumnType.INTEGER:
+                                        row.put(key, myStatement.getColumnLong(i));
+                                        break;
 
-                                case SQLColumnType.REAL:
-                                    row.put(key, myStatement.getColumnDouble(i));
-                                    break;
+                                    case SQLColumnType.BLOB:
+                                    case SQLColumnType.TEXT:
+                                    default: // (just in case)
+                                        row.put(key, myStatement.getColumnTextNativeString(i));
+                                }
 
-                                case SQLColumnType.INTEGER:
-                                    row.put(key, myStatement.getColumnLong(i));
-                                    break;
-
-                                case SQLColumnType.BLOB:
-                                case SQLColumnType.TEXT:
-                                default: // (just in case)
-                                    row.put(key, myStatement.getColumnTextNativeString(i));
                             }
 
+                            rowsArrayResult.put(row);
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
                         }
+                    } while (myStatement.step());
 
-                        rowsArrayResult.put(row);
-
+                    try {
+                        rowsResult.put("rows", rowsArrayResult);
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-                } while (myStatement.step());
-
-                try {
-                    rowsResult.put("rows", rowsArrayResult);
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                }
+            } finally {
+                if (myStatement != null) {
+                    myStatement.dispose();
                 }
             }
-
-            myStatement.dispose();
 
             return rowsResult;
         }
