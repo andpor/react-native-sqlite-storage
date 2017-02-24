@@ -8,12 +8,6 @@
 package org.pgsqlite;
 
 import android.annotation.SuppressLint;
-import android.database.Cursor;
-import android.database.CursorWindow;
-import android.database.sqlite.SQLiteCursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteException;
-import android.database.sqlite.SQLiteStatement;
 import android.content.Context;
 import android.util.Base64;
 import android.util.Log;
@@ -1057,6 +1051,12 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
         }
     }
 
+    private void closeQuietly(SQLiteStatement statement) {
+        if (statement != null) {
+            statement.close();
+        }
+    }
+
     private class DBRunner implements Runnable {
         final String dbname;
         final String password;
@@ -1111,7 +1111,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                     if (androidLockWorkaround && dbq.queries.length == 1 && dbq.queries[0].equals("COMMIT")) {
                         // Log.v(SQLitePlugin.class.getSimpleName(), "close and reopen db");
                         closeDatabaseNow(dbname);
-                        this.mydb = openDatabase(dbname, "", this.openFlags, null);
+                        this.mydb = openDatabase(dbname, password, "", this.openFlags, null);
                         // Log.v(SQLitePlugin.class.getSimpleName(), "close and reopen db finished");
                     }
 
