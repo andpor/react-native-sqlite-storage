@@ -13,6 +13,8 @@ import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.uimanager.ViewManager;
 
+import net.sqlcipher.database.SQLiteDatabase;
+
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -35,6 +37,7 @@ public class SQLitePluginPackage implements ReactPackage {
     public List<NativeModule> createNativeModules(
                                 ReactApplicationContext reactContext) {
       List<NativeModule> modules = new ArrayList<>();
+      SQLiteDatabase.loadLibs(reactContext);
 
       modules.add(new SQLitePlugin(reactContext));
 

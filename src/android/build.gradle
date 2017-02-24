@@ -1,5 +1,6 @@
 buildscript {
     repositories {
+        mavenLocal()
         jcenter()
     }
 
@@ -24,11 +25,14 @@ android {
         abortOnError false
     }
 }
-
-repositories {
-    mavenCentral()
+allprojects {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
 }
 
 dependencies {
     compile 'com.facebook.react:react-native:0.14.+'
+    compile 'net.zetetic:android-database-sqlcipher:3.5.3@aar'
 }
