@@ -226,7 +226,7 @@ const SQLiteDemo = React.createClass({
     renderProgressEntry(entry){
         return (<View style={listStyles.li}>
             <View>
-                <Text style={listStyles.title}>{entry}</Text>
+                <Text style={listStyles.liText}>{entry}</Text>
             </View>
         </View>)
     },
