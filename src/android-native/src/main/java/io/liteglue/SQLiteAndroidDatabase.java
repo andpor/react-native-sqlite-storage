@@ -17,7 +17,8 @@ import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteStatement;
 
 import android.util.Base64;
-import android.util.Log;
+
+import com.facebook.common.logging.FLog;
 
 import java.io.File;
 import java.lang.IllegalArgumentException;
@@ -33,8 +34,7 @@ import org.json.JSONObject;
 /**
  * Android Database helper class
  */
-class SQLiteAndroidDatabase
-{
+class SQLiteAndroidDatabase {
     private static final Pattern FIRST_WORD = Pattern.compile("^\\s*(\\S+)",
             Pattern.CASE_INSENSITIVE);
 
@@ -145,9 +145,8 @@ class SQLiteAndroidDatabase
                             needRawQuery = false;
                         } catch (SQLiteException ex) {
                             // Indicate problem & stop this query:
-                            ex.printStackTrace();
                             errorMessage = ex.getMessage();
-                            Log.v("executeSqlBatch", "SQLiteStatement.executeUpdateDelete(): Error=" + errorMessage);
+                            FLog.e(SQLitePlugin.TAG, "SQLiteStatement.executeUpdateDelete() failed", ex);
                             needRawQuery = false;
                         } catch (Exception ex) {
                             // Assuming SDK_INT was lying & method not found:
@@ -188,9 +187,8 @@ class SQLiteAndroidDatabase
                     } catch (SQLiteException ex) {
                         // report error result with the error message
                         // could be constraint violation or some other error
-                        ex.printStackTrace();
                         errorMessage = ex.getMessage();
-                        Log.v("executeSqlBatch", "SQLiteDatabase.executeInsert(): Error=" + errorMessage);
+                        FLog.e(SQLitePlugin.TAG, "SQLiteDatabase.executeInsert() failed", ex);
                     }
                 }
 
@@ -202,9 +200,8 @@ class SQLiteAndroidDatabase
                         queryResult = new JSONObject();
                         queryResult.put("rowsAffected", 0);
                     } catch (SQLiteException ex) {
-                        ex.printStackTrace();
                         errorMessage = ex.getMessage();
-                        Log.v("executeSqlBatch", "SQLiteDatabase.beginTransaction(): Error=" + errorMessage);
+                        FLog.e(SQLitePlugin.TAG, "SQLiteDatabase.beginTransaction() failed", ex);
                     }
                 }
 
@@ -217,9 +214,8 @@ class SQLiteAndroidDatabase
                         queryResult = new JSONObject();
                         queryResult.put("rowsAffected", 0);
                     } catch (SQLiteException ex) {
-                        ex.printStackTrace();
                         errorMessage = ex.getMessage();
-                        Log.v("executeSqlBatch", "SQLiteDatabase.setTransactionSuccessful/endTransaction(): Error=" + errorMessage);
+                        FLog.e(SQLitePlugin.TAG, "SQLiteDatabase.setTransactionSuccessful/endTransaction() failed", ex);
                     }
                 }
 
@@ -231,9 +227,8 @@ class SQLiteAndroidDatabase
                         queryResult = new JSONObject();
                         queryResult.put("rowsAffected", 0);
                     } catch (SQLiteException ex) {
-                        ex.printStackTrace();
                         errorMessage = ex.getMessage();
-                        Log.v("executeSqlBatch", "SQLiteDatabase.endTransaction(): Error=" + errorMessage);
+                        FLog.e(SQLitePlugin.TAG, "SQLiteDatabase.endTransaction() failed", ex);
                     }
                 }
 
@@ -246,9 +241,8 @@ class SQLiteAndroidDatabase
                     }
                 }
             } catch (Exception ex) {
-                ex.printStackTrace();
                 errorMessage = ex.getMessage();
-                Log.v("executeSqlBatch", "SQLiteAndroidDatabase.executeSql[Batch](): Error=" + errorMessage);
+                FLog.e(SQLitePlugin.TAG, "SQLiteAndroidDatabase.executeSql[Batch]() failed", ex);
             }
 
             try {
@@ -272,9 +266,7 @@ class SQLiteAndroidDatabase
                     batchResults.put(r);
                 }
             } catch (JSONException ex) {
-                ex.printStackTrace();
-                Log.v("executeSqlBatch", "SQLiteAndroidDatabase.executeSql[Batch](): Error=" + ex.getMessage());
-                // TODO what to do?
+                FLog.e(SQLitePlugin.TAG, "SQLiteAndroidDatabase.executeSql[Batch]() failed", ex);
             }
         }
 
@@ -332,7 +324,7 @@ class SQLiteAndroidDatabase
                     return (int)statement.simpleQueryForLong();
                 } catch (Exception e) {
                     // assume we couldn't count for whatever reason, keep going
-                    Log.e(SQLiteAndroidDatabase.class.getSimpleName(), "uncaught", e);
+                    FLog.e(SQLitePlugin.TAG, "update query failed", e);
                 }
             }
         } else { // delete
@@ -347,7 +339,7 @@ class SQLiteAndroidDatabase
                     return (int)statement.simpleQueryForLong();
                 } catch (Exception e) {
                     // assume we couldn't count for whatever reason, keep going
-                    Log.e(SQLiteAndroidDatabase.class.getSimpleName(), "uncaught", e);
+                    FLog.e(SQLitePlugin.TAG, "delete table query failed", e);
 
                 }
             }
@@ -395,9 +387,7 @@ class SQLiteAndroidDatabase
 
             cur = mydb.rawQuery(query, params);
         } catch (Exception ex) {
-            ex.printStackTrace();
-            String errorMessage = ex.getMessage();
-            Log.v("executeSqlBatch", "SQLiteAndroidDatabase.executeSql[Batch](): Error=" + errorMessage);
+            FLog.e(SQLitePlugin.TAG, "SQLiteAndroidDatabase.executeSql[Batch]() failed", ex);
             throw ex;
         }
 
@@ -430,14 +420,14 @@ class SQLiteAndroidDatabase
                     rowsArrayResult.put(row);
 
                 } catch (JSONException e) {
-                    e.printStackTrace();
+                    FLog.w(SQLitePlugin.TAG, e.getMessage(), e);
                 }
             } while (cur.moveToNext());
 
             try {
                 rowsResult.put("rows", rowsArrayResult);
             } catch (JSONException e) {
-                e.printStackTrace();
+                FLog.e(SQLitePlugin.TAG, e.getMessage(), e);
             }
         }
 

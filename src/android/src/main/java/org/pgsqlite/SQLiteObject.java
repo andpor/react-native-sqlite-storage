@@ -1,5 +1,7 @@
 package org.pgsqlite;
 
+import com.facebook.common.logging.FLog;
+
 import org.json.JSONObject;
 
 import java.lang.reflect.Field;
@@ -22,9 +24,9 @@ public class SQLiteObject extends JSONObject {
             valuesField.setAccessible(true);
             valuesField.set(this, new LinkedHashMap<String, Object>(size));
         } catch (NoSuchFieldException e) {
-            e.printStackTrace();
+            FLog.e(SQLitePlugin.TAG, e.getMessage(), e);
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            FLog.e(SQLitePlugin.TAG, e.getMessage(), e);
         }
     }
 }
