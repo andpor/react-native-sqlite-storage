@@ -51,6 +51,8 @@ import java.io.IOException;
 
 public class SQLitePlugin extends ReactContextBaseJavaModule {
 
+    private static final String TAG = "React-Sqlite";
+
     private static final String PLUGIN_NAME = "SQLite";
 
     private static final String LOG_TAG = SQLitePlugin.class.getSimpleName();
@@ -487,6 +489,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
      * @param cbc - JS callback
      */
     private void closeDatabase(String dbName, CallbackContext cbc) {
+	Log.i(TAG, "Close database in thread");
         DBRunner r = dbrmap.get(dbName);
         if (r != null) {
             try {
@@ -510,6 +513,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
      * @param dbName   The name of the database file
      */
     private void closeDatabaseNow(String dbName) {
+	Log.i(TAG, "Close database now");
         SQLiteDatabase mydb = this.getDatabase(dbName);
 
         if (mydb != null) {
