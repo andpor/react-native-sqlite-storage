@@ -17,7 +17,6 @@ import android.database.sqlite.SQLiteStatement;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Base64;
-import android.util.Log;
 
 import java.io.Closeable;
 import java.io.File;
@@ -33,6 +32,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.facebook.common.logging.FLog;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
@@ -51,9 +51,9 @@ import java.io.IOException;
 
 public class SQLitePlugin extends ReactContextBaseJavaModule {
 
-    private static final String PLUGIN_NAME = "SQLite";
+    public static final String TAG = SQLitePlugin.class.getSimpleName();
 
-    private static final String LOG_TAG = SQLitePlugin.class.getSimpleName();
+    private static final String PLUGIN_NAME = "SQLite";
 
     private static final Pattern FIRST_WORD = Pattern.compile("^\\s*(\\S+)",
             Pattern.CASE_INSENSITIVE);
@@ -214,7 +214,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
             action = Action.valueOf(actionAsString);
         } catch (IllegalArgumentException e) {
             // shouldn't ever happen
-            Log.e(SQLitePlugin.class.getSimpleName(), "unexpected error", e);
+            FLog.e(TAG, "unexpected error", e);
             throw(e);
         }
 
@@ -222,7 +222,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
             return executeAndPossiblyThrow(action, args, cbc);
         } catch (JSONException e) {
             // TODO: signal JSON problem to JS
-            Log.e(SQLitePlugin.class.getSimpleName(), "unexpected error", e);
+            FLog.e(TAG, "unexpected error", e);
             throw(e);
         }
     }
@@ -307,7 +307,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                     try {
                         r.q.put(q);
                     } catch(Exception e) {
-                        Log.e(SQLitePlugin.class.getSimpleName(), "couldn't add to queue", e);
+                        FLog.e(TAG, "couldn't add to queue", e);
                         cbc.error("couldn't add to queue");
                     }
                 } else {
@@ -333,7 +333,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                 // stop the db runner thread:
                 r.q.put(new DBQuery());
             } catch(Exception ex) {
-                Log.e(SQLitePlugin.class.getSimpleName(), "couldn't stop db thread for db: " + dbname,ex);
+                FLog.e(TAG, "couldn't stop db thread for db: " + dbname,ex);
             }
             dbrmap.remove(dbname);
         }
@@ -393,20 +393,20 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                 if (assetFilePath.compareTo("1") == 0) {
                     assetFilePath = "www/" + dbname;
                     in = this.getContext().getAssets().open(assetFilePath);
-                    Log.v("info", "Located pre-populated DB asset in app bundle www subdirectory: " + assetFilePath);
+                    FLog.v(TAG, "Located pre-populated DB asset in app bundle www subdirectory: " + assetFilePath);
                 } else if (assetFilePath.charAt(0) == '~') {
                     assetFilePath = assetFilePath.startsWith("~/") ? assetFilePath.substring(2) : assetFilePath.substring(1);
                     in = this.getContext().getAssets().open(assetFilePath);
-                    Log.v("info", "Located pre-populated DB asset in app bundle subdirectory: " + assetFilePath);
+                    FLog.v(TAG, "Located pre-populated DB asset in app bundle subdirectory: " + assetFilePath);
                 } else {
                     File filesDir = this.getContext().getFilesDir();
                     assetFilePath = assetFilePath.startsWith("/") ? assetFilePath.substring(1) : assetFilePath;
                     File assetFile = new File(filesDir, assetFilePath);
                     in = new FileInputStream(assetFile);
-                    Log.v("info", "Located pre-populated DB asset in Files subdirectory: " + assetFile.getCanonicalPath());
+                    FLog.v(TAG, "Located pre-populated DB asset in Files subdirectory: " + assetFile.getCanonicalPath());
                     if (openFlags == SQLiteDatabase.OPEN_READONLY) {
                         dbfile = assetFile;
-                        Log.v("info", "Detected read-only mode request for external asset.");
+                        FLog.v(TAG, "Detected read-only mode request for external asset.");
                     }
                 }
             }
@@ -416,7 +416,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                 dbfile = this.getContext().getDatabasePath(dbname);
 
                 if (!dbfile.exists() && in != null) {
-                    Log.v("info", "Copying pre-populated db asset to destination");
+                    FLog.v(TAG, "Copying pre-populated db asset to destination");
                     this.createFromAssets(dbname, dbfile, in);
                 }
 
@@ -425,7 +425,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                 }
             }
 
-            Log.v("info", "Opening sqlite db: " + dbfile.getAbsolutePath());
+            FLog.v(TAG, "Opening sqlite db: " + dbfile.getAbsolutePath());
 
             SQLiteDatabase mydb = SQLiteDatabase.openDatabase(dbfile.getAbsolutePath(), null, openFlags);
 
@@ -454,7 +454,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
         OutputStream out = null;
 
         try {
-            Log.v("info", "Copying pre-populated DB content");
+            FLog.v(TAG, "Copying pre-populated DB content");
             String dbPath = dbfile.getAbsolutePath();
             dbPath = dbPath.substring(0, dbPath.lastIndexOf("/") + 1);
 
@@ -472,9 +472,9 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
             while ((len = assetFileInputStream.read(buf)) > 0)
                 out.write(buf, 0, len);
 
-            Log.v("info", "Copied pre-populated DB content to: " + newDbFile.getAbsolutePath());
+            FLog.v(TAG, "Copied pre-populated DB content to: " + newDbFile.getAbsolutePath());
         } catch (IOException e) {
-            Log.v("createFromAssets", "No pre-populated DB found, error=" + e.getMessage());
+            FLog.e(TAG, "No pre-populated DB found.", e);
         } finally {
             closeQuietly(out);
         }
@@ -495,7 +495,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                 if (cbc != null) {
                     cbc.error("couldn't close database" + e);
                 }
-                Log.e(SQLitePlugin.class.getSimpleName(), "couldn't close database", e);
+                FLog.e(TAG, "couldn't close database", e);
             }
         } else {
             if (cbc != null) {
@@ -558,7 +558,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                 if (cbc != null) {
                     cbc.error("couldn't close database" + e);
                 }
-                Log.e(SQLitePlugin.class.getSimpleName(), "couldn't close database", e);
+                FLog.e(TAG, "couldn't close database", e);
             }
         } else {
             boolean deleteResult = this.deleteDatabaseNow(dbname);
@@ -585,7 +585,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
             try {
                 return SQLiteDatabase.deleteDatabase(dbfile);
             } catch (Exception e) {
-                Log.e(SQLitePlugin.class.getSimpleName(), "couldn't delete because old SDK_INT", e);
+                FLog.e(TAG, "couldn't delete because old SDK_INT", e);
                 return deleteDatabasePreHoneycomb(dbfile);
             }
         } else {
@@ -598,7 +598,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
         try {
             return this.getContext().deleteDatabase(dbfile.getAbsolutePath());
         } catch (Exception e) {
-            Log.e(SQLitePlugin.class.getSimpleName(), "couldn't delete database", e);
+            FLog.e(TAG, "couldn't delete database", e);
             return false;
         }
     }
@@ -672,9 +672,8 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                             needRawQuery = false;
                         } catch (SQLiteException ex) {
                             // Indicate problem & stop this query:
-                            ex.printStackTrace();
                             errorMessage = ex.getMessage();
-                            Log.v("executeSqlBatch", "SQLiteStatement.executeUpdateDelete(): Error=" + errorMessage);
+                            FLog.e(TAG, "SQLiteStatement.executeUpdateDelete() failed", ex);
                             needRawQuery = false;
                         } catch (Exception ex) {
                             // Assuming SDK_INT was lying & method not found:
@@ -717,9 +716,8 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                     } catch (SQLiteException ex) {
                         // report error result with the error message
                         // could be constraint violation or some other error
-                        ex.printStackTrace();
                         errorMessage = ex.getMessage();
-                        Log.v("executeSqlBatch", "SQLiteDatabase.executeInsert(): Error=" + errorMessage);
+                        FLog.e(TAG, "SQLiteDatabase.executeInsert() failed", ex);
                     } finally {
                        closeQuietly(myStatement);
                     }
@@ -733,9 +731,8 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                         queryResult = new JSONObject();
                         queryResult.put("rowsAffected", 0);
                     } catch (SQLiteException ex) {
-                        ex.printStackTrace();
                         errorMessage = ex.getMessage();
-                        Log.v("executeSqlBatch", "SQLiteDatabase.beginTransaction(): Error=" + errorMessage);
+                        FLog.e(TAG, "SQLiteDatabase.beginTransaction() failed", ex);
                     }
                 }
 
@@ -748,9 +745,8 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                         queryResult = new JSONObject();
                         queryResult.put("rowsAffected", 0);
                     } catch (SQLiteException ex) {
-                        ex.printStackTrace();
                         errorMessage = ex.getMessage();
-                        Log.v("executeSqlBatch", "SQLiteDatabase.setTransactionSuccessful/endTransaction(): Error=" + errorMessage);
+                        FLog.e(TAG, "SQLiteDatabase.setTransactionSuccessful/endTransaction() failed", ex);
                     }
                 }
 
@@ -762,9 +758,8 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                         queryResult = new JSONObject();
                         queryResult.put("rowsAffected", 0);
                     } catch (SQLiteException ex) {
-                        ex.printStackTrace();
                         errorMessage = ex.getMessage();
-                        Log.v("executeSqlBatch", "SQLiteDatabase.endTransaction(): Error=" + errorMessage);
+                        FLog.e(TAG, "SQLiteDatabase.endTransaction() failed", ex);
                     }
                 }
 
@@ -777,9 +772,8 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                     }
                 }
             } catch (Exception ex) {
-                ex.printStackTrace();
                 errorMessage = ex.getMessage();
-                Log.v("executeSqlBatch", "SQLitePlugin.executeSql[Batch](): Error=" + errorMessage);
+                FLog.e(TAG, "SQLitePlugin.executeSql[Batch](): failed", ex);
             }
 
             try {
@@ -803,8 +797,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                     batchResults.put(r);
                 }
             } catch (JSONException ex) {
-                ex.printStackTrace();
-                Log.v("executeSqlBatch", "SQLitePlugin.executeSql[Batch](): Error=" + ex.getMessage());
+                FLog.e(TAG, "SQLitePlugin.executeSql[Batch]() failed", ex);
             }
         }
 
@@ -863,7 +856,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                     return (int)statement.simpleQueryForLong();
                 } catch (Exception e) {
                     // assume we couldn't count for whatever reason, keep going
-                    Log.e(SQLitePlugin.class.getSimpleName(), "uncaught", e);
+                    FLog.e(TAG, "uncaught", e);
                 } finally {
                     closeQuietly(statement);
                 }
@@ -881,7 +874,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                     return (int)statement.simpleQueryForLong();
                 } catch (Exception e) {
                     // assume we couldn't count for whatever reason, keep going
-                    Log.e(LOG_TAG, "uncaught", e);
+                    FLog.e(TAG, "uncaught", e);
                 } finally {
                     closeQuietly(statement);
                 }
@@ -949,9 +942,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
 
                 cur = mydb.rawQuery(query, params);
             } catch (Exception ex) {
-                ex.printStackTrace();
-                String errorMessage = ex.getMessage();
-                Log.v("executeSqlBatch", "SQLitePlugin.executeSql[Batch](): Error=" + errorMessage);
+                FLog.e(TAG, "SQLitePlugin.executeSql[Batch]() failed", ex);
                 throw ex;
             }
 
@@ -984,14 +975,14 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                         rowsArrayResult.put(row);
 
                     } catch (JSONException e) {
-                        Log.e(LOG_TAG, e.getMessage(), e);
+                        FLog.e(TAG, e.getMessage(), e);
                     }
                 } while (cur.moveToNext());
 
                 try {
                     rowsResult.put("rows", rowsArrayResult);
                 } catch (JSONException e) {
-                   Log.e(LOG_TAG, e.getMessage(), e);
+                   FLog.e(TAG, e.getMessage(), e);
                 }
             }
         } finally {
@@ -1075,12 +1066,12 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                     openFlags = readOnly ? SQLiteDatabase.OPEN_READONLY : openFlags;
                 }
             } catch (Exception ex){
-                Log.v(SQLitePlugin.class.getSimpleName(),"Error retrieving assetFilename this.mode from options:",ex);
+                FLog.e(TAG,"Error retrieving assetFilename this.mode from options:",ex);
             }
             this.openFlags = openFlags;
             this.androidLockWorkaround = options.has("androidLockWorkaround");
             if (this.androidLockWorkaround)
-                Log.v(SQLitePlugin.class.getSimpleName(), "Android db closing/locking workaround applied");
+                FLog.i(TAG, "Android db closing/locking workaround applied");
 
             this.q = new LinkedBlockingQueue<DBQuery>();
             this.openCbc = cbc;
@@ -1090,7 +1081,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
             try {
                 this.mydb = openDatabase(dbname, this.assetFilename, this.openFlags, this.openCbc);
             } catch (Exception e) {
-                Log.e(SQLitePlugin.class.getSimpleName(), "unexpected error, stopping db thread", e);
+                FLog.e(TAG, "unexpected error, stopping db thread", e);
                 dbrmap.remove(dbname);
                 return;
             }
@@ -1105,16 +1096,16 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
 
                     // XXX workaround for Android locking/closing issue:
                     if (androidLockWorkaround && dbq.queries.length == 1 && dbq.queries[0].equals("COMMIT")) {
-                        // Log.v(SQLitePlugin.class.getSimpleName(), "close and reopen db");
+                        // FLog.v(TAG, "close and reopen db");
                         closeDatabaseNow(dbname);
                         this.mydb = openDatabase(dbname, "", this.openFlags, null);
-                        // Log.v(SQLitePlugin.class.getSimpleName(), "close and reopen db finished");
+                        // FLog.v(TAG, "close and reopen db finished");
                     }
 
                     dbq = q.take();
                 }
             } catch (Exception e) {
-                Log.e(SQLitePlugin.class.getSimpleName(), "unexpected error", e);
+                FLog.e(TAG, "unexpected error", e);
             }
 
             if (dbq != null && dbq.close) {
@@ -1134,12 +1125,12 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                                 dbq.cbc.error("couldn't delete database");
                             }
                         } catch (Exception e) {
-                            Log.e(SQLitePlugin.class.getSimpleName(), "couldn't delete database", e);
+                            FLog.e(TAG, "couldn't delete database", e);
                             dbq.cbc.error("couldn't delete database: " + e);
                         }
                     }
                 } catch (Exception e) {
-                    Log.e(SQLitePlugin.class.getSimpleName(), "couldn't close database", e);
+                    FLog.e(TAG, "couldn't close database", e);
                     if (dbq.cbc != null) {
                         dbq.cbc.error("couldn't close database: " + e);
                     }
