@@ -33,7 +33,6 @@
     "react-native": ">=0.14.0"
   },
   "dependencies": {
-    "rnpm": "1.5.2",
     "xcode": "0.8.9"
   },
   "rnpm": {
