@@ -9,13 +9,10 @@ package org.pgsqlite;
 
 import android.annotation.SuppressLint;
 import android.database.Cursor;
-import android.database.CursorWindow;
-import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteStatement;
 import android.content.Context;
-import android.os.Bundle;
 import android.util.Base64;
 
 import java.io.Closeable;
@@ -56,15 +53,6 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
     private static final String PLUGIN_NAME = "SQLite";
 
     private static final Pattern FIRST_WORD = Pattern.compile("^\\s*(\\S+)",
-            Pattern.CASE_INSENSITIVE);
-
-    private static final Pattern WHERE_CLAUSE = Pattern.compile("\\s+WHERE\\s+(.+)$",
-            Pattern.CASE_INSENSITIVE);
-
-    private static final Pattern UPDATE_TABLE_NAME = Pattern.compile("^\\s*UPDATE\\s+(\\S+)",
-            Pattern.CASE_INSENSITIVE);
-
-    private static final Pattern DELETE_TABLE_NAME = Pattern.compile("^\\s*DELETE\\s+FROM\\s+(\\S+)",
             Pattern.CASE_INSENSITIVE);
 
     /**
@@ -580,27 +568,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
     @SuppressLint("NewApi")
     private boolean deleteDatabaseNow(String dbname) {
         File dbfile = this.getContext().getDatabasePath(dbname);
-        if (android.os.Build.VERSION.SDK_INT >= 11) {
-            // Use try & catch just in case android.os.Build.VERSION.SDK_INT >= 16 was lying:
-            try {
-                return SQLiteDatabase.deleteDatabase(dbfile);
-            } catch (Exception e) {
-                FLog.e(TAG, "couldn't delete because old SDK_INT", e);
-                return deleteDatabasePreHoneycomb(dbfile);
-            }
-        } else {
-            // use old API
-            return deleteDatabasePreHoneycomb(dbfile);
-        }
-    }
-
-    private boolean deleteDatabasePreHoneycomb(File dbfile) {
-        try {
-            return this.getContext().deleteDatabase(dbfile.getAbsolutePath());
-        } catch (Exception e) {
-            FLog.e(TAG, "couldn't delete database", e);
-            return false;
-        }
+        return android.database.sqlite.SQLiteDatabase.deleteDatabase(dbfile);
     }
 
     /**
@@ -634,15 +602,12 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
             return;
         }
 
-
         String query;
         String query_id;
         int len = queryarr.length;
         JSONArray batchResults = new JSONArray();
 
         for (int i = 0; i < len; i++) {
-            int rowsAffectedCompat = 0;
-            boolean needRowsAffectedCompat = false;
             query_id = queryIDs[i];
 
             JSONObject queryResult = null;
@@ -656,39 +621,30 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                 QueryType queryType = getQueryType(query);
 
                 if (queryType == QueryType.update || queryType == QueryType.delete) {
-                    if (android.os.Build.VERSION.SDK_INT >= 11) {
-                        SQLiteStatement myStatement = null;
-                        int rowsAffected = -1; // (assuming invalid)
+                    SQLiteStatement myStatement = null;
+                    int rowsAffected = -1; // (assuming invalid)
 
-                        // Use try & catch just in case android.os.Build.VERSION.SDK_INT >= 11 is lying:
-                        try {
-                            myStatement = mydb.compileStatement(query);
-                            if (jsonparams != null) {
-                                bindArgsToStatement(myStatement, jsonparams[i]);
-                            }
-
-                            rowsAffected = myStatement.executeUpdateDelete();
-                            // Indicate valid results:
-                            needRawQuery = false;
-                        } catch (SQLiteException ex) {
-                            // Indicate problem & stop this query:
-                            errorMessage = ex.getMessage();
-                            FLog.e(TAG, "SQLiteStatement.executeUpdateDelete() failed", ex);
-                            needRawQuery = false;
-                        } catch (Exception ex) {
-                            // Assuming SDK_INT was lying & method not found:
-                            // do nothing here & try again with raw query.
-                        } finally {
-                            closeQuietly(myStatement);
+                    try {
+                        myStatement = mydb.compileStatement(query);
+                        if (jsonparams != null) {
+                            bindArgsToStatement(myStatement, jsonparams[i]);
                         }
 
-                        if (rowsAffected != -1) {
-                            queryResult = new JSONObject();
-                            queryResult.put("rowsAffected", rowsAffected);
-                        }
-                    } else { // pre-honeycomb
-                        rowsAffectedCompat = countRowsAffectedCompat(queryType, query, jsonparams, mydb, i);
-                        needRowsAffectedCompat = true;
+                        rowsAffected = myStatement.executeUpdateDelete();
+                        // Indicate valid results:
+                        needRawQuery = false;
+                    } catch (SQLiteException ex) {
+                        // Indicate problem & stop this query:
+                        errorMessage = ex.getMessage();
+                        FLog.e(TAG, "SQLiteStatement.executeUpdateDelete() failed", ex);
+                        needRawQuery = false;
+                    } finally {
+                        closeQuietly(myStatement);
+                    }
+
+                    if (rowsAffected != -1) {
+                        queryResult = new JSONObject();
+                        queryResult.put("rowsAffected", rowsAffected);
                     }
                 }
 
@@ -766,10 +722,6 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                 // raw query for other statements:
                 if (needRawQuery) {
                     queryResult = this.executeSqlStatementQuery(mydb, query, jsonparams[i], cbc);
-
-                    if (needRowsAffectedCompat) {
-                        queryResult.put("rowsAffected", rowsAffectedCompat);
-                    }
                 }
             } catch (Exception ex) {
                 errorMessage = ex.getMessage();
@@ -802,86 +754,6 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
         }
 
         cbc.success(batchResults);
-    }
-
-    private int countRowsAffectedCompat(QueryType queryType, String query, JSONArray[] jsonparams,
-                                        SQLiteDatabase mydb, int i) throws JSONException {
-        // quick and dirty way to calculate the rowsAffected in pre-Honeycomb.  just do a SELECT
-        // beforehand using the same WHERE clause. might not be perfect, but it's better than nothing
-        Matcher whereMatcher = WHERE_CLAUSE.matcher(query);
-
-        String where = "";
-
-        int pos = 0;
-        while (whereMatcher.find(pos)) {
-            where = " WHERE " + whereMatcher.group(1);
-            pos = whereMatcher.start(1);
-        }
-        // WHERE clause may be omitted, and also be sure to find the last one,
-        // e.g. for cases where there's a subquery
-
-        // bindings may be in the update clause, so only take the last n
-        int numQuestionMarks = 0;
-        for (int j = 0; j < where.length(); j++) {
-            if (where.charAt(j) == '?') {
-                numQuestionMarks++;
-            }
-        }
-
-        JSONArray subParams = null;
-
-        if (jsonparams != null) {
-            // only take the last n of every array of sqlArgs
-            JSONArray origArray = jsonparams[i];
-            subParams = new JSONArray();
-            int startPos = origArray.length() - numQuestionMarks;
-            for (int j = startPos; j < origArray.length(); j++) {
-                subParams.put(j - startPos, origArray.get(j));
-            }
-        }
-
-        if (queryType == QueryType.update) {
-            Matcher tableMatcher = UPDATE_TABLE_NAME.matcher(query);
-            if (tableMatcher.find()) {
-                String table = tableMatcher.group(1);
-                SQLiteStatement statement = null;
-                try {
-                     statement = mydb.compileStatement(
-                            "SELECT count(*) FROM " + table + where);
-
-                    if (subParams != null) {
-                        bindArgsToStatement(statement, subParams);
-                    }
-
-                    return (int)statement.simpleQueryForLong();
-                } catch (Exception e) {
-                    // assume we couldn't count for whatever reason, keep going
-                    FLog.e(TAG, "uncaught", e);
-                } finally {
-                    closeQuietly(statement);
-                }
-            }
-        } else { // delete
-            Matcher tableMatcher = DELETE_TABLE_NAME.matcher(query);
-            if (tableMatcher.find()) {
-                String table = tableMatcher.group(1);
-                SQLiteStatement statement = null;
-                try {
-                     statement = mydb.compileStatement(
-                            "SELECT count(*) FROM " + table + where);
-                    bindArgsToStatement(statement, subParams);
-
-                    return (int)statement.simpleQueryForLong();
-                } catch (Exception e) {
-                    // assume we couldn't count for whatever reason, keep going
-                    FLog.e(TAG, "uncaught", e);
-                } finally {
-                    closeQuietly(statement);
-                }
-            }
-        }
-
-        return 0;
     }
 
     private QueryType getQueryType(String query) {
@@ -958,18 +830,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                     try {
                         for (int i = 0; i < colCount; ++i) {
                             key = cur.getColumnName(i);
-
-                            if (android.os.Build.VERSION.SDK_INT >= 11) {
-
-                                // Use try & catch just in case android.os.Build.VERSION.SDK_INT >= 11 is lying:
-                                try {
-                                    bindPostHoneycomb(row, key, cur, i);
-                                } catch (Exception ex) {
-                                    bindPreHoneycomb(row, key, cur, i);
-                                }
-                            } else {
-                                bindPreHoneycomb(row, key, cur, i);
-                            }
+                            bindRow(row, key, cur, i);
                         }
 
                         rowsArrayResult.put(row);
@@ -993,7 +854,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
     }
 
     @SuppressLint("NewApi")
-    private void bindPostHoneycomb(JSONObject row, String key, Cursor cur, int i) throws JSONException {
+    private void bindRow(JSONObject row, String key, Cursor cur, int i) throws JSONException {
         int curType = cur.getType(i);
 
         switch (curType) {
@@ -1013,26 +874,6 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
             default: /* (not expected) */
                 row.put(key, cur.getString(i));
                 break;
-        }
-    }
-
-    private void bindPreHoneycomb(JSONObject row, String key, Cursor cursor, int i) throws JSONException {
-        // Since cursor.getType() is not available pre-honeycomb, this is
-        // a workaround so we don't have to bind everything as a string
-        // Details here: http://stackoverflow.com/q/11658239
-        SQLiteCursor sqLiteCursor = (SQLiteCursor) cursor;
-        CursorWindow cursorWindow = sqLiteCursor.getWindow();
-        int pos = cursor.getPosition();
-        if (cursorWindow.isNull(pos, i)) {
-            row.put(key, JSONObject.NULL);
-        } else if (cursorWindow.isLong(pos, i)) {
-            row.put(key, cursor.getLong(i));
-        } else if (cursorWindow.isFloat(pos, i)) {
-            row.put(key, cursor.getDouble(i));
-        } else if (cursorWindow.isBlob(pos, i)) {
-            row.put(key, new String(Base64.encode(cursor.getBlob(i), Base64.DEFAULT)));
-        } else { // string
-            row.put(key, cursor.getString(i));
         }
     }
 
