@@ -18,7 +18,7 @@ The library has been tested with React 0.41 (and earlier) and XCode 7,8 - it wor
 
 Version 3.2 is the first version compatible with RN 0.40.
 
-#Version History
+# Version History
 
 v3.2.2
  1. Corrects the CocoaPods based development set-up instructions and includes sample Podfile. [Issue #125] (https://github.com/andpor/react-native-sqlite-storage/issues/125)
@@ -89,7 +89,7 @@ v2.0 - Full support for Promise API. Backward compatible with Callbacks.
 
 v1.0 - Initial release for iOS with full support of all operations based on plan JavaScript callbacks.
 
-#How to use (iOS):
+# How to use (iOS):
 
 #### Step 1. Install Dependencies
 
@@ -194,7 +194,7 @@ db.transaction((tx) => {
 });
 ```
 
-#How to use (Android):
+# How to use (Android):
 
 #### Step 1 - NPM Install
 
@@ -435,11 +435,11 @@ dbMaster.detach( 'second', successCallback, errorCallback );
 For sure, their is also Promise-support available for attach() and detach(), as shown in the example-application under the
 directory "examples".
 
-#Original Cordova SQLite Bindings from Chris Brody
+# Original Cordova SQLite Bindings from Chris Brody
 https://github.com/litehelpers/Cordova-sqlite-storage
 
 The issues and limitations for the actual SQLite can be found on this site.
 
-##Issues
+## Issues
 
 1. Android binds all numeric SQL input values to double. This is due to the underlying React Native limitation where only a Numeric type is available on the interface point making it ambiguous to distinguish integers from doubles. Once I figure out the proper way to do this I will update the codebase [(Issue #4141)] (https://github.com/facebook/react-native/issues/4141).
