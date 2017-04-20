@@ -20,13 +20,25 @@ Version 3.2 is the first version compatible with RN 0.40.
 
 # Version History
 
+v3.3.0
+ 1. Access to MutableDictonary openDBs properly synchronized [PR #130] (https://github.com/andpor/react-native-sqlite-storage/pull/130)
+ 2. Database attach flow fixed. Threading model fix in order to have all queries executed in the same order [PR #131] (https://github.com/andpor/react-native-sqlite-storage/pull/131)
+ 3. All statements and queries are closed in finally statements in order to fix SQLiteCipher corner case crashes [PR #132] (https://github.com/andpor/react-native-sqlite-storage/pull/132)
+ 4. Minor style fix	in index.ios.callback.js and index.ios.promise.js [PR #136] (https://github.com/andpor/react-native-sqlite-storage/pull/136)
+ 5. Fix determination logic for opened db [PR #139] (https://github.com/andpor/react-native-sqlite-storage/pull/139)
+ 6. Clean up in lib/sqlite.core.js [PR #138] (https://github.com/andpor/react-native-sqlite-storage/pull/138)
+ 7. Production grade logging for the Android plugin [PR #137] (https://github.com/andpor/react-native-sqlite-storage/pull/137)
+ 8. Remove pre-honeycomb workaround code in Android that was causing issues in SQL Cipher [PR #147] (https://github.com/andpor/react-native-sqlite-storage/pull/147)
+ 9. Fix broken Markdown headings [PR #153] (https://github.com/andpor/react-native-sqlite-storage/pull/153)
+ 10. Drop usage of the dead rnpm repository [PR #148] (https://github.com/andpor/react-native-sqlite-storage/pull/148)
+
 v3.2.2
  1. Corrects the CocoaPods based development set-up instructions and includes sample Podfile. [Issue #125] (https://github.com/andpor/react-native-sqlite-storage/issues/125)
  
 v3.2.1
  1. Sample apps in test directory adjusted for React Native 0.41 and plugability in AwesomeProject. [Issue #120] (https://github.com/andpor/react-native-sqlite-storage/issues/120)
  
-v3.2 
+v3.2.0 
  1. This is a backward incompatible release with baseline React Native 0.40 support.
  2. [React Native 0.40 compatibility fixes] (https://github.com/andpor/react-native-sqlite-storage/pull/110) - thanks K-Leon for this contribution
  
