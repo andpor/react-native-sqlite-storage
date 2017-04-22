@@ -217,10 +217,10 @@ RCT_EXPORT_METHOD(open: (NSDictionary *) options success:(RCTResponseSenderBlock
           sqlite3_create_function(db, "regexp", 2, SQLITE_ANY, NULL, &sqlite_regexp, NULL, NULL);
         
           // for SQLCipher version:
-          NSString *dbkey = options[@"key"];
-          const char *key = NULL;
-          if (dbkey != NULL) key = [dbkey UTF8String];
-          if (key != NULL) sqlite3_key(db, key, strlen(key));
+          // NSString *dbkey = options[@"key"];
+          // const char *key = NULL;
+          // if (dbkey != NULL) key = [dbkey UTF8String];
+          // if (key != NULL) sqlite3_key(db, key, strlen(key));
         
           // Attempt to read the SQLite master table [to support SQLCipher version]:
           if(sqlite3_exec(db, (const char*)"SELECT count(*) FROM sqlite_master;", NULL, NULL, NULL) == SQLITE_OK) {
