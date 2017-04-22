@@ -21,7 +21,7 @@ Version 3.2 is the first version compatible with RN 0.40.
 # Version History
 
 v3.3.1
- 1. Comment of SQLCipher code in iOS implementation as a quick fix.
+ 1. Comment of SQLCipher code in iOS implementation as a quick fix. [Issue #155] (https://github.com/andpor/react-native-sqlite-storage/issues/155)
  
 v3.3.0 (Extended thanks to dryganets for his significant contributions to this release)
  1. Access to MutableDictonary openDBs properly synchronized [PR #130] (https://github.com/andpor/react-native-sqlite-storage/pull/130)
