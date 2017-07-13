@@ -20,6 +20,9 @@ Version 3.2 is the first version compatible with RN 0.40.
 
 # Version History
 
+v3.3.2
+ 1. Yoga import fix
+ 
 v3.3.1
  1. Comment of SQLCipher code in iOS implementation as a quick fix. [Issue #155] (https://github.com/andpor/react-native-sqlite-storage/issues/155)
  
