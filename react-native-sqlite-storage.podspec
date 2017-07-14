@@ -11,7 +11,8 @@ Pod::Spec.new do |s|
   s.author   = package['author']
   s.source   = { :git => package['repository']['url'], :tag => "v#{s.version}" }
 
-  s.platform = :ios, "8.0"
+  s.ios.deployment_target = '8.0'
+  s.osx.deployment_target = '10.10'
 
   s.preserve_paths = 'README.md', 'LICENSE', 'package.json', 'sqlite.js'
   s.source_files   = "src/ios/*.{h,m}"
