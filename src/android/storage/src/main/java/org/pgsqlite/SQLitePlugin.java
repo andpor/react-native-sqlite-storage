@@ -8,11 +8,10 @@
 package org.pgsqlite;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
-import android.database.sqlite.SQLiteStatement;
-import android.content.Context;
 import android.util.Base64;
 
 import java.io.Closeable;
@@ -39,6 +38,10 @@ import com.facebook.react.bridge.Callback;
 import org.json.JSONException;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.pgsqlite.sqlite.plugin.Database;
+import org.pgsqlite.sqlite.plugin.DatabaseConnectionProvider;
+import org.pgsqlite.sqlite.plugin.ICursor;
+import org.pgsqlite.sqlite.plugin.SQLStatement;
 
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -62,20 +65,20 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
      */
     static ConcurrentHashMap<String, DBRunner> dbrmap = new ConcurrentHashMap<String, DBRunner>();
 
-    /**
-     * Linked activity
-     */
-    protected Context context = null;
+    private Context context = null;
 
     /**
      * Thread pool for database operations
      */
-    protected ExecutorService threadPool;
+    private ExecutorService threadPool;
 
-    public SQLitePlugin(ReactApplicationContext reactContext) {
+    private DatabaseConnectionProvider provider;
+
+    public SQLitePlugin(ReactApplicationContext reactContext, DatabaseConnectionProvider provider) {
         super(reactContext);
         this.context = reactContext.getApplicationContext();
         this.threadPool = Executors.newCachedThreadPool();
+        this.provider = provider;
     }
 
     /**
@@ -365,11 +368,11 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
      * @return instance of SQLite database
      * @throws Exception
      */
-    private SQLiteDatabase openDatabase(String dbname, String assetFilePath, int openFlags, CallbackContext cbc) throws Exception {
+    private Database openDatabase(String dbname, String assetFilePath, int openFlags, CallbackContext cbc) throws Exception {
         InputStream in = null;
         File dbfile = null;
         try {
-            SQLiteDatabase database = this.getDatabase(dbname);
+            Database database = this.getDatabase(dbname);
             if (database != null && database.isOpen()) {
                 //this only happens when DBRunner is cycling the db for the locking work around.
                 // otherwise, this should not happen - should be blocked at the execute("open") level
@@ -415,7 +418,8 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
 
             FLog.v(TAG, "Opening sqlite db: " + dbfile.getAbsolutePath());
 
-            SQLiteDatabase mydb = SQLiteDatabase.openDatabase(dbfile.getAbsolutePath(), null, openFlags);
+            // TODO implement password support
+            Database mydb = provider.openDatabase(dbfile.getAbsolutePath(), null, openFlags);
 
             if (cbc != null) // needed for Android locking/closing workaround
                 cbc.success("database open");
@@ -498,11 +502,8 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
      * @param dbName   The name of the database file
      */
     private void closeDatabaseNow(String dbName) {
-        SQLiteDatabase mydb = this.getDatabase(dbName);
-
-        if (mydb != null) {
-            mydb.close();
-        }
+        Database mydb = this.getDatabase(dbName);
+        closeQuietly(mydb);
     }
 
     /**
@@ -576,7 +577,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
      *
      * @param dbname The name of the database.
      */
-    private SQLiteDatabase getDatabase(String dbname) {
+    private Database getDatabase(String dbname) {
         DBRunner r = dbrmap.get(dbname);
         return (r == null) ? null :  r.mydb;
     }
@@ -594,7 +595,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
     private void executeSqlBatch(String dbname, String[] queryarr, JSONArray[] jsonparams,
                                  String[] queryIDs, CallbackContext cbc) {
 
-        SQLiteDatabase mydb = getDatabase(dbname);
+        Database mydb = getDatabase(dbname);
 
         if (mydb == null) {
             // not allowed - can only happen if someone has closed (and possibly deleted) a database and then re-used the database
@@ -621,7 +622,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                 QueryType queryType = getQueryType(query);
 
                 if (queryType == QueryType.update || queryType == QueryType.delete) {
-                    SQLiteStatement myStatement = null;
+                    SQLStatement myStatement = null;
                     int rowsAffected = -1; // (assuming invalid)
 
                     try {
@@ -652,7 +653,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                 if (queryType == QueryType.insert && jsonparams != null) {
                     needRawQuery = false;
 
-                    SQLiteStatement myStatement = mydb.compileStatement(query);
+                    SQLStatement myStatement = mydb.compileStatement(query);
 
                     bindArgsToStatement(myStatement, jsonparams[i]);
 
@@ -768,7 +769,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
         return QueryType.other;
     }
 
-    private void bindArgsToStatement(SQLiteStatement myStatement, JSONArray sqlArgs) throws JSONException {
+    private void bindArgsToStatement(SQLStatement myStatement, JSONArray sqlArgs) throws JSONException {
         for (int i = 0; i < sqlArgs.length(); i++) {
             if (sqlArgs.get(i) instanceof Float || sqlArgs.get(i) instanceof Double) {
                 myStatement.bindDouble(i + 1, sqlArgs.getDouble(i));
@@ -792,12 +793,12 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
      *
      * @return results in string form
      */
-    private JSONObject executeSqlStatementQuery(SQLiteDatabase mydb,
+    private JSONObject executeSqlStatementQuery(Database mydb,
                                                 String query, JSONArray paramsAsJson,
                                                 CallbackContext cbc) throws Exception {
         JSONObject rowsResult = new JSONObject();
 
-        Cursor cur = null;
+        ICursor cur = null;
         try {
             try {
                 String[] params;
@@ -854,7 +855,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
     }
 
     @SuppressLint("NewApi")
-    private void bindRow(JSONObject row, String key, Cursor cur, int i) throws JSONException {
+    private void bindRow(JSONObject row, String key, ICursor cur, int i) throws JSONException {
         int curType = cur.getType(i);
 
         switch (curType) {
@@ -895,7 +896,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
         final BlockingQueue<DBQuery> q;
         final CallbackContext openCbc;
 
-        SQLiteDatabase mydb;
+        Database mydb;
 
         DBRunner(final String dbname, JSONObject options, CallbackContext cbc) {
             this.dbname = dbname;

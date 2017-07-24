@@ -13,6 +13,9 @@ import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.uimanager.ViewManager;
 
+import org.pgsqlite.sqlite.plugin.DatabaseConnectionProvider;
+import org.pgsqlite.sqlite.plugin.DefaultConnectionProvider;
+
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -20,15 +23,14 @@ import java.util.List;
 
 public class SQLitePluginPackage implements ReactPackage {
 
-    /**
-     * @deprecated, use method without activity
-     * activity parameter is ignored
-     */
-    public SQLitePluginPackage(Activity activity){
-        this();
-    }
+    private final DatabaseConnectionProvider mProvider;
 
     public SQLitePluginPackage() {
+        this(new DefaultConnectionProvider());
+    }
+
+    public SQLitePluginPackage(DatabaseConnectionProvider provider) {
+        mProvider = provider;
     }
 
     @Override
@@ -36,7 +38,7 @@ public class SQLitePluginPackage implements ReactPackage {
                                 ReactApplicationContext reactContext) {
       List<NativeModule> modules = new ArrayList<>();
 
-      modules.add(new SQLitePlugin(reactContext));
+      modules.add(new SQLitePlugin(reactContext, mProvider));
 
       return modules;
     }

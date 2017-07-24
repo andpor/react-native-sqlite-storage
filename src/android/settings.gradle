@@ -1,2 +1,4 @@
 rootProject.name = 'SQLitePlugin'
-include ':app'
+include ':sqlite-plugin-provider'
+include ':sql-cipher-plugin'
+include ':storage'
