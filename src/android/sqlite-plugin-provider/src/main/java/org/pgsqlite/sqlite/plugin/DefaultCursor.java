@@ -1,14 +1,12 @@
 package org.pgsqlite.sqlite.plugin;
 
-import android.database.Cursor;
-
 import java.io.IOException;
 
 /**
  * Written by Sergei Dryganets Jul 24/2017
  */
-public class DefaultCursor implements ICursor {
-	private final Cursor mCursor;
+public class DefaultCursor implements Cursor {
+	private final android.database.Cursor mCursor;
 
 	public DefaultCursor(android.database.Cursor cursor) {
 		mCursor = cursor;

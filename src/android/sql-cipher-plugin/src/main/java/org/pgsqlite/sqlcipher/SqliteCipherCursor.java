@@ -1,18 +1,16 @@
 package org.pgsqlite.sqlcipher;
 
-import net.sqlcipher.Cursor;
-
-import org.pgsqlite.sqlite.plugin.ICursor;
+import org.pgsqlite.sqlite.plugin.Cursor;
 
 import java.io.IOException;
 
 /**
  * Written by Sergei Dryganets Jul 24/2017
  */
-public class SqliteCipherCursor implements ICursor {
-	private final Cursor cursor;
+public class SqliteCipherCursor implements Cursor {
+	private final net.sqlcipher.Cursor cursor;
 
-	public SqliteCipherCursor(Cursor cursor) {
+	public SqliteCipherCursor(net.sqlcipher.Cursor cursor) {
 		this.cursor = cursor;
 	}
 

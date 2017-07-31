@@ -3,7 +3,7 @@ package org.pgsqlite.sqlcipher;
 import net.sqlcipher.database.SQLiteDatabase;
 
 import org.pgsqlite.sqlite.plugin.Database;
-import org.pgsqlite.sqlite.plugin.ICursor;
+import org.pgsqlite.sqlite.plugin.Cursor;
 import org.pgsqlite.sqlite.plugin.SQLStatement;
 
 import java.io.IOException;
@@ -29,7 +29,7 @@ public class SqliteCipherDatabase implements Database {
 	}
 
 	@Override
-	public ICursor rawQuery(String sql, String[] params) {
+	public Cursor rawQuery(String sql, String[] params) {
 		return new SqliteCipherCursor(database.rawQuery(sql, params));
 	}
 

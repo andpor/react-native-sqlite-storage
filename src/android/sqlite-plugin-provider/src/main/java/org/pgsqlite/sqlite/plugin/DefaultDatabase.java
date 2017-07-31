@@ -25,7 +25,7 @@ public class DefaultDatabase implements Database {
 	}
 
 	@Override
-	public ICursor rawQuery(String sql, String[] params) {
+	public Cursor rawQuery(String sql, String[] params) {
 		return new DefaultCursor(database.rawQuery(sql, params));
 	}
 

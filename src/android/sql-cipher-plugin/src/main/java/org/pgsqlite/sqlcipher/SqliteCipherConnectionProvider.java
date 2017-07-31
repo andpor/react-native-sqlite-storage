@@ -14,8 +14,8 @@ import net.sqlcipher.database.SQLiteDatabase;
  */
 public class SqliteCipherConnectionProvider implements DatabaseConnectionProvider {
 	private static volatile boolean sNativeLibraryLoaded;
-	@Override
-	public void init(Context context) {
+
+	public SqliteCipherConnectionProvider(Context context) {
 		if (!sNativeLibraryLoaded) {
 			sNativeLibraryLoaded = true;
 			SQLiteDatabase.loadLibs(context);

@@ -8,7 +8,7 @@ import java.io.Closeable;
 public interface Database extends Closeable {
 	void execSQL(String sql);
 	SQLStatement compileStatement(String sql);
-	ICursor rawQuery(String sql, String[] params);
+	Cursor rawQuery(String sql, String[] params);
 	boolean isOpen();
 
 	void beginTransaction();
