@@ -5,8 +5,6 @@
  */
 package org.pgsqlite;
 
-import android.app.Activity;
-
 import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.JavaScriptModule;
 import com.facebook.react.bridge.NativeModule;
@@ -23,14 +21,14 @@ import java.util.List;
 
 public class SQLitePluginPackage implements ReactPackage {
 
-    private final DatabaseConnectionProvider mProvider;
+    private final DatabaseConnectionProvider provider;
 
     public SQLitePluginPackage() {
         this(new DefaultConnectionProvider());
     }
 
     public SQLitePluginPackage(DatabaseConnectionProvider provider) {
-        mProvider = provider;
+        this.provider = provider;
     }
 
     @Override
@@ -38,7 +36,7 @@ public class SQLitePluginPackage implements ReactPackage {
                                 ReactApplicationContext reactContext) {
       List<NativeModule> modules = new ArrayList<>();
 
-      modules.add(new SQLitePlugin(reactContext, mProvider));
+      modules.add(new SQLitePlugin(reactContext, provider));
 
       return modules;
     }
