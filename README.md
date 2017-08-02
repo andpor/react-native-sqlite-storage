@@ -1,7 +1,7 @@
 # react-native-sqlite-storage
 SQLite3 Native Plugin for React Native for both Android (Classic and Native) and iOS
 
-Inspired by fantastic work done by Chris Brody I did not want to re-invent the wheel. The original Cordova plugin was written so well and adhered to latest WebSQL API that there was no need to come up with anything much different. So the Cordova plugin was ported to React Native.
+This is Chris Brody's Cordova SQLite plugin ported to React Native.
 
 Features:
   1. iOS and Android supported via identical JavaScript API.
@@ -14,7 +14,7 @@ There are sample apps provided in test directory that can be used in with the Aw
 
 Please let me know your projects that use these SQLite React Native modules. I will list them in the reference section. If there are any features that you think would benefit this library please post them.
 
-The library has been tested with React 0.41 (and earlier) and XCode 7,8 - it works fine out of the box without any need for tweaks or code changes. For XCode 7,8 vs. XCode 6 the only difference is that sqlite ios library name suffix is tbd instead of dylib. 
+The library has been tested with React 0.43.4 (and earlier) and XCode 7,8 - it works fine out of the box without any need for tweaks or code changes. For XCode 7,8 vs. XCode 6 the only difference is that sqlite ios library name suffix is tbd instead of dylib. 
 
 Version 3.2 is the first version compatible with RN 0.40.
 
