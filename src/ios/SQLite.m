@@ -172,7 +172,7 @@ RCT_EXPORT_METHOD(open: (NSDictionary *) options success:(RCTResponseSenderBlock
               targetBundleDirPath = [targetBundleDirPath stringByAppendingPathComponent: @"www"];
               assetFilePath = [targetBundleDirPath stringByAppendingPathComponent: dbfilename];
               RCTLog(@"Built path to pre-populated DB asset from app bundle www subdirectory: %@",assetFilePath);
-            } else if ([assetFilePath characterAtIndex:0] == '~') {
+            } else if ([assetFilePath hasPrefix:@"~"]) {
               assetFilePath = [assetFilePath substringFromIndex:1];
               NSString *targetBundleDirPath = [[NSBundle mainBundle] resourcePath];
               assetFilePath = [targetBundleDirPath stringByAppendingPathComponent: assetFilePath];
