@@ -172,7 +172,7 @@ RCT_EXPORT_METHOD(open: (NSDictionary *) options success:(RCTResponseSenderBlock
               targetBundleDirPath = [targetBundleDirPath stringByAppendingPathComponent: @"www"];
               assetFilePath = [targetBundleDirPath stringByAppendingPathComponent: dbfilename];
               RCTLog(@"Built path to pre-populated DB asset from app bundle www subdirectory: %@",assetFilePath);
-            } else if ([assetFilePath characterAtIndex:0 == '~']) {
+            } else if ([assetFilePath characterAtIndex:0] == '~') {
               assetFilePath = [assetFilePath substringFromIndex:1];
               NSString *targetBundleDirPath = [[NSBundle mainBundle] resourcePath];
               assetFilePath = [targetBundleDirPath stringByAppendingPathComponent: assetFilePath];
@@ -215,21 +215,28 @@ RCT_EXPORT_METHOD(open: (NSDictionary *) options success:(RCTResponseSenderBlock
           return;
         } else {
           sqlite3_create_function(db, "regexp", 2, SQLITE_ANY, NULL, &sqlite_regexp, NULL, NULL);
-        
-          // for SQLCipher version:
-          // NSString *dbkey = options[@"key"];
-          // const char *key = NULL;
-          // if (dbkey != NULL) key = [dbkey UTF8String];
-          // if (key != NULL) sqlite3_key(db, key, strlen(key));
-        
+          const char *key = NULL;
+          
+#ifdef SQLCIPHER
+          NSString *dbkey = options[@"key"];
+          if (dbkey != NULL) {
+            key = [dbkey UTF8String];
+            if (key != NULL) {
+              sqlite3_key(db, key, strlen(key));
+            }
+          }
+#endif
           // Attempt to read the SQLite master table [to support SQLCipher version]:
           if(sqlite3_exec(db, (const char*)"SELECT count(*) FROM sqlite_master;", NULL, NULL, NULL) == SQLITE_OK) {
             NSValue *dbPointer = [NSValue valueWithPointer:db];
             openDBs[dbfilename] = @{ @"dbPointer": dbPointer, @"dbPath" : dbname};
-            pluginResult = [SQLiteResult resultWithStatus:SQLiteStatus_OK messageAsString:@"Database opened"];
+            NSString *msg = (key != NULL) ? @"Secure database opened" : @"Database opened";
+            pluginResult = [SQLiteResult resultWithStatus:SQLiteStatus_OK messageAsString: msg];
+            RCTLog(msg);
           } else {
-            pluginResult = [SQLiteResult resultWithStatus:SQLiteStatus_ERROR messageAsString:@"Unable to open DB with key"];
-            RCTLog(@"Unable to open db with key");
+            NSString *msg = [NSString stringWithFormat:@"Unable to open %@", (key != NULL) ? @"secure database with key" : @"database"];
+            pluginResult = [SQLiteResult resultWithStatus:SQLiteStatus_ERROR messageAsString:msg];
+            RCTLog(msg);
             sqlite3_close (db);
             [openDBs removeObjectForKey:dbfilename];
           }
