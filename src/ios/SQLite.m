@@ -232,11 +232,11 @@ RCT_EXPORT_METHOD(open: (NSDictionary *) options success:(RCTResponseSenderBlock
             openDBs[dbfilename] = @{ @"dbPointer": dbPointer, @"dbPath" : dbname};
             NSString *msg = (key != NULL) ? @"Secure database opened" : @"Database opened";
             pluginResult = [SQLiteResult resultWithStatus:SQLiteStatus_OK messageAsString: msg];
-            RCTLog(msg);
+            RCTLog(@"%@", msg);
           } else {
             NSString *msg = [NSString stringWithFormat:@"Unable to open %@", (key != NULL) ? @"secure database with key" : @"database"];
             pluginResult = [SQLiteResult resultWithStatus:SQLiteStatus_ERROR messageAsString:msg];
-            RCTLog(msg);
+            RCTLog(@"%@", msg);
             sqlite3_close (db);
             [openDBs removeObjectForKey:dbfilename];
           }
