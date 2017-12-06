@@ -1,5 +1,12 @@
 # Version History
 
+v3.3.4
+ 1. New version of native binaries compile with latest sqlite version 3.20.1 supporting pcre extension to enable REGEXP function for Android. (https://github.com/andpor/react-native-sqlite-storage/pull/205)
+ 2. Fixes Xcode warning for potentially insecure string. (https://github.com/andpor/react-native-sqlite-storage/pull/199)
+ 3. Remove createJSModules @ovveride marker - RN 0.47 compatibility. (https://github.com/andpor/react-native-sqlite-storage/pull/188)
+ 4. Podfile add macOS support (https://github.com/andpor/react-native-sqlite-storage/pull/179)
+ 5. instructions directory added on npmignore. (https://github.com/andpor/react-native-sqlite-storage/pull/174)
+ 
 v3.3.3
  1. Fix for the db location string [Issue #172] (https://github.com/andpor/react-native-sqlite-storage/issues/172)
  2. #define in iOS casebase for SQLCIPHER. If you include this #define in your main project settings, this library will pick up appropriate key handling code automatically.
