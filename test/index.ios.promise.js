@@ -60,15 +60,12 @@ class SQLiteDemo extends Component {
     }
 
     populateDatabase = (db) => {
-        this.updateProgress("Database integrity check")
-        console.log('trying to excuting');
+        this.updateProgress("Database integrity check")    
         db.executeSql('SELECT 1 FROM Version LIMIT 1').then(() =>{
-            console.log('excuting');
             this.updateProgress("Database is ready ... executing query ...");
             db.transaction(this.queryEmployees).then(() => {
                 this.updateProgress("Processing completed")
-            });
-            console.log('after-excuting');
+            });  
         }).catch((error) =>{
             console.log("Received error: ", error)
             this.updateProgress("Database not yet ready ... populating data")
@@ -140,7 +137,7 @@ class SQLiteDemo extends Component {
         tx.executeSql('INSERT INTO Employees (name, office, department) VALUES ("Leslie Nelson", 3,  4);');
         tx.executeSql('INSERT INTO Employees (name, office, department) VALUES ("Fidel Castro", 3, 3);');
         tx.executeSql('INSERT INTO Employees (name, office, department) VALUES ("Bill Clinton", 1, 3);');
-        tx.executeSql('INSERT INTO Employees (name, office, department) VALUES ("Margaret thischer", 1, 3);');
+        tx.executeSql('INSERT INTO Employees (name, office, department) VALUES ("Margaret Thatcher", 1, 3);');
         tx.executeSql('INSERT INTO Employees (name, office, department) VALUES ("Donald Trump", 1, 3);');
         tx.executeSql('INSERT INTO Employees (name, office, department) VALUES ("Dr DRE", 2, 2);');
         tx.executeSql('INSERT INTO Employees (name, office, department) VALUES ("Samantha Fox", 2, 1);');
@@ -168,7 +165,6 @@ class SQLiteDemo extends Component {
             this.updateProgress("Opening database ...")
             SQLite.openDatabase({name : "test5.db", createFromLocation : "~/db/andrew.db"}).then((DB) => {
                 db = DB;
-                console.log(db);
                 this.updateProgress("Database OPEN");
                 this.populateDatabase(DB);
             }).catch((error) => {
