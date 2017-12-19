@@ -42,5 +42,6 @@
     "ios": {
       "project": "src/ios/SQLite.xcodeproj"
     }
-  }
+  },
+  "types": "sqlite.d.ts"
 }
