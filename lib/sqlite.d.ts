@@ -46,13 +46,13 @@ declare module "react-native-sqlite-storage" {
     export interface OpenParams {
         [key: string]: any;
         name: string;
-        location?: string;
-        createFromLocation?: string;
+        location?: string | number;
+        createFromLocation?: string | number;
     }
 
     export interface DeleteParams {
         name: string;
-        location?: string | any;
+        location?: string | number;
     }
 
     export interface SqlitePlugin {
