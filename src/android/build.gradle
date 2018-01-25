@@ -31,4 +31,5 @@ repositories {
 
 dependencies {
     compile 'com.facebook.react:react-native:0.14.+'
+    compile 'com.github.dryganets:sqlite-adapter:0.0.1'
 }

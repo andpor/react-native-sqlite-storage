@@ -5,8 +5,6 @@
  */
 package io.liteglue;
 
-import android.app.Activity;
-
 import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.JavaScriptModule;
 import com.facebook.react.bridge.NativeModule;
@@ -18,14 +16,6 @@ import java.util.Collections;
 import java.util.List;
 
 public class SQLitePluginPackage implements ReactPackage {
-
-    /**
-     * @deprecated Please use version without activity parameter
-     * activity parameter is ignored
-     */
-    public SQLitePluginPackage(Activity activity) {
-        this();
-    }
 
     public SQLitePluginPackage(){
     }

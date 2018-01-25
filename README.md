@@ -150,6 +150,8 @@ project(':react-native-sqlite-storage').projectDir = new File(rootProject.projec
 dependencies {
     ...
     compile project(':react-native-sqlite-storage')
+    // For sqlite cipher support add following dependency:
+    compile 'com.github.dryganets:sqlite-adapter-cipher:0.0.1'
 }
 ```
 
@@ -173,6 +175,7 @@ public class MainActivity extends Activity implements DefaultHardwareBackBtnHand
                 .setBundleAssetName("index.android.bundle")  // this is dependant on how you name you JS files, example assumes index.android.js
                 .setJSMainModuleName("index.android")        // this is dependant on how you name you JS files, example assumes index.android.js
                 .addPackage(new MainReactPackage())
+                // To enable sqlitecipher - pass new SqliteCipherConnectionProvider() to package constructor
                 .addPackage(new SQLitePluginPackage())       // register SQLite Plugin here
                 .setUseDeveloperSupport(BuildConfig.DEBUG)
                 .setInitialLifecycleState(LifecycleState.RESUMED)
