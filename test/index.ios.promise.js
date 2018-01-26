@@ -32,74 +32,73 @@ const database_displayname = "SQLite Test Database";
 const database_size = 200000;
 let db;
 
-const SQLiteDemo = React.createClass({
-    getInitialState(){
-        return {
+class SQLiteDemo extends Component {
+    constructor() {
+        super()
+        this.state = {
             progress: [],
             dataSource: new ListView.DataSource({
                 rowHasChanged: (row1, row2) => { row1 !== row2; },
             })
         };
-    },
+    }
+    updateProgress = (text) => {
+        let progress = [...this.state.progress]
+        progress.push(text);
+        this.setState({
+            progress
+        })
+    }
 
     componentWillUnmount(){
         this.closeDatabase();
-    },
+    }
 
-    errorCB(err) {
+    errorCB = (err) => {
         console.log("error: ",err);
-        this.state.progress.push("Error " + (err.message || err));
-        this.setState(this.state);
-    },
+        this.updateProgress("Error " + (err.message || err));
+    }
 
-    populateDatabase(db){
-        var that = this;
-        that.state.progress.push("Database integrity check");
-        that.setState(that.state);
+    populateDatabase = (db) => {
+        this.updateProgress("Database integrity check")    
         db.executeSql('SELECT 1 FROM Version LIMIT 1').then(() =>{
-            that.state.progress.push("Database is ready ... executing query ...");
-            that.setState(that.state);
-            db.transaction(that.queryEmployees).then(() => {
-                that.state.progress.push("Processing completed");
-                that.setState(that.state);
-            });
+            this.updateProgress("Database is ready ... executing query ...");
+            db.transaction(this.queryEmployees).then(() => {
+                this.updateProgress("Processing completed")
+            });  
         }).catch((error) =>{
             console.log("Received error: ", error)
-            that.state.progress.push("Database not yet ready ... populating data");
-            that.setState(that.state);
-            db.transaction(that.populateDB).then(() =>{
-                that.state.progress.push("Database populated ... executing query ...");
-                that.setState(that.state);
-                db.transaction(that.queryEmployees).then((result) => { 
-                    console.log("Transaction is now finished"); 
-                    that.state.progress.push("Processing completed");
-                    that.setState(that.state);
-                    that.closeDatabase()});
+            this.updateProgress("Database not yet ready ... populating data")
+            db.transaction(this.populateDB).then(() =>{
+                this.updateProgress("Database populated ... executing query ...")
+                db.transaction(this.queryEmployees).then((result) => { 
+                    console.log("Transaction is now finished");
+                    this.updateProgress("Processing completed");
+                    this.closeDatabase()});
             });
         });
-    },
+    }
 
-    populateDB(tx) {
-        var that = this;
-        this.state.progress.push("Executing DROP stmts");
-        this.setState(this.state);
+    populateDB = (tx) => {
+        this.updateProgress("Executing DROP stmts")
 
         tx.executeSql('DROP TABLE IF EXISTS Employees;');
         tx.executeSql('DROP TABLE IF EXISTS Offices;');
         tx.executeSql('DROP TABLE IF EXISTS Departments;');
 
-        this.state.progress.push("Executing CREATE stmts");
-        this.setState(this.state);
+        
+        this.updateProgress("Executing CREATE stmts");
+        
 
         tx.executeSql('CREATE TABLE IF NOT EXISTS Version( '
             + 'version_id INTEGER PRIMARY KEY NOT NULL); ').catch((error) => {  
-            that.errorCB(error) 
+            this.errorCB(error) 
         });
 
         tx.executeSql('CREATE TABLE IF NOT EXISTS Departments( '
             + 'department_id INTEGER PRIMARY KEY NOT NULL, '
             + 'name VARCHAR(30) ); ').catch((error) => {  
-            that.errorCB(error) 
+            this.errorCB(error) 
         });
 
         tx.executeSql('CREATE TABLE IF NOT EXISTS Offices( '
@@ -107,7 +106,7 @@ const SQLiteDemo = React.createClass({
             + 'name VARCHAR(20), '
             + 'longtitude FLOAT, '
             + 'latitude FLOAT ) ; ').catch((error) => {  
-            that.errorCB(error) 
+            this.errorCB(error) 
         });
 
         tx.executeSql('CREATE TABLE IF NOT EXISTS Employees( '
@@ -117,11 +116,10 @@ const SQLiteDemo = React.createClass({
             + 'department INTEGER, '
             + 'FOREIGN KEY ( office ) REFERENCES Offices ( office_id ) '
             + 'FOREIGN KEY ( department ) REFERENCES Departments ( department_id ));').catch((error) => {  
-            that.errorCB(error) 
+            this.errorCB(error) 
         });
 
-        this.state.progress.push("Executing INSERT stmts");
-        this.setState(this.state);
+        this.updateProgress("Executing INSERT stmts")
 
 
         tx.executeSql('INSERT INTO Departments (name) VALUES ("Client Services");');
@@ -144,92 +142,80 @@ const SQLiteDemo = React.createClass({
         tx.executeSql('INSERT INTO Employees (name, office, department) VALUES ("Dr DRE", 2, 2);');
         tx.executeSql('INSERT INTO Employees (name, office, department) VALUES ("Samantha Fox", 2, 1);');
         console.log("all config SQL done");
-    },
+    }
 
-    queryEmployees(tx) {
-        var that = this;
+    queryEmployees = (tx) => {
         console.log("Executing employee query");
         tx.executeSql('SELECT a.name, b.name as deptName FROM Employees a, Departments b WHERE a.department = b.department_id').then(([tx,results]) => {
-            that.state.progress.push("Query completed");
-            that.setState(that.state);
+            this.updateProgress("Query completed")
             var len = results.rows.length;
             for (let i = 0; i < len; i++) {
                 let row = results.rows.item(i);
-                that.state.progress.push(`Empl Name: ${row.name}, Dept Name: ${row.deptName}`);
+                this.updateProgress(`Empl Name: ${row.name}, Dept Name: ${row.deptName}`)
             }
-            that.setState(that.state);
         }).catch((error) => { 
             console.log(error);
         });
-    },
+    }
 
-    loadAndQueryDB(){
-        var that = this;
-        that.state.progress.push("Plugin integrity check ...");
-        that.setState(that.state);
+    loadAndQueryDB = () => {
+        this.updateProgress("Plugin integrity check ...");
         SQLite.echoTest().then(() => {
-            that.state.progress.push("Integrity check passed ...");
-            that.setState(that.state);
-            that.state.progress.push("Opening database ...");
-            that.setState(that.state);
+            this.updateProgress("Integrity check passed ...")
+            this.updateProgress("Opening database ...")
             SQLite.openDatabase({name : "test5.db", createFromLocation : "~/db/andrew.db"}).then((DB) => {
                 db = DB;
-                that.state.progress.push("Database OPEN");
-                that.setState(that.state);
-                that.populateDatabase(DB);
+                this.updateProgress("Database OPEN");
+                this.populateDatabase(DB);
             }).catch((error) => {
                 console.log(error);
             });
         }).catch(error => {
-            that.state.progress.push("echoTest failed - plugin not functional");
-            that.setState(that.state);
+            this.updateProgress("echoTest failed - plugin not functional");
         });
-    },
+    }
 
-    closeDatabase(){
-        var that = this;
+    closeDatabase = () => {
         if (db) {
             console.log("Closing database ...");
-            that.state.progress.push("Closing DB");
-            that.setState(that.state);
+            this.updateProgress("Closing DB")
             db.close().then((status) => {
-                that.state.progress.push("Database CLOSED");
-                that.setState(that.state);
+                this.updateProgress("Database CLOSED");
             }).catch((error) => {
-                that.errorCB(error);
+                this.errorCB(error);
             });
         } else {
-            that.state.progress.push("Database was not OPENED");
-            that.setState(that.state);
+            this.updateProgress("Database was not OPENED")
         }
-    },
+    }
 
-    deleteDatabase(){
-        var that = this;
-        that.state.progress = ["Deleting database"];
-        that.setState(that.state);
+    deleteDatabase = () => {
+        this.updateProgress("Deleting database")
         SQLite.deleteDatabase(database_name).then(() => {
             console.log("Database DELETED");
-            that.state.progress.push("Database DELETED");
-            that.setState(that.state);
+            this.updateProgress("Database DELETED")
         }).catch((error) => {
-            that.errorCB(error);
+            this.errorCB(error);
         });
-    },
+    }
 
-    runDemo(){
-        this.state.progress = ["Starting SQLite Promise Demo"];
-        this.setState(this.state);
+    runDemo = () => {
+        console.log('running');
+        this.setState({
+            progress: ["Starting SQLite Promise Demo"]
+        })
+        //this.state.progress = ["Starting SQLite Promise Demo"];
+        //this.setState(this.state);
         this.loadAndQueryDB();
-    },
+    }
 
-    renderProgressEntry(entry){
+    renderProgressEntry = (entry) => {
         return (<View style={listStyles.li}>
             <View>
                 <Text style={listStyles.liText}>{entry}</Text>
             </View>
         </View>)
-    },
+    }
 
     render(){
         var ds = new ListView.DataSource({rowHasChanged: (row1, row2) => { row1 !== row2;}});
@@ -252,7 +238,7 @@ const SQLiteDemo = React.createClass({
                 style={listStyles.liContainer}/>
         </View>);
     }
-});
+};
 
 var listStyles = StyleSheet.create({
     li: {
