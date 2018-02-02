@@ -138,7 +138,16 @@ npm install --save react-native-sqlite-storage
 ...
 
 include ':react-native-sqlite-storage'
-project(':react-native-sqlite-storage').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-sqlite-storage/src/android')
+project(':react-native-sqlite-storage').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-sqlite-storage/src/android/storage')
+
+include ':sqlite-plugin-provider'
+project(':sqlite-plugin-provider').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-sqlite-storage/src/android/sqlite-plugin-provider')
+
+// for sqlitecipher support:
+include ':sql-cipher-plugin'
+project(':sql-cipher-plugin').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-sqlite-storage/src/android/sql-cipher-plugin')
+
+
 ```
 
 #### Step 3 - Update app Gradle Build
@@ -150,6 +159,9 @@ project(':react-native-sqlite-storage').projectDir = new File(rootProject.projec
 dependencies {
     ...
     compile project(':react-native-sqlite-storage')
+    compile project(':sqlite-plugin-provider')
+    // To add sqlite cipher support:
+    compile project(':sql-cipher-plugin')
 }
 ```
 
@@ -173,7 +185,7 @@ public class MainActivity extends Activity implements DefaultHardwareBackBtnHand
                 .setBundleAssetName("index.android.bundle")  // this is dependant on how you name you JS files, example assumes index.android.js
                 .setJSMainModuleName("index.android")        // this is dependant on how you name you JS files, example assumes index.android.js
                 .addPackage(new MainReactPackage())
-                .addPackage(new SQLitePluginPackage())       // register SQLite Plugin here
+                .addPackage(new SQLitePluginPackage())       // register SQLite Plugin here. For SQLiteCipher support pass SqliteCipherConnectionProvider to PluginPackage.
                 .setUseDeveloperSupport(BuildConfig.DEBUG)
                 .setInitialLifecycleState(LifecycleState.RESUMED)
                 .build();
