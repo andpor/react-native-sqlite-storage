@@ -373,8 +373,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
             if (database != null && database.isOpen()) {
                 // this only happens when DBRunner is cycling the db for the locking work around.
                 // otherwise, this should not happen - should be blocked at the execute("open") level
-                if (cbc != null) cbc.error("database already open");
-                throw new Exception("database already open");
+                throw new Exception("Database already open");
             }
 
             boolean assetImportError = false;
@@ -416,52 +415,38 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                 }
             }
 
-            boolean databaseFileReady = true;
             if (dbfile == null) {
                 openFlags = SQLiteDatabase.OPEN_READWRITE | SQLiteDatabase.CREATE_IF_NECESSARY;
                 dbfile = this.getContext().getDatabasePath(dbname);
 
                 if (!dbfile.exists() && assetImportRequested) {
                     if (assetImportError || in == null) {
-                        databaseFileReady = false;
                         FLog.e(TAG, "Unable to import pre-populated db asset");
+                        throw new Exception("Unable to import pre-populated db asset");
                     } else {
                         FLog.v(TAG, "Copying pre-populated db asset to destination");
                         try {
                             this.createFromAssets(dbname, dbfile, in);
                         } catch (Exception ex){
-                            databaseFileReady = false;
-                            FLog.e(TAG, "Unable to import pre-populated DB asset.", ex);
+                            FLog.e(TAG, "Error importing pre-populated DB asset", ex);
+                            throw new Exception("Error importing pre-populated DB asset");
                         }
                     }
                 }
 
-                if (databaseFileReady && !dbfile.exists()) {
+                if (!dbfile.exists()) {
                     dbfile.getParentFile().mkdirs();
                 }
             }
 
-            if (databaseFileReady) {
-                FLog.v(TAG, "DB file is ready, proceeding to OPEN SQLite DB: " + dbfile.getAbsolutePath());
+            FLog.v(TAG, "DB file is ready, proceeding to OPEN SQLite DB: " + dbfile.getAbsolutePath());
 
-                SQLiteDatabase mydb = SQLiteDatabase.openDatabase(dbfile.getAbsolutePath(), null, openFlags);
+            SQLiteDatabase mydb = SQLiteDatabase.openDatabase(dbfile.getAbsolutePath(), null, openFlags);
 
-                if (cbc != null)
-                    cbc.success("database open");
+            if (cbc != null)
+                cbc.success("Database opened");
 
-                return mydb;
-            } else {
-                FLog.e(TAG, "Unable to OPEN SQLite DB");
-                if (cbc != null) {
-                    cbc.error("Can't open database. Check pre-populated asset location.");
-                }
-                throw new Exception("Pre-populated db asset file error.");
-            }
-        } catch (SQLiteException ex) {
-            if (cbc != null) {
-                cbc.error("Can't open database." + ex);
-            }
-            throw ex;
+            return mydb;
         } finally {
            closeQuietly(in);
         }
@@ -956,8 +941,18 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
         public void run() {
             try {
                 this.mydb = openDatabase(dbname, this.assetFilename, this.openFlags, this.openCbc);
+            } catch (SQLiteException ex) {
+                FLog.e(TAG, "SQLite error opening database, stopping db thread", ex);
+                if (openCbc != null) {
+                    openCbc.error("Can't open database." + ex);
+                }
+                dbrmap.remove(dbname);
+                return;
             } catch (Exception ex) {
-                FLog.e(TAG, "unexpected error opening database, stopping db thread", ex);
+                FLog.e(TAG, "Unexpected error opening database, stopping db thread", ex);
+                if (openCbc != null) {
+                    openCbc.error("Can't open database." + ex);
+                }
                 dbrmap.remove(dbname);
                 return;
             }
