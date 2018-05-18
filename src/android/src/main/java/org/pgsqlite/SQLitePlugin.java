@@ -371,59 +371,96 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
         try {
             SQLiteDatabase database = this.getDatabase(dbname);
             if (database != null && database.isOpen()) {
-                //this only happens when DBRunner is cycling the db for the locking work around.
+                // this only happens when DBRunner is cycling the db for the locking work around.
                 // otherwise, this should not happen - should be blocked at the execute("open") level
                 if (cbc != null) cbc.error("database already open");
                 throw new Exception("database already open");
             }
 
-            if (assetFilePath != null && assetFilePath.length() > 0) {
+            boolean assetImportError = false;
+            boolean assetImportRequested = assetFilePath != null && assetFilePath.length() > 0;
+            if (assetImportRequested) {
                 if (assetFilePath.compareTo("1") == 0) {
                     assetFilePath = "www/" + dbname;
-                    in = this.getContext().getAssets().open(assetFilePath);
-                    FLog.v(TAG, "Located pre-populated DB asset in app bundle www subdirectory: " + assetFilePath);
+                    try {
+                        in = this.getContext().getAssets().open(assetFilePath);
+                        FLog.v(TAG, "Pre-populated DB asset FOUND  in app bundle www subdirectory: " + assetFilePath);
+                    } catch (Exception ex){
+                        assetImportError = true;
+                        FLog.e(TAG, "pre-populated DB asset NOT FOUND in app bundle www subdirectory: " + assetFilePath);
+                    }
                 } else if (assetFilePath.charAt(0) == '~') {
                     assetFilePath = assetFilePath.startsWith("~/") ? assetFilePath.substring(2) : assetFilePath.substring(1);
-                    in = this.getContext().getAssets().open(assetFilePath);
-                    FLog.v(TAG, "Located pre-populated DB asset in app bundle subdirectory: " + assetFilePath);
+                    try {
+                        in = this.getContext().getAssets().open(assetFilePath);
+                        FLog.v(TAG, "Pre-populated DB asset FOUND in app bundle subdirectory: " + assetFilePath);
+                    } catch (Exception ex){
+                        assetImportError = true;
+                        FLog.e(TAG, "pre-populated DB asset NOT FOUND in app bundle www subdirectory: " + assetFilePath);
+                    }
                 } else {
                     File filesDir = this.getContext().getFilesDir();
                     assetFilePath = assetFilePath.startsWith("/") ? assetFilePath.substring(1) : assetFilePath;
-                    File assetFile = new File(filesDir, assetFilePath);
-                    in = new FileInputStream(assetFile);
-                    FLog.v(TAG, "Located pre-populated DB asset in Files subdirectory: " + assetFile.getCanonicalPath());
-                    if (openFlags == SQLiteDatabase.OPEN_READONLY) {
-                        dbfile = assetFile;
-                        FLog.v(TAG, "Detected read-only mode request for external asset.");
+                    try {
+                        File assetFile = new File(filesDir, assetFilePath);
+                        in = new FileInputStream(assetFile);
+                        FLog.v(TAG, "Pre-populated DB asset FOUND in Files subdirectory: " + assetFile.getCanonicalPath());
+                        if (openFlags == SQLiteDatabase.OPEN_READONLY) {
+                            dbfile = assetFile;
+                            FLog.v(TAG, "Detected read-only mode request for external asset.");
+                        }
+                    } catch (Exception ex){
+                        assetImportError = true;
+                        FLog.e(TAG, "Error opening pre-populated DB asset in app bundle www subdirectory: " + assetFilePath);
                     }
                 }
             }
 
+            boolean databaseFileReady = true;
             if (dbfile == null) {
                 openFlags = SQLiteDatabase.OPEN_READWRITE | SQLiteDatabase.CREATE_IF_NECESSARY;
                 dbfile = this.getContext().getDatabasePath(dbname);
 
-                if (!dbfile.exists() && in != null) {
-                    FLog.v(TAG, "Copying pre-populated db asset to destination");
-                    this.createFromAssets(dbname, dbfile, in);
+                if (!dbfile.exists() && assetImportRequested) {
+                    if (assetImportError || in == null) {
+                        databaseFileReady = false;
+                        FLog.e(TAG, "Unable to import pre-populated db asset");
+                    } else {
+                        FLog.v(TAG, "Copying pre-populated db asset to destination");
+                        try {
+                            this.createFromAssets(dbname, dbfile, in);
+                        } catch (Exception ex){
+                            databaseFileReady = false;
+                            FLog.e(TAG, "Unable to import pre-populated DB asset.", ex);
+                        }
+                    }
                 }
 
-                if (!dbfile.exists()) {
+                if (databaseFileReady && !dbfile.exists()) {
                     dbfile.getParentFile().mkdirs();
                 }
             }
 
-            FLog.v(TAG, "Opening sqlite db: " + dbfile.getAbsolutePath());
+            if (databaseFileReady) {
+                FLog.v(TAG, "DB file is ready, proceeding to OPEN SQLite DB: " + dbfile.getAbsolutePath());
 
-            SQLiteDatabase mydb = SQLiteDatabase.openDatabase(dbfile.getAbsolutePath(), null, openFlags);
+                SQLiteDatabase mydb = SQLiteDatabase.openDatabase(dbfile.getAbsolutePath(), null, openFlags);
 
-            if (cbc != null) // needed for Android locking/closing workaround
-                cbc.success("database open");
+                if (cbc != null)
+                    cbc.success("database open");
 
-            return mydb;
+                return mydb;
+            } else {
+                FLog.e(TAG, "Unable to OPEN SQLite DB");
+                if (cbc != null) {
+                    cbc.error("Can't open database. Check pre-populated asset location.");
+                }
+                throw new Exception("Pre-populated db asset file error.");
+            }
         } catch (SQLiteException ex) {
-            if (cbc != null) // needed for Android locking/closing workaround
-                cbc.error("can't open database " + ex);
+            if (cbc != null) {
+                cbc.error("Can't open database." + ex);
+            }
             throw ex;
         } finally {
            closeQuietly(in);
@@ -438,7 +475,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
      * @param dbfile The File of the destination db
      * @param assetFileInputStream input file stream for pre-populated db asset
      */
-    private void createFromAssets(String dbName, File dbfile, InputStream assetFileInputStream) {
+    private void createFromAssets(String dbName, File dbfile, InputStream assetFileInputStream) throws Exception {
         OutputStream out = null;
 
         try {
@@ -460,9 +497,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
             while ((len = assetFileInputStream.read(buf)) > 0)
                 out.write(buf, 0, len);
 
-            FLog.v(TAG, "Copied pre-populated DB content to: " + newDbFile.getAbsolutePath());
-        } catch (IOException e) {
-            FLog.e(TAG, "No pre-populated DB found.", e);
+            FLog.v(TAG, "Copied pre-populated DB asset to: " + newDbFile.getAbsolutePath());
         } finally {
             closeQuietly(out);
         }
@@ -921,8 +956,8 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
         public void run() {
             try {
                 this.mydb = openDatabase(dbname, this.assetFilename, this.openFlags, this.openCbc);
-            } catch (Exception e) {
-                FLog.e(TAG, "unexpected error, stopping db thread", e);
+            } catch (Exception ex) {
+                FLog.e(TAG, "unexpected error opening database, stopping db thread", ex);
                 dbrmap.remove(dbname);
                 return;
             }
@@ -945,8 +980,8 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
 
                     dbq = q.take();
                 }
-            } catch (Exception e) {
-                FLog.e(TAG, "unexpected error", e);
+            } catch (Exception ex) {
+                FLog.e(TAG, "unexpected error", ex);
             }
 
             if (dbq != null && dbq.close) {
@@ -965,15 +1000,15 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                             } else {
                                 dbq.cbc.error("couldn't delete database");
                             }
-                        } catch (Exception e) {
-                            FLog.e(TAG, "couldn't delete database", e);
-                            dbq.cbc.error("couldn't delete database: " + e);
+                        } catch (Exception ex) {
+                            FLog.e(TAG, "couldn't delete database", ex);
+                            dbq.cbc.error("couldn't delete database: " + ex);
                         }
                     }
-                } catch (Exception e) {
-                    FLog.e(TAG, "couldn't close database", e);
+                } catch (Exception ex) {
+                    FLog.e(TAG, "couldn't close database", ex);
                     if (dbq.cbc != null) {
-                        dbq.cbc.error("couldn't close database: " + e);
+                        dbq.cbc.error("couldn't close database: " + ex);
                     }
                 }
             }
