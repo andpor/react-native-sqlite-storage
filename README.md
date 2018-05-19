@@ -131,7 +131,7 @@ db.transaction((tx) => {
 ```shell
 npm install --save react-native-sqlite-storage
 ```
-#### Step 2 - Update Gradle Settings
+#### Step 2 - Update Gradle Settings (located under Gradle Settings in Project Panel)
 
 ```gradle
 // file: android/settings.gradle
@@ -141,7 +141,7 @@ include ':react-native-sqlite-storage'
 project(':react-native-sqlite-storage').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-sqlite-storage/src/android')
 ```
 
-#### Step 3 - Update app Gradle Build
+#### Step 3 - Update app module Gradle Build script (located under Gradle Settings in Project Panel)
 
 ```gradle
 // file: android/app/build.gradle
