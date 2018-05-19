@@ -14,7 +14,7 @@ There are sample apps provided in test directory that can be used in with the Aw
 
 Please let me know your projects that use these SQLite React Native modules. I will list them in the reference section. If there are any features that you think would benefit this library please post them.
 
-The library has been tested with React 0.43.4 (and earlier) and XCode 7,8 - it works fine out of the box without any need for tweaks or code changes. For XCode 7,8 vs. XCode 6 the only difference is that sqlite ios library name suffix is tbd instead of dylib. 
+The library has been tested with React 16.2 (and earlier) and XCode 7,8,9 - it works fine out of the box without any need for tweaks or code changes. For XCode 7,8 vs. XCode 6 the only difference is that sqlite ios library name suffix is tbd instead of dylib. 
 
 Version 3.2 is the first version compatible with RN 0.40.
 
