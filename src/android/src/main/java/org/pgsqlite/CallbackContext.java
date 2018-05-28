@@ -9,10 +9,6 @@ import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 public class CallbackContext {
 
     private static final String LOG_TAG = CallbackContext.class.getSimpleName();
@@ -30,13 +26,9 @@ public class CallbackContext {
      *
      * @param message The message to add to the success result.
      */
-    public void success(JSONObject message) {
-        try {
-            WritableMap writableMap = SQLitePluginConverter.jsonToReact(message);
-            successCallback.invoke(writableMap);
-        } catch (JSONException ex){
-            errorCallback.invoke("Internal error converting results:"+ex.getMessage());
-        }
+    public void success(WritableMap message) {
+        successCallback.invoke(message);
+
     }
 
     /**
@@ -53,14 +45,8 @@ public class CallbackContext {
      *
      * @param message The message to add to the success result.
      */
-    public void success(JSONArray message) {
-        try {
-            WritableArray writableArray = SQLitePluginConverter.jsonToReact(message);
-            successCallback.invoke(writableArray);
-        } catch (JSONException ex){
-            errorCallback.invoke("Internal error converting results:"+ex.getMessage());
-        }
-
+    public void success(WritableArray message) {
+        successCallback.invoke(message);
     }
 
     /**
@@ -75,13 +61,8 @@ public class CallbackContext {
      *
      * @param message The message to add to the error result.
      */
-    public void error(JSONObject message) {
-        try {
-            WritableMap writableMap = SQLitePluginConverter.jsonToReact(message);
-            errorCallback.invoke(writableMap);
-        } catch (JSONException ex){
-            errorCallback.invoke("Internal error converting results:"+ex.getMessage());
-        }
+    public void error(WritableMap message) {
+        errorCallback.invoke(message);
     }
 
     /**

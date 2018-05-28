@@ -717,4 +717,9 @@ RCT_EXPORT_METHOD(executeSql: (NSDictionary *) options success:(RCTResponseSende
   return result;
 }
 
++ (BOOL)requiresMainQueueSetup
+{
+  return YES;
+}
+
 @end /* vim: set expandtab : */

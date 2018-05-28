@@ -6,122 +6,222 @@
 
 package org.pgsqlite;
 
-import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.NoSuchKeyException;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
-import com.facebook.react.bridge.ReadableMapKeySetIterator;
 import com.facebook.react.bridge.ReadableType;
-import com.facebook.react.bridge.WritableArray;
-import com.facebook.react.bridge.WritableMap;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.util.Iterator;
 
 public abstract class SQLitePluginConverter {
-    static JSONObject reactToJSON(ReadableMap readableMap) throws JSONException {
-        JSONObject jsonObject = new JSONObject();
-        ReadableMapKeySetIterator iterator = readableMap.keySetIterator();
-        while(iterator.hasNextKey()){
-            String key = iterator.nextKey();
-            ReadableType valueType = readableMap.getType(key);
-            switch (valueType){
-                case Null:
-                    jsonObject.put(key,JSONObject.NULL);
-                    break;
+
+    /**
+     * Returns the value at {@code key} if it exists, coercing it if
+     * necessary.
+     */
+    static String getString(ReadableMap map, String key, String defaultValue) {
+        if (map == null){
+            return defaultValue;
+        }
+        try {
+            ReadableType type = map.getType(key);
+            switch (type) {
+                case Number:
+                    double value = map.getDouble(key);
+                    if (value == (long) value) {
+                        return String.valueOf((long) value);
+                    } else {
+                        return String.valueOf(value);
+                    }
                 case Boolean:
-                    jsonObject.put(key, readableMap.getBoolean(key));
+                    return String.valueOf(map.getBoolean(key));
+                case String:
+                    return map.getString(key);
+                case Null:
+                    return null;
+                default:
+                    return defaultValue;
+            }
+        } catch(NoSuchKeyException ex){
+            return defaultValue;
+        }
+    }
+
+    /**
+     * Returns the value at {@code key} if it exists, coercing it if
+     * necessary.
+     */
+    static boolean getBoolean(ReadableMap map, String key, boolean defaultValue) {
+        if (map == null){
+            return defaultValue;
+        }
+        try {
+            ReadableType type = map.getType(key);
+            switch (type) {
+                case Boolean:
+                    return map.getBoolean(key);
+                case String: {
+                    String value = map.getString(key);
+                    if ("true".equalsIgnoreCase(value)) {
+                        return true;
+                    } else if ("false".equalsIgnoreCase(value)) {
+                        return false;
+                    }
+                    return false;
+                }
+                case Number: {
+                    double value = map.getDouble(key);
+                    if (value == (long) 0) {
+                        return Boolean.FALSE;
+                    } else {
+                        return Boolean.TRUE;
+                    }
+                }
+                case Null:
+                    return false;
+                default:
+                    return defaultValue;
+            }
+        } catch(NoSuchKeyException ex){
+            return defaultValue;
+        }
+    }
+
+    /**
+     * Returns the value at {@code index} if it exists, coercing it if
+     * necessary.
+     */
+    static String getString(ReadableArray array, int index, String defaultValue) {
+        if (array == null){
+            return defaultValue;
+        }
+        try {
+            ReadableType type = array.getType(index);
+            switch (type) {
+                case Number:
+                    double value = array.getDouble(index);
+                    if (value == (long) value) {
+                        return String.valueOf((long) value);
+                    } else {
+                        return String.valueOf(value);
+                    }
+                case Boolean:
+                    return String.valueOf(array.getBoolean(index));
+                case String:
+                    return array.getString(index);
+                case Null:
+                    return null;
+                default:
+                    return defaultValue;
+            }
+        } catch(NoSuchKeyException ex){
+            return defaultValue;
+        }
+    }
+
+    /**
+     * Returns the value at {@code index} if it exists, coercing it if
+     * necessary.
+     */
+    static boolean getBoolean(ReadableArray array, int index, boolean defaultValue) {
+        if (array == null){
+            return defaultValue;
+        }
+        try {
+            ReadableType type = array.getType(index);
+            switch (type) {
+                case Boolean:
+                    return array.getBoolean(index);
+                case String: {
+                    String value = array.getString(index);
+                    if ("true".equalsIgnoreCase(value)) {
+                        return true;
+                    } else if ("false".equalsIgnoreCase(value)) {
+                        return false;
+                    }
+                    return false;
+                }
+                case Number: {
+                    double value = array.getDouble(index);
+                    if (value == 0) {
+                        return Boolean.FALSE;
+                    } else {
+                        return Boolean.TRUE;
+                    }
+                }
+                case Null:
+                    return false;
+                default:
+                    return defaultValue;
+            }
+        } catch(NoSuchKeyException ex){
+            return defaultValue;
+        }
+    }
+
+
+    static Object get(ReadableMap map,String key,Object defaultValue){
+        if (map == null){
+            return defaultValue;
+        }
+
+        try {
+            Object value = null;
+            ReadableType type = map.getType(key);
+            switch(type){
+                case Boolean:
+                    value = map.getBoolean(key);
                     break;
                 case Number:
-                    jsonObject.put(key, readableMap.getDouble(key));
+                    value = map.getDouble(key);
                     break;
                 case String:
-                    jsonObject.put(key, readableMap.getString(key));
+                    value = map.getString(key);
                     break;
                 case Map:
-                    jsonObject.put(key, reactToJSON(readableMap.getMap(key)));
+                    value = map.getMap(key);
                     break;
                 case Array:
-                    jsonObject.put(key, reactToJSON(readableMap.getArray(key)));
+                    value = map.getArray(key);
+                    break;
+                case Null:
+                    value = null;
                     break;
             }
+            return value;
+        } catch (NoSuchKeyException ex){
+            return defaultValue;
         }
-
-        return jsonObject;
     }
 
-    static JSONArray reactToJSON(ReadableArray readableArray) throws JSONException {
-        JSONArray jsonArray = new JSONArray();
-        for(int i=0; i < readableArray.size(); i++) {
-            ReadableType valueType = readableArray.getType(i);
-            switch (valueType){
-                case Null:
-                    jsonArray.put(JSONObject.NULL);
-                    break;
+    static Object get(ReadableArray array,int index,Object defaultValue){
+        if (array == null){
+            return defaultValue;
+        }
+
+        try {
+            Object value = null;
+            ReadableType type = array.getType(index);
+            switch(type){
                 case Boolean:
-                    jsonArray.put(readableArray.getBoolean(i));
+                    value = array.getBoolean(index);
                     break;
                 case Number:
-                    jsonArray.put(readableArray.getDouble(i));
+                    value = array.getDouble(index);
                     break;
                 case String:
-                    jsonArray.put(readableArray.getString(i));
+                    value = array.getString(index);
                     break;
                 case Map:
-                    jsonArray.put(reactToJSON(readableArray.getMap(i)));
+                    value = array.getMap(index);
                     break;
                 case Array:
-                    jsonArray.put(reactToJSON(readableArray.getArray(i)));
+                    value = array.getArray(index);
+                    break;
+                case Null:
                     break;
             }
+            return value;
+        } catch (NoSuchKeyException ex){
+            return defaultValue;
         }
-        return jsonArray;
-    }
-
-    static WritableMap jsonToReact(JSONObject jsonObject) throws JSONException {
-        WritableMap writableMap = Arguments.createMap();
-        Iterator iterator = jsonObject.keys();
-        while(iterator.hasNext()) {
-            String key = (String) iterator.next();
-            Object value = jsonObject.get(key);
-            if (value instanceof Float || value instanceof Double) {
-                writableMap.putDouble(key, jsonObject.getDouble(key));
-            } else if (value instanceof Number) {
-                writableMap.putDouble(key, jsonObject.getLong(key));
-            } else if (value instanceof String) {
-                writableMap.putString(key, jsonObject.getString(key));
-            } else if (value instanceof JSONObject) {
-                writableMap.putMap(key,jsonToReact(jsonObject.getJSONObject(key)));
-            } else if (value instanceof JSONArray){
-                writableMap.putArray(key, jsonToReact(jsonObject.getJSONArray(key)));
-            } else if (value == JSONObject.NULL){
-                writableMap.putNull(key);
-            }
-        }
-
-        return writableMap;
-    }
-
-    static WritableArray jsonToReact(JSONArray jsonArray) throws JSONException {
-        WritableArray writableArray = Arguments.createArray();
-        for(int i=0; i < jsonArray.length(); i++) {
-            Object value = jsonArray.get(i);
-            if (value instanceof Float || value instanceof Double) {
-                writableArray.pushDouble(jsonArray.getDouble(i));
-            } else if (value instanceof Number) {
-                writableArray.pushDouble(jsonArray.getLong(i));
-            } else if (value instanceof String) {
-                writableArray.pushString(jsonArray.getString(i));
-            } else if (value instanceof JSONObject) {
-                writableArray.pushMap(jsonToReact(jsonArray.getJSONObject(i)));
-            } else if (value instanceof JSONArray){
-                writableArray.pushArray(jsonToReact(jsonArray.getJSONArray(i)));
-            } else if (value == JSONObject.NULL){
-                writableArray.pushNull();
-            }
-        }
-        return writableArray;
     }
 }
