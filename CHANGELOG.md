@@ -1,5 +1,11 @@
 # Version History
 
+v3.3.5
+ 1. All JSON conversions in Android modules have been eliminated in favor of direct React Native interfaces. This should provide siginificant performance improvement.
+ 2. Main Queue Warning issue fixed in iOS.
+ 3. Exception handling in logic processing asset imports have been fixed and error codes are properly propagated to JS callabcks.
+ 4. Examples have been revamped and library was tested with XCode 9 and Android Studio 3.1.1 (Gradle 2.2)
+ 
 v3.3.4
  1. New version of native binaries compile with latest sqlite version 3.20.1 supporting pcre extension to enable REGEXP function for Android. (https://github.com/andpor/react-native-sqlite-storage/pull/205)
  2. Fixes Xcode warning for potentially insecure string. (https://github.com/andpor/react-native-sqlite-storage/pull/199)
