@@ -604,9 +604,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
 
             try {
                 boolean needRawQuery = true;
-
                 query = queries[i];
-
                 QueryType queryType = getQueryType(query);
 
                 if (queryType == QueryType.update || queryType == QueryType.delete) {
@@ -710,7 +708,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
 
                 // raw query for other statements:
                 if (needRawQuery) {
-                    queryResult = this.executeSqlStatementQuery(mydb, query, queryParams[i], cbc);
+                    queryResult = this.executeSqlStatementQuery(mydb, query, queryParams != null ? queryParams[i] : null, cbc);
                 }
             } catch (Exception ex) {
                 errorMessage = ex.getMessage();
@@ -790,12 +788,16 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
         Cursor cur = null;
         try {
             try {
-                String[] params = new String[queryParams.size()];
-                for (int j = 0; j < queryParams.size(); j++) {
-                    if (queryParams.isNull(j)) {
-                        params[j] = "";
-                    } else {
-                        params[j] = SQLitePluginConverter.getString(queryParams,j,"");
+                String[] params = new String[0];
+                if (queryParams != null) {
+                    int size = queryParams.size();
+                    params = new String[size];
+                    for (int j = 0; j < size; j++) {
+                        if (queryParams.isNull(j)) {
+                            params[j] = "";
+                        } else {
+                            params[j] = SQLitePluginConverter.getString(queryParams, j, "");
+                        }
                     }
                 }
 
