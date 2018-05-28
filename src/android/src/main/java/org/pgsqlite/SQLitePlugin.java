@@ -188,13 +188,14 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
         } catch (IllegalArgumentException ex) {
             // shouldn't ever happen
             FLog.e(TAG, "unexpected error", ex);
+            cbc.error("Unexpected error executing processing SQLite query");
             throw ex;
         }
         try {
             return executeAndPossiblyThrow(action, args, cbc);
         } catch (Exception ex) {
-            // TODO: signal JSON problem to JS
             FLog.e(TAG, "unexpected error", ex);
+            cbc.error("Unexpected error executing processing SQLite query");
             throw ex;
         }
     }
@@ -204,30 +205,31 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
 
         switch (action) {
             case echoStringValue:
-                String echo_value = args.getString("value");
+                String echo_value = SQLitePluginConverter.getString(args,"value","");
                 cbc.success(echo_value);
                 break;
 
             case open:
-                dbname = args.getString("name");
+                dbname = SQLitePluginConverter.getString(args,"name","");
                 // open database and start reading its queue
                 this.startDatabase(dbname, args, cbc);
                 break;
 
             case close:
-                dbname = args.getString("path");
+                dbname = SQLitePluginConverter.getString(args,"path","");
                 // put request in the q to close the db
                 this.closeDatabase(dbname, cbc);
                 break;
 
             case attach:
-                dbname = args.getString("path");
-                // attach database
-                this.attachDatabase(dbname, args.getString("dbName"), args.getString("dbAlias"), cbc);
+                dbname = SQLitePluginConverter.getString(args,"path","");
+                String dbAlias = SQLitePluginConverter.getString(args,"dbAlias","");
+                String dbNameToAttach = SQLitePluginConverter.getString(args,"dbName","");
+                this.attachDatabase(dbname,dbNameToAttach,dbAlias,cbc);
                 break;
 
             case delete:
-                dbname = args.getString("path");
+                dbname = SQLitePluginConverter.getString(args,"path","");
                 deleteDatabase(dbname, cbc);
                 break;
 
@@ -235,10 +237,10 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
             case backgroundExecuteSqlBatch:
                 String [] queries;
                 String [] queryIDs = null;
-                ReadableArray [] sqlParams = null;
-                ReadableMap dbArgs = args.getMap("dbargs");
-                dbname = dbArgs.getString("dbname");
-                ReadableArray txArgs = args.getArray("executes");
+                ReadableArray [] queryParams = null;
+                ReadableMap dbArgs = (ReadableMap) SQLitePluginConverter.get(args,"dbargs",null);
+                dbname = SQLitePluginConverter.getString(dbArgs,"dbname","");
+                ReadableArray txArgs = (ReadableArray) SQLitePluginConverter.get(args,"executes",null);
 
                 if (txArgs.isNull(0)) {
                     queries = new String[0];
@@ -246,18 +248,18 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                     int len = txArgs.size();
                     queries = new String[len];
                     queryIDs = new String[len];
-                    sqlParams = new ReadableArray[len];
+                    queryParams = new ReadableArray[len];
 
                     for (int i = 0; i < len; i++) {
-                        ReadableMap a = txArgs.getMap(i);
-                        queries[i] = a.getString("sql");
-                        queryIDs[i] = a.getString("qid");
-                        sqlParams[i] = a.getArray("params");
+                        ReadableMap queryArgs = (ReadableMap) SQLitePluginConverter.get(txArgs,i,null);
+                        queries[i] = SQLitePluginConverter.getString(queryArgs,"sql","");
+                        queryIDs[i] = SQLitePluginConverter.getString(queryArgs,"qid","");
+                        queryParams[i] = (ReadableArray) SQLitePluginConverter.get(queryArgs,"params",null);
                     }
                 }
 
                 // put db query in the queue to be executed in the db thread:
-                DBQuery q = new DBQuery(queries, queryIDs, sqlParams, cbc);
+                DBQuery q = new DBQuery(queries, queryIDs, queryParams, cbc);
                 DBRunner r = dbrmap.get(dbname);
                 if (r != null) {
                     try {
@@ -416,7 +418,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
 
             return mydb;
         } finally {
-           closeQuietly(in);
+            closeQuietly(in);
         }
     }
 
@@ -636,7 +638,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                 }
 
                 // INSERT:
-                if (queryType == QueryType.insert && queryParams != null) {
+                else if (queryType == QueryType.insert && queryParams != null) {
                     needRawQuery = false;
 
                     SQLiteStatement myStatement = mydb.compileStatement(query);
@@ -662,11 +664,11 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                         errorMessage = ex.getMessage();
                         FLog.e(TAG, "SQLiteDatabase.executeInsert() failed", ex);
                     } finally {
-                       closeQuietly(myStatement);
+                        closeQuietly(myStatement);
                     }
                 }
 
-                if (queryType == QueryType.begin) {
+                else if (queryType == QueryType.begin) {
                     needRawQuery = false;
                     try {
                         mydb.beginTransaction();
@@ -679,7 +681,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                     }
                 }
 
-                if (queryType == QueryType.commit) {
+                else if (queryType == QueryType.commit) {
                     needRawQuery = false;
                     try {
                         mydb.setTransactionSuccessful();
@@ -693,7 +695,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                     }
                 }
 
-                if (queryType == QueryType.rollback) {
+                else if (queryType == QueryType.rollback) {
                     needRawQuery = false;
                     try {
                         mydb.endTransaction();
@@ -764,7 +766,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
             } else if (sqlArgs.isNull(i)) {
                 myStatement.bindNull(i + 1);
             } else {
-                myStatement.bindString(i + 1, sqlArgs.getString(i));
+                myStatement.bindString(i + 1, SQLitePluginConverter.getString(sqlArgs,i,""));
             }
         }
     }
@@ -793,7 +795,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                     if (queryParams.isNull(j)) {
                         params[j] = "";
                     } else {
-                        params[j] = queryParams.getString(j);
+                        params[j] = SQLitePluginConverter.getString(queryParams,j,"");
                     }
                 }
 
@@ -877,16 +879,16 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
             this.dbname = dbname;
             int openFlags = SQLiteDatabase.OPEN_READWRITE | SQLiteDatabase.CREATE_IF_NECESSARY;
             try {
-                this.assetFilename = options.getString("assetFilename");
+                this.assetFilename = SQLitePluginConverter.getString(options,"assetFilename",null);
                 if (this.assetFilename != null && this.assetFilename.length() > 0) {
-                    boolean readOnly = options.getBoolean("readOnly");
+                    boolean readOnly = SQLitePluginConverter.getBoolean(options,"readOnly",false);
                     openFlags = readOnly ? SQLiteDatabase.OPEN_READONLY : openFlags;
                 }
             } catch (Exception ex){
-                FLog.e(TAG,"Error retrieving assetFilename this.mode from options:",ex);
+                FLog.e(TAG,"Error retrieving assetFilename or mode from options:",ex);
             }
             this.openFlags = openFlags;
-            this.androidLockWorkaround = options.getBoolean("androidLockWorkaround");
+            this.androidLockWorkaround = SQLitePluginConverter.getBoolean(options,"androidLockWorkaround",false);
             if (this.androidLockWorkaround)
                 FLog.i(TAG, "Android db closing/locking workaround applied");
 
@@ -919,7 +921,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                 dbq = q.take();
 
                 while (!dbq.stop) {
-                    executeSqlBatch(dbname, dbq.queries, dbq.jsonparams, dbq.queryIDs, dbq.cbc);
+                    executeSqlBatch(dbname, dbq.queries, dbq.queryParams, dbq.queryIDs, dbq.cbc);
 
                     // XXX workaround for Android locking/closing issue:
                     if (androidLockWorkaround && dbq.queries.length == 1 && dbq.queries[0].equals("COMMIT")) {
@@ -973,7 +975,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
         final boolean delete;
         final String[] queries;
         final String[] queryIDs;
-        final ReadableArray[] jsonparams;
+        final ReadableArray[] queryParams;
         final CallbackContext cbc;
 
         DBQuery(String[] myqueries, String[] qids, ReadableArray[] params, CallbackContext c) {
@@ -982,7 +984,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
             this.delete = false;
             this.queries = myqueries;
             this.queryIDs = qids;
-            this.jsonparams = params;
+            this.queryParams = params;
             this.cbc = c;
         }
 
@@ -992,7 +994,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
             this.delete = delete;
             this.queries = null;
             this.queryIDs = null;
-            this.jsonparams = null;
+            this.queryParams = null;
             this.cbc = cbc;
         }
 
@@ -1003,7 +1005,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
             this.delete = false;
             this.queries = null;
             this.queryIDs = null;
-            this.jsonparams = null;
+            this.queryParams = null;
             this.cbc = null;
         }
     }
