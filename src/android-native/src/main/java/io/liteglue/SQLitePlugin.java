@@ -712,7 +712,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                                     break;
 
                                 case SQLColumnType.INTEGER:
-                                    row.putInt(key, myStatement.getColumnInteger(i));
+                                    row.putDouble(key, myStatement.getColumnLong(i));
                                     break;
 
                                 case SQLColumnType.BLOB:

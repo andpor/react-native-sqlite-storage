@@ -842,7 +842,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                 row.putNull(key);
                 break;
             case Cursor.FIELD_TYPE_INTEGER:
-                row.putInt(key, cur.getInt(i));
+                row.putDouble(key, cur.getLong(i));
                 break;
             case Cursor.FIELD_TYPE_FLOAT:
                 row.putDouble(key, cur.getDouble(i));
