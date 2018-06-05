@@ -1,5 +1,8 @@
 # Version History
 
+v3.3.6
+ 1. Fix INTEGER column value overflow.
+ 
 v3.3.5
  1. All JSON conversions in Android modules have been eliminated in favor of direct React Native interfaces. This should provide siginificant performance improvement.
  2. Main Queue Warning issue fixed in iOS.
