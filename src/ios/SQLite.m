@@ -225,7 +225,7 @@ RCT_EXPORT_METHOD(open: (NSDictionary *) options success:(RCTResponseSenderBlock
           // Attempt to read the SQLite master table [to support SQLCipher version]:
           if(sqlite3_exec(db, (const char*)"SELECT count(*) FROM sqlite_master;", NULL, NULL, NULL) == SQLITE_OK) {
             NSValue *dbPointer = [NSValue valueWithPointer:db];
-            openDBs[dbfilename] = @{ @"dbPointer": dbPointer, @"dbPath" : dbname};
+            openDBs[dbfilename] = @{ @"dbPointer": dbPointer, @"dbPath": dbname, @"dbKey": dbkey };
             pluginResult = [SQLiteResult resultWithStatus:SQLiteStatus_OK messageAsString:@"Database opened"];
           } else {
             pluginResult = [SQLiteResult resultWithStatus:SQLiteStatus_ERROR messageAsString:@"Unable to open DB with key"];
@@ -338,8 +338,9 @@ RCT_EXPORT_METHOD(attach: (NSDictionary *) options success:(RCTResponseSenderBlo
       } else {
         sqlite3 *db = [((NSValue *) dbInfo[@"dbPointer"]) pointerValue];
         NSString *dbPathToAttach = dbInfoToAttach[@"dbPath"];
+        NSString *dbKey = dbInfoToAttach[@"dbKey"];
         
-        NSString* sql = [NSString stringWithFormat:@"ATTACH DATABASE '%@' AS %@", dbPathToAttach, dbAlias];
+        NSString* sql = [NSString stringWithFormat:@"ATTACH DATABASE '%@' AS %@ KEY '%@'", dbPathToAttach, dbAlias, dbKey];
         
         if(sqlite3_exec(db, [sql UTF8String], NULL, NULL, NULL) == SQLITE_OK) {
           pluginResult = [SQLiteResult resultWithStatus:SQLiteStatus_OK messageAsString:@"Database attached successfully."];

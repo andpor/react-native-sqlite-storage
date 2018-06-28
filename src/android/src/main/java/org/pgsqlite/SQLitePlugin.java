@@ -537,7 +537,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
         if (runner != null) {
             File databasePath = this.getContext().getDatabasePath(dbNameToAttach);
             String filePathToAttached = databasePath.getAbsolutePath();
-            String statement = "ATTACH DATABASE '" + filePathToAttached + "' AS " + dbAlias;
+            String statement = "ATTACH DATABASE '" + filePathToAttached + "' AS " + dbAlias + " KEY '" + runner.password + "'";
             // TODO: get rid of qid as it's just hardcoded to 1111 in js layer
             DBQuery query = new DBQuery(new String [] {statement},
                     new String[] {"1111"}, new JSONArray[] {new JSONArray()}, cbc);
@@ -547,7 +547,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                 cbc.error("Can't put query in the queue. Interrupted.");
             }
         } else {
-            cbc.error("Database " + dbName + "i s not created yet");
+            cbc.error("Database " + dbName + " is not created yet");
         }
     }
 
