@@ -53,7 +53,7 @@ Done, skip to Step 2.
 This command should be executed in the root directory of your RN project
 ```shell
 npm install --save react-native-sqlite-storage
-rnpm link
+react-native link
 ```
 
 rnpm and xcode are dependencies of this project and should get installed with the module but in case there are issue running rnpm link and rnpm/xcode are not already installed you can try to install it globally as follows:
