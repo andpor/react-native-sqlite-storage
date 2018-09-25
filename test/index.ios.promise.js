@@ -54,7 +54,7 @@ class SQLiteDemo extends Component {
     this.setState({
       progress
     });
-  }
+  };
 
   componentWillUnmount(){
     this.closeDatabase();
@@ -63,30 +63,30 @@ class SQLiteDemo extends Component {
   errorCB = (err) => {
     console.log("error: ",err);
     this.updateProgress("Error " + (err.message || err));
-  }
+  };
 
   populateDatabase = (db) => {
-    this.updateProgress("Database integrity check")
+    this.updateProgress("Database integrity check");
     db.executeSql('SELECT 1 FROM Version LIMIT 1').then(() =>{
       this.updateProgress("Database is ready ... executing query ...");
       db.transaction(this.queryEmployees).then(() => {
         this.updateProgress("Processing completed")
       });
     }).catch((error) =>{
-      console.log("Received error: ", error)
-      this.updateProgress("Database not yet ready ... populating data")
+      console.log("Received error: ", error);
+      this.updateProgress("Database not yet ready ... populating data");
       db.transaction(this.populateDB).then(() =>{
-        this.updateProgress("Database populated ... executing query ...")
+        this.updateProgress("Database populated ... executing query ...");
         db.transaction(this.queryEmployees).then((result) => {
           console.log("Transaction is now finished");
           this.updateProgress("Processing completed");
           this.closeDatabase()});
       });
     });
-  }
+  };
 
   populateDB = (tx) => {
-    this.updateProgress("Executing DROP stmts")
+    this.updateProgress("Executing DROP stmts");
 
     tx.executeSql('DROP TABLE IF EXISTS Employees;');
     tx.executeSql('DROP TABLE IF EXISTS Offices;');
@@ -125,7 +125,7 @@ class SQLiteDemo extends Component {
       this.errorCB(error)
     });
 
-    this.updateProgress("Executing INSERT stmts")
+    this.updateProgress("Executing INSERT stmts");
 
 
     tx.executeSql('INSERT INTO Departments (name) VALUES ("Client Services");');
@@ -148,12 +148,12 @@ class SQLiteDemo extends Component {
     tx.executeSql('INSERT INTO Employees (name, office, department) VALUES ("Dr DRE", 2, 2);');
     tx.executeSql('INSERT INTO Employees (name, office, department) VALUES ("Samantha Fox", 2, 1);');
     console.log("all config SQL done");
-  }
+  };
 
   queryEmployees = (tx) => {
     console.log("Executing employee query");
     tx.executeSql('SELECT a.name, b.name as deptName FROM Employees a, Departments b WHERE a.department = b.department_id and a.department=?', [3]).then(([tx,results]) => {
-      this.updateProgress("Query completed")
+      this.updateProgress("Query completed");
       var len = results.rows.length;
       for (let i = 0; i < len; i++) {
         let row = results.rows.item(i);
@@ -162,14 +162,14 @@ class SQLiteDemo extends Component {
     }).catch((error) => {
       console.log(error);
     });
-  }
+  };
 
   loadAndQueryDB = () => {
     this.updateProgress("Plugin integrity check ...");
     SQLite.echoTest().then(() => {
-      this.updateProgress("Integrity check passed ...")
-      this.updateProgress("Opening database ...")
-      SQLite.openDatabase({name : "test5.db", createFromLocation : "~/db/andrew.db"}).then((DB) => {
+      this.updateProgress("Integrity check passed ...");
+      this.updateProgress("Opening database ...");
+      SQLite.openDatabase(database_name, database_version, database_displayname, database_size).then((DB) => {
         db = DB;
         this.updateProgress("Database OPEN");
         this.populateDatabase(DB);
@@ -179,12 +179,12 @@ class SQLiteDemo extends Component {
     }).catch(error => {
       this.updateProgress("echoTest failed - plugin not functional");
     });
-  }
+  };
 
   closeDatabase = () => {
     if (db) {
       console.log("Closing database ...");
-      this.updateProgress("Closing DB")
+      this.updateProgress("Closing DB");
       db.close().then((status) => {
         this.updateProgress("Database CLOSED");
       }).catch((error) => {
@@ -193,23 +193,23 @@ class SQLiteDemo extends Component {
     } else {
       this.updateProgress("Database was not OPENED")
     }
-  }
+  };
 
   deleteDatabase = () => {
-    this.updateProgress("Deleting database")
+    this.updateProgress("Deleting database");
     SQLite.deleteDatabase(database_name).then(() => {
       console.log("Database DELETED");
       this.updateProgress("Database DELETED")
     }).catch((error) => {
       this.errorCB(error);
     });
-  }
+  };
 
   runDemo = () => {
     console.log('running');
     this.updateProgress("Starting SQLite Promise Demo",true);
     this.loadAndQueryDB();
-  }
+  };
 
   renderProgressEntry = (entry) => {
     return (<View style={listStyles.li}>
@@ -217,7 +217,7 @@ class SQLiteDemo extends Component {
         <Text style={listStyles.liText}>{entry}</Text>
       </View>
     </View>)
-  }
+  };
 
   render(){
     let ds = new ListView.DataSource({rowHasChanged: (row1, row2) => row1 !== row2 });
@@ -240,7 +240,7 @@ class SQLiteDemo extends Component {
         style={listStyles.liContainer}/>
     </View>);
   }
-};
+}
 
 var listStyles = StyleSheet.create({
   li: {
