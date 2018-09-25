@@ -36,9 +36,6 @@
     "xcode": "0.8.9"
   },
   "rnpm": {
-    "commands": {
-      "postlink": "node_modules/react-native-sqlite-storage/scripts/rnpm-postlink.js"
-    },
     "ios": {
       "project": "src/ios/SQLite.xcodeproj"
     }
