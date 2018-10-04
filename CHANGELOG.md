@@ -1,5 +1,10 @@
 # Version History
 
+v3.3.7
+ 1. Remove rnpm-postlink (#292)
+ 2. Use correct parameters for SQLite.openDatabase (#291)
+ 3. Pulling SDK versions from root project (#287) - Android only
+ 
 v3.3.6
  1. Fix INTEGER column value overflow.
  
