@@ -1,6 +1,6 @@
 {
   "name": "react-native-sqlite-storage",
-  "version": "3.3.6",
+  "version": "3.3.7",
   "description": "SQLite3 bindings for React Native (Android & iOS)",
   "main": "sqlite.js",
   "scripts": {
