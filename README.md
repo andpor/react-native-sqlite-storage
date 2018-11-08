@@ -1,5 +1,5 @@
 # react-native-sqlite-storage
-SQLite3 Native Plugin for React Native for both Android (Classic and Native) and iOS
+SQLite3 Native Plugin for React Native for both Android (Classic and Native), iOS and Windows
 
 Foundation of this library is based on Chris Brody's Cordova SQLite plugin.
 
