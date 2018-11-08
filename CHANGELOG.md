@@ -1,5 +1,8 @@
 # Version History
-
+v3.3.8
+ 1. UWP implementation for SqliteStorage (https://github.com/andpor/react-native-sqlite-storage/pull/302)
+ 2. Fix the window is not defined (https://github.com/andpor/react-native-sqlite-storage/pull/295)
+ 
 v3.3.7
  1. Remove rnpm-postlink (#292)
  2. Use correct parameters for SQLite.openDatabase (#291)
