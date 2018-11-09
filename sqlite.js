@@ -57,10 +57,9 @@ function createPromiseRuntime() {
         args.push([]);
       }
       var promise = new Promise((resolve,reject) => {
+        let retValue;
         let success = function(...args){
-          if (!returnValueExpected) {
-           return resolve(args);
-          }
+          return resolve(returnValueExpected ? retValue : args)
         };
         let error = function(err){
           console.log('error: ',fn,...args,arguments);
@@ -69,10 +68,7 @@ function createPromiseRuntime() {
           }
           return false;
         };
-        var retValue = originalFn.call(this,...args,reverseCallbacks ? error : success, reverseCallbacks ? success : error);
-        if (returnValueExpected){
-          return resolve(retValue);
-        }
+        retValue = originalFn.call(this,...args,reverseCallbacks ? error : success, reverseCallbacks ? success : error);
       });
 
       return promise;
