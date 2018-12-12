@@ -1,4 +1,7 @@
 # Version History
+v3.3.9
+ 1. Gradle upgrade to 3.1.4 and addition of google repo (https://github.com/andpor/react-native-sqlite-storage/issues/294)
+ 
 v3.3.8
  1. UWP implementation for SqliteStorage (https://github.com/andpor/react-native-sqlite-storage/pull/302)
  2. Fix the window is not defined (https://github.com/andpor/react-native-sqlite-storage/pull/295)
