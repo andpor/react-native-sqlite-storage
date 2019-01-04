@@ -637,6 +637,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
 
                 // INSERT:
                 else if (queryType == QueryType.insert && queryParams != null) {
+                    FLog.d("executeSqlBatch","INSERT");
                     needRawQuery = false;
 
                     SQLiteStatement myStatement = mydb.compileStatement(query);
@@ -663,6 +664,25 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                         FLog.e(TAG, "SQLiteDatabase.executeInsert() failed", ex);
                     } finally {
                         closeQuietly(myStatement);
+                    }
+                }
+
+                // ALTER:
+                else if (queryType == QueryType.alter) {
+                    FLog.d("executeSqlBatch","ALTER");
+                    needRawQuery = false;
+
+                    try {
+                        mydb.execSQL(query);
+
+                        queryResult = Arguments.createMap();
+                        queryResult.putInt("rowsAffected", 0);
+                    } catch (SQLiteException ex) {
+                        // report error result with the error message
+                        // could be constraint violation or some other error
+                        ex.printStackTrace();
+                        errorMessage = ex.getMessage();
+                        FLog.v("executeSqlBatch", "SQLiteDatabase.execSQL(): Error=" + errorMessage);
                     }
                 }
 
@@ -1027,6 +1047,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
         insert,
         delete,
         select,
+        alter,
         begin,
         commit,
         rollback,

@@ -172,6 +172,25 @@ class SQLiteAndroidDatabase {
                     }
                 }
 
+                // ALTER:
+                else if (queryType == QueryType.alter) {
+                    FLog.d("executeSqlBatch","ALTER");
+                    needRawQuery = false;
+
+                    try {
+                        mydb.execSQL(query);
+
+                        queryResult = Arguments.createMap();
+                        queryResult.putInt("rowsAffected", 0);
+                    } catch (SQLiteException ex) {
+                        // report error result with the error message
+                        // could be constraint violation or some other error
+                        ex.printStackTrace();
+                        errorMessage = ex.getMessage();
+                        FLog.v("executeSqlBatch", "SQLiteDatabase.execSQL(): Error=" + errorMessage);
+                    }
+                }
+
                 else if (queryType == QueryType.begin) {
                     needRawQuery = false;
                     try {
@@ -367,6 +386,7 @@ class SQLiteAndroidDatabase {
         insert,
         delete,
         select,
+        alter,
         begin,
         commit,
         rollback,
