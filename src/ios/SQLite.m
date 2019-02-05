@@ -218,6 +218,7 @@ RCT_EXPORT_METHOD(open: (NSDictionary *) options success:(RCTResponseSenderBlock
         
           // for SQLCipher version:
           NSString *dbkey = options[@"key"];
+          if (dbkey == nil) dbkey = @"";
           const char *key = NULL;
           if (dbkey != NULL) key = [dbkey UTF8String];
           if (key != NULL) sqlite3_key(db, key, strlen(key));
