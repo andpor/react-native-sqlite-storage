@@ -156,6 +156,7 @@ dependencies {
 #### Step 4 - Register React Package (this should work on React version but if it does not , try the ReactActivity based approach. Note: for version 3.0.0 and below you would have to pass in the instance of your Activity to the SQLitePluginPackage constructor
 
 ```java
+// file: android/app/src/main/java/com/<YourProjectName>/MainApplication.java
 ...
 import org.pgsqlite.SQLitePluginPackage;
 
@@ -187,6 +188,7 @@ public class MainActivity extends Activity implements DefaultHardwareBackBtnHand
 Alternative approach on newer versions of React Native (0.18+). Note: for version 3.0.0 and below you would have to pass in the instance of your Activity to the SQLitePluginPackage constructor
 
 ```java
+// file: android/app/src/main/java/com/<YourProjectName>/MainApplication.java
 import org.pgsqlite.SQLitePluginPackage;
 
 public class MainApplication extends Application implements ReactApplication {
