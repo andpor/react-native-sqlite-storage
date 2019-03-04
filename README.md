@@ -149,7 +149,7 @@ project(':react-native-sqlite-storage').projectDir = new File(rootProject.projec
 
 dependencies {
     ...
-    compile project(':react-native-sqlite-storage')
+    implementation project(':react-native-sqlite-storage')
 }
 ```
 
