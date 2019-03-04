@@ -1,4 +1,7 @@
 # Version History
+v3.3.10
+ 1. Fix package org.pgsqlite not found error for RN 0.58.4 (https://github.com/andpor/react-native-sqlite-storage/pull/324)
+ 
 v3.3.9
  1. Gradle upgrade to 3.1.4 and addition of google repo (https://github.com/andpor/react-native-sqlite-storage/issues/294)
  
