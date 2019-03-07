@@ -32,9 +32,6 @@
   "peerDependencies": {
     "react-native": ">=0.14.0"
   },
-  "dependencies": {
-    "xcode": "0.8.9"
-  },
   "rnpm": {
     "ios": {
       "project": "src/ios/SQLite.xcodeproj"
