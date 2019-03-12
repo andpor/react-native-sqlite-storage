@@ -82,3 +82,5 @@ gradle-app.setting
 !gradle-wrapper.jar
 
 instructions/
+
+*.test.js
