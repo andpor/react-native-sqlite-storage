@@ -1,12 +1,16 @@
 module.exports = {
 	dependency: {
 		platforms: {
-			ios: {
-				project: 'src/ios/SQLite.xcodeproj'
-			},
-			android: {
-				sourceDir: 'src/android'
-			}
+			ios: {},
+			android: {}
+		}
+	},
+	project: {
+		ios: {
+			project: 'src/ios/SQLite.xcodeproj'
+		},
+		android: {
+			sourceDir: 'src/android'
 		}
 	}
 }
