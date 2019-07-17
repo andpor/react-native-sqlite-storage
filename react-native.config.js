@@ -1,10 +1,10 @@
 module.exports = {
-	project: {
-		ios: {
-			project: 'src/ios/SQLite.xcodeproj'
-		},
-		android: {
-			sourceDir: 'src/android'
-		}
-	}
+  project: {
+    ios: {
+      project: 'src/ios/SQLite.xcodeproj'
+    },
+    android: {
+      sourceDir: 'src/android'
+    }
+  }
 }
