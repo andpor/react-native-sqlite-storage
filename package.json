@@ -4,7 +4,7 @@
   "description": "SQLite3 bindings for React Native (Android & iOS)",
   "main": "sqlite.js",
   "scripts": {
-    "test": "echo \"Error: no test specified yet\" && exit 1"
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -39,5 +39,9 @@
     "android": {
       "sourceDir": "src/android"
     }
+  },
+  "devDependencies": {
+    "@babel/preset-flow": "^7.0.0",
+    "jest": "^24.4.0"
   }
 }
