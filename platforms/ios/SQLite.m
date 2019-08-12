@@ -119,6 +119,14 @@ RCT_EXPORT_MODULE();
         [appDBPaths setObject: libs forKey:@"nosync"];
       }
     }
+
+    NSURL* groupURL = [[NSFileManager defaultManager] containerURLForSecurityApplicationGroupIdentifier:@"group.io.worldbrain.memex"];
+    if (groupURL != NULL)
+    {
+       NSString* shared = groupURL.path;
+       RCTLog(@"Detected Shared path: %@", shared);
+       [appDBPaths setObject: shared forKey:@"shared"];
+    }
   }
   return self;
 }
