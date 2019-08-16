@@ -46,7 +46,7 @@ function createCallbackRuntime() {
     let [returnValueExpected,prototype,fn,argsNeedPadding,reverseCallbacks,rejectOnError]= entry;
     plugin[prototype].prototype[fn] = originalFns[prototype + "." + fn];
   });
-  console.log("Callback based runtime ready");
+  plugin.log("Callback based runtime ready");
 }
 function createPromiseRuntime() {
   config.forEach(entry => {
@@ -63,7 +63,7 @@ function createPromiseRuntime() {
           }
         };
         let error = function(err){
-          console.log('error: ',fn,...args,arguments);
+          plugin.log('error: ',fn,...args,arguments);
           if (rejectOnError) {
             reject(err);
           }
@@ -78,7 +78,7 @@ function createPromiseRuntime() {
       return promise;
     }
   });
-  console.log("Promise based runtime ready");
+  plugin.log("Promise based runtime ready");
 }
 SQLiteFactory.prototype.enablePromise = enablePromiseRuntime;
 
