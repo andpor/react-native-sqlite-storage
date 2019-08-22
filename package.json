@@ -31,13 +31,5 @@
   "homepage": "https://github.com/andpor/react-native-sqlite-storage",
   "peerDependencies": {
     "react-native": ">=0.14.0"
-  },
-  "rnpm": {
-    "ios": {
-      "project": "src/ios/SQLite.xcodeproj"
-    },
-    "android": {
-      "sourceDir": "src/android"
-    }
   }
 }

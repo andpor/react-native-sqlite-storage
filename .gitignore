@@ -55,6 +55,7 @@ xcuserdata
 *.xcuserstate
 *.xcscmblueprint
 *.xcscheme
+.vscode
 
 android/.gradle/
 # node.js
