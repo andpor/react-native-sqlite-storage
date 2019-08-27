@@ -120,7 +120,8 @@ RCT_EXPORT_MODULE();
       }
     }
 
-    NSURL* groupURL = [[NSFileManager defaultManager] containerURLForSecurityApplicationGroupIdentifier:@"group.io.worldbrain.memex"];
+    NSString *groupName = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"AppGroupName"];
+    NSURL *groupURL = [[NSFileManager defaultManager] containerURLForSecurityApplicationGroupIdentifier:groupName];
     if (groupURL != NULL)
     {
        NSString* shared = groupURL.path;
