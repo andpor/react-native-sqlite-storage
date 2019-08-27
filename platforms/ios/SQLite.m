@@ -234,6 +234,9 @@ RCT_EXPORT_METHOD(open: (NSDictionary *) options success:(RCTResponseSenderBlock
             }
           }
 #endif
+
+          sqlite3_exec(db, "PRAGMA journal_mode=WAL;", NULL, NULL, NULL);
+
           // Attempt to read the SQLite master table [to support SQLCipher version]:
           if(sqlite3_exec(db, (const char*)"SELECT count(*) FROM sqlite_master;", NULL, NULL, NULL) == SQLITE_OK) {
             NSValue *dbPointer = [NSValue valueWithPointer:db];
