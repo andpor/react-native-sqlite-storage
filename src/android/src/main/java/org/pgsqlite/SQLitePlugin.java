@@ -9,10 +9,13 @@ package org.pgsqlite;
 
 import android.annotation.SuppressLint;
 import android.database.Cursor;
+import android.database.CursorWindow;
+import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteStatement;
 import android.content.Context;
+import android.os.Build;
 import android.util.Base64;
 
 import java.io.Closeable;
@@ -54,6 +57,8 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
 
     private static final Pattern FIRST_WORD = Pattern.compile("^\\s*(\\S+)",
             Pattern.CASE_INSENSITIVE);
+
+    private static final long CURSOR_WINDOW_SIZE_BYTES = 100 * 1024 * 1024;
 
     /**
      * Multiple database runner map (static).
@@ -807,7 +812,11 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                 FLog.e(TAG, "SQLitePlugin.executeSql[Batch]() failed", ex);
                 throw ex;
             }
-
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && cur instanceof SQLiteCursor) {
+                final SQLiteCursor sqliteCursor = (SQLiteCursor) cur;
+                final CursorWindow cursorWindow = new CursorWindow(null, CURSOR_WINDOW_SIZE_BYTES);
+                sqliteCursor.setWindow(cursorWindow);
+            }
             // If query result has rows
             if (cur != null && cur.moveToFirst()) {
                 WritableArray rowsArrayResult = Arguments.createArray();
