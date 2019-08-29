@@ -1,4 +1,7 @@
 # Version History
+v4.1.0
+ 1. New native SQLite libraries for Android. Dropping support for armeabi.
+ 
 v4.0.0
  1. RN 0.60 compatibility (https://github.com/andpor/react-native-sqlite-storage/pull/361)
  
