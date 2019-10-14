@@ -5,7 +5,7 @@ module.exports = {
 				project: './platforms/ios/SQLite.xcodeproj'
 			},
 			android: {
-				sourceDir: './platforms/android'
+				sourceDir: './platforms/android-native'
 			}
 		}
 	}
