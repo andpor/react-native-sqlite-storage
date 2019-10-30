@@ -138,7 +138,7 @@ npm install --save react-native-sqlite-storage
 ...
 
 include ':react-native-sqlite-storage'
-project(':react-native-sqlite-storage').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-sqlite-storage/src/android')
+project(':react-native-sqlite-storage').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-sqlite-storage/platforms/android')
 ```
 
 #### Step 3 - Update app module Gradle Build script (located under Gradle Settings in Project Panel)
