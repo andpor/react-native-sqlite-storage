@@ -14,22 +14,28 @@ There are sample apps provided in test directory that can be used in with the Aw
 
 Please let me know your projects that use these SQLite React Native modules. I will list them in the reference section. If there are any features that you think would benefit this library please post them.
 
-The library has been tested with React 16.2 (and earlier) and XCode 7,8,9 - it works fine out of the box without any need for tweaks or code changes. For XCode 7,8 vs. XCode 6 the only difference is that sqlite ios library name suffix is tbd instead of dylib. 
+The library has been tested with React 16.2 (and earlier) and XCode 7,8,9 - it works fine out of the box without any need for tweaks or code changes. For XCode 7,8 vs. XCode 6 the only difference is that sqlite ios library name suffix is tbd instead of dylib.
 
 Version 3.2 is the first version compatible with RN 0.40.
 
+# Installation
+```
+  npm install --save react-native-sqlite-storage
+```
+Then follow the instructions for your platform to link react-native-sqlite-storage into your project
 
-# How to use (iOS):
+## iOS
+#### Standard Method
+** React Native 0.60 and above **
+Run `cd ios && pod install && cd ..`. Linking is not required in React Native 0.60 and above
+
+** React Native 0.59 and below **
 
 #### Step 1. Install Dependencies
 
 ##### With CocoaPods:
 
-This command should be executed in the root directory of your RN project
-```shell
-npm install --save react-native-sqlite-storage
-```
-Then add this to your Podfile which should be located inside the ios project subdirectory
+Add this to your Podfile which should be located inside the ios project subdirectory
 ```ruby
 pod 'React', :path => '../node_modules/react-native'
 pod 'react-native-sqlite-storage', :path => '../node_modules/react-native-sqlite-storage'
@@ -38,13 +44,12 @@ Or use the sample Podfile included in the package by copying it over to ios subd
 
 Refresh the Pods installation
 ```ruby
-pod install 
+pod install
 ```
 OR
 ```ruby
-pod update 
+pod update
 ```
-
 
 Done, skip to Step 2.
 
@@ -52,7 +57,6 @@ Done, skip to Step 2.
 
 This command should be executed in the root directory of your RN project
 ```shell
-npm install --save react-native-sqlite-storage
 react-native link
 ```
 
@@ -126,22 +130,45 @@ db.transaction((tx) => {
 
 # How to use (Android):
 
-#### Step 1 - NPM Install
+** React Native 0.60 and above **
+If you would like to use the devices SQLite there are no extra steps.
+However, if you would like to use the SQLite bundled with this library (includes support for FTS5), add the following to your `react-native.config.js`
 
-```shell
-npm install --save react-native-sqlite-storage
+```js
+module.exports = {
+  ...,
+  dependencies: {
+    ...,
+    "react-native-sqlite-storage": {
+      platforms: {
+        android: {
+          sourceDir:
+            "../node_modules/react-native-sqlite-storage/platforms/android-native",
+          packageImportPath: "import io.liteglue.SQLitePluginPackage;",
+          packageInstance: "new SQLitePluginPackage()"
+        }
+      }
+    }
+    ...
+  }
+  ...
+};
 ```
-#### Step 2 - Update Gradle Settings (located under Gradle Settings in Project Panel)
+
+** React Native 0.59 and below **
+
+#### Step 1 - Update Gradle Settings (located under Gradle Settings in Project Panel)
 
 ```gradle
 // file: android/settings.gradle
 ...
 
 include ':react-native-sqlite-storage'
-project(':react-native-sqlite-storage').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-sqlite-storage/src/android')
+project(':react-native-sqlite-storage').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-sqlite-storage/platforms/android') // react-native-sqlite-storage >= 4.0.0
+// IMPORTANT: if you are working with a version less than 4.0.0 the project directory is '../node_modules/react-native-sqlite-storage/src/android'
 ```
 
-#### Step 3 - Update app module Gradle Build script (located under Gradle Settings in Project Panel)
+#### Step 2 - Update app module Gradle Build script (located under Gradle Settings in Project Panel)
 
 ```gradle
 // file: android/app/build.gradle
@@ -153,7 +180,7 @@ dependencies {
 }
 ```
 
-#### Step 4 - Register React Package (this should work on React version but if it does not , try the ReactActivity based approach. Note: for version 3.0.0 and below you would have to pass in the instance of your Activity to the SQLitePluginPackage constructor
+#### Step 3 - Register React Package (this should work on React version but if it does not , try the ReactActivity based approach. Note: for version 3.0.0 and below you would have to pass in the instance of your Activity to the SQLitePluginPackage constructor
 
 ```java
 ...
@@ -205,7 +232,7 @@ public class MainApplication extends Application implements ReactApplication {
 }
 ```
 
-#### Step 5 - Require and use in Javascript - see full examples (callbacks and Promise) in test directory.
+#### Step 4 - Require and use in Javascript - see full examples (callbacks and Promise) in test directory.
 
 ```js
 // file: index.android.js
