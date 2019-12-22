@@ -14,7 +14,7 @@ There are sample apps provided in test directory that can be used in with the Aw
 
 Please let me know your projects that use these SQLite React Native modules. I will list them in the reference section. If there are any features that you think would benefit this library please post them.
 
-The library has been tested with React 16.2 (and earlier) and XCode 7,8,9 - it works fine out of the box without any need for tweaks or code changes. For XCode 7,8 vs. XCode 6 the only difference is that sqlite ios library name suffix is tbd instead of dylib. 
+The library has been tested with React 16.2 (and earlier) and XCode 7,8,9 - it works fine out of the box without any need for tweaks or code changes. For XCode 7,8 vs. XCode 6 the only difference is that sqlite ios library name suffix is tbd instead of dylib.
 
 Version 3.2 is the first version compatible with RN 0.40.
 
@@ -44,11 +44,11 @@ Or use the sample Podfile included in the package by copying it over to ios subd
 
 Refresh the Pods installation
 ```ruby
-pod install 
+pod install
 ```
 OR
 ```ruby
-pod update 
+pod update
 ```
 
 Done, skip to Step 2.
@@ -164,7 +164,8 @@ module.exports = {
 ...
 
 include ':react-native-sqlite-storage'
-project(':react-native-sqlite-storage').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-sqlite-storage/src/android')
+project(':react-native-sqlite-storage').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-sqlite-storage/platforms/android') // react-native-sqlite-storage >= 4.0.0
+// IMPORTANT: if you are working with a version less than 4.0.0 the project directory is '../node_modules/react-native-sqlite-storage/src/android'
 ```
 
 #### Step 2 - Update app module Gradle Build script (located under Gradle Settings in Project Panel)
