@@ -312,6 +312,7 @@ where the `location` option may be set to one of the following choices:
 - `default`: `Library/LocalDatabase` subdirectory - *NOT* visible to iTunes and *NOT* backed up by iCloud
 - `Library`: `Library` subdirectory - backed up by iCloud, *NOT* visible to iTunes
 - `Documents`: `Documents` subdirectory - visible to iTunes and backed up by iCloud
+- `Shared`:  app group's shared container - *see next section*
 
 The original webSql style openDatabase still works and the location will implicitly default to 'default' option:
 
@@ -319,6 +320,34 @@ The original webSql style openDatabase still works and the location will implici
 SQLite.openDatabase("myDatabase.db", "1.0", "Demo", -1);
 ```
 
+## Opening a database in an App Group's Shared Container (iOS)
+
+If you have an iOS app extension which needs to share access to the same DB instance as your main app, you must use the shared container of a registered app group.
+
+Assuming you have already set up an app group and turned on the "App Groups" entitlement of both the main app and app extension, setting them to the same app group name, the following extra steps must be taken:
+
+#### Step 1 - supply your app group name in all needed `Info.plist`s
+
+In both `ios/MY_APP_NAME/Info.plist` and `ios/MY_APP_EXT_NAME/Info.plist` (along with any other app extensions you may have), you simply need to add the `AppGroupName` key to the main dictionary with your app group name as the string value:
+
+```xml
+<plist version="1.0">
+<dict>
+  <!-- ... -->
+  <key>AppGroupName</key>
+  <string>MY_APP_GROUP_NAME</string>
+  <!-- ... -->
+</dict>
+</plist>
+```
+
+#### Step 2 - set shared database location
+
+When calling `SQLite.openDatabase` in your React Native code, you need to set the `location` param to `'Shared'`:
+
+```js
+SQLite.openDatabase({name: 'my.db', location: 'Shared'}, successcb, errorcb);
+```
 
 ## Importing a pre-populated database.
 

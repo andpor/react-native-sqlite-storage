@@ -119,6 +119,15 @@ RCT_EXPORT_MODULE();
         [appDBPaths setObject: libs forKey:@"nosync"];
       }
     }
+
+    NSString *groupName = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"AppGroupName"];
+    NSURL *groupURL = [[NSFileManager defaultManager] containerURLForSecurityApplicationGroupIdentifier:groupName];
+    if (groupURL != NULL)
+    {
+       NSString* shared = groupURL.path;
+       RCTLog(@"Detected Shared path: %@", shared);
+       [appDBPaths setObject: shared forKey:@"shared"];
+    }
   }
   return self;
 }
@@ -226,6 +235,9 @@ RCT_EXPORT_METHOD(open: (NSDictionary *) options success:(RCTResponseSenderBlock
             }
           }
 #endif
+
+          sqlite3_exec(db, "PRAGMA journal_mode=WAL;", NULL, NULL, NULL);
+
           // Attempt to read the SQLite master table [to support SQLCipher version]:
           if(sqlite3_exec(db, (const char*)"SELECT count(*) FROM sqlite_master;", NULL, NULL, NULL) == SQLITE_OK) {
             NSValue *dbPointer = [NSValue valueWithPointer:db];
