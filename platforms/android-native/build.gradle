@@ -36,9 +36,13 @@ android {
 
 repositories {
     mavenCentral()
+    google()
+    maven {
+        url "https://maven.google.com"
+    }
 }
 
 dependencies {
-    implementation 'com.facebook.react:react-native:0.14.+'
+    implementation 'com.facebook.react:react-native:+'
     implementation files('libs/sqlite-connector.jar')
 }
