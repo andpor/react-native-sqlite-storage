@@ -24,6 +24,12 @@ Version 3.2 is the first version compatible with RN 0.40.
 ```
 Then follow the instructions for your platform to link react-native-sqlite-storage into your project
 
+## Promises
+To enable promises, run 
+```javascript
+SQLite.enablePromise(true);
+```
+
 ## iOS
 #### Standard Method
 ** React Native 0.60 and above **
