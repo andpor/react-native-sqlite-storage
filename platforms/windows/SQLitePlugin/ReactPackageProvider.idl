@@ -1,4 +1,4 @@
-namespace SQLitePluginModule
+namespace SQLitePlugin
 {
     [webhosthidden]
     [default_interface]
