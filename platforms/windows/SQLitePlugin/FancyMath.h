@@ -7,25 +7,25 @@
 
 namespace SQLitePlugin
 {
-    REACT_MODULE(SQLitePlugin);
+    REACT_STRUCT(OpenOptions);
+    struct OpenOptions
+    {
+        REACT_FIELD(Name, L"name")
+        // Path at which to store the database
+        std::string Name;
+
+        REACT_FIELD(AssetFileName, L"assetFilename")
+        // Optional. When creating the DB, uses this file as the initial state.
+        std::string AssetFileName;
+
+        REACT_FIELD(ReadOnly, L"readOnly")
+        bool ReadOnly;
+    };
+
+    REACT_MODULE(SQLitePlugin, L"SQLite");
     struct SQLitePlugin
     {
-        REACT_STRUCT(OpenOptions)
-        struct OpenOptions
-        {
-            REACT_FIELD(Name)
-            // Path at which to store the database
-            std::string Name;
-
-            REACT_FIELD(AssetFileName)
-            // Optional. When creating the DB, uses this file as the initial state.
-            std::string AssetFileName;
-
-            REACT_FIELD(ReadOnly)
-            bool ReadOnly;
-        };
-
-        REACT_METHOD(open);
+        REACT_METHOD(open, L"open");
         void open(
             OpenOptions options,
             std::function<void(std::string)>&& onSuccess,
@@ -36,7 +36,6 @@ namespace SQLitePlugin
             if (dbFileName == nullptr) {
                 onFailure("You must specify database name");
             }
-
 
             onSuccess("TwoCallbacksMethod succeeded");
 
