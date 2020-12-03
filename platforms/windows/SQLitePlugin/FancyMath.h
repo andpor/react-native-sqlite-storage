@@ -9,16 +9,20 @@
 #include <winrt/Windows.Foundation.Collections.h>
 #include <winsqlite/winsqlite3.h>
 
+
+using namespace winrt;
 using namespace winrt::Windows::Foundation;
 using namespace winrt::Windows::Storage;
 namespace SQLitePlugin
 {
-    class OpenDB
+    struct OpenDB
     {
         sqlite3* Handle;
-        std::string Path;
+        hstring Path;
+        OpenDB() {
 
-        OpenDB(sqlite3* handle, std::string path)
+        };
+        OpenDB(sqlite3* handle, hstring path)
         {
             Handle = handle;
             Path = path;
@@ -40,11 +44,19 @@ namespace SQLitePlugin
             bool ReadOnly;
     };
 
+    REACT_STRUCT(CloseOptions);
+    struct CloseOptions
+    {
+        REACT_FIELD(Path, L"path")
+        // Path at which the database is located
+        std::string Path;
+    };
+
 
     REACT_MODULE(SQLitePlugin, L"SQLite");
     struct SQLitePlugin
     {
-        std::map<std::string, OpenDB> OpenDBs;
+        std::map<hstring, OpenDB> OpenDBs;
 
         IAsyncOperation<StorageFile> ResolveAssetFile(std::string& assetFilePath, std::string& dbFileName)
         {
@@ -72,6 +84,17 @@ namespace SQLitePlugin
             }
         }
 
+        hstring ResolveDbFilePath(hstring dbFileName)
+        {
+            return ApplicationData::Current().LocalFolder().Path() + L"\\" + dbFileName;
+        }
+
+        IAsyncOperation<StorageFile> CopyDbAsync(StorageFile srcDbFile, hstring destDbFileName)
+        {
+            // This implementation is closely related to ResolveDbFilePath.
+            return srcDbFile.CopyAsync(ApplicationData::Current().LocalFolder(), destDbFileName, NameCollisionOption::FailIfExists);
+        }
+
         REACT_METHOD(open, L"open");
         winrt::fire_and_forget open(
             OpenOptions options,
@@ -87,7 +110,10 @@ namespace SQLitePlugin
                 return;
             }
 
-            if (OpenDBs.find(dbFileName) != OpenDBs.end())
+            hstring absoluteDbPath;
+            absoluteDbPath = ResolveDbFilePath(to_hstring(dbFileName));
+
+            if (OpenDBs.find(absoluteDbPath) != OpenDBs.end())
             {
                 onSuccess("Database opened");
                 return;
@@ -101,17 +127,93 @@ namespace SQLitePlugin
                 {
                     assetFile = co_await assetFileOp;
                 }
-                catch (winrt::hresult_error const& ex)
+                catch (hresult_error const& ex)
                 {
                     onFailure("Unable to open asset file: " + winrt::to_string(ex.message()));
                     co_return;
                 }
             }
             
+            int openFlags = 0;
+            openFlags |= SQLITE_OPEN_NOMUTEX;
 
 
-            onSuccess("TwoCallbacksMethod succeeded");
+            if (options.ReadOnly && assetFileOp != nullptr)
+            {
+                openFlags |= SQLITE_OPEN_READONLY;
+                absoluteDbPath = assetFile.Path();
+            }
+            else
+            {
+                openFlags |= SQLITE_OPEN_READWRITE;
+                openFlags |= SQLITE_OPEN_CREATE;
 
+                if (assetFileOp != nullptr)
+                {
+                    try
+                    {
+                        co_await CopyDbAsync(assetFile, to_hstring(dbFileName));
+                    }
+                    catch (hresult_error const& ex)
+                    {
+                        // CopyDbAsync throws when the file already exists.
+                        onFailure("Unable to copy asset file: " + winrt::to_string(ex.message()));
+                        co_return;
+                    }
+                }
+            }
+
+            sqlite3* dbHandle = nullptr;
+
+            int result = sqlite3_open_v2(to_string(absoluteDbPath).c_str(), &dbHandle, openFlags, nullptr);
+            if (result == SQLITE_OK)
+            {
+                OpenDBs[absoluteDbPath] = OpenDB(dbHandle, absoluteDbPath);
+                onSuccess("Database opened");
+            }
+            else
+            {
+                onFailure("Unable to open DB");
+            }
+
+        }
+
+        REACT_METHOD(close, L"close");
+        void close(
+            CloseOptions options,
+            std::function<void(std::string)> onSuccess,
+            std::function<void(std::string)> onFailure) noexcept
+        {
+            std::string dbFileName = options.Path;
+
+            if (dbFileName == nullptr)
+            {
+                onFailure("You must specify database path");
+                return;
+            }
+
+            hstring absoluteDbPath;
+            absoluteDbPath = ResolveDbFilePath(to_hstring(dbFileName));
+
+            if (OpenDBs.find(absoluteDbPath) == OpenDBs.end())
+            {
+                onFailure("Specified db was not open");
+                return;
+            }
+
+            OpenDB db = OpenDBs[absoluteDbPath];
+            OpenDBs.erase(absoluteDbPath);
+
+            if (sqlite3_close(db.Handle) != SQLITE_OK)
+            {
+                // C# implementation returns success if the DB failed to close
+                // Matching the existing implementation
+                std::string debugMessage = "SQLitePluginModule: Error closing database: " + to_string(absoluteDbPath) + "\n";
+                OutputDebugStringA(debugMessage.c_str());
+            }
+
+            onSuccess("DB Closed");
+            return;
         }
     };
 }
