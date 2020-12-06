@@ -8,7 +8,9 @@
 #include <winrt/Microsoft.ReactNative.h>
 #include <winrt/Windows.Foundation.Collections.h>
 #include <winsqlite/winsqlite3.h>
+#include <ppltasks.h>
 
+#include "TaskQueue.h"
 
 using namespace winrt;
 using namespace winrt::Windows::Foundation;
@@ -48,8 +50,8 @@ namespace SQLitePlugin
     struct CloseOptions
     {
         REACT_FIELD(Path, L"path")
-        // Path at which the database is located
-        std::string Path;
+            // Path at which the database is located
+            std::string Path;
     };
 
 
@@ -57,8 +59,9 @@ namespace SQLitePlugin
     struct SQLitePlugin
     {
         std::map<hstring, OpenDB> OpenDBs;
+        TaskQueue SyncTaskQueue;
 
-        IAsyncOperation<StorageFile> ResolveAssetFile(std::string& assetFilePath, std::string& dbFileName)
+        static IAsyncOperation<StorageFile> ResolveAssetFile(const std::string& assetFilePath, std::string& dbFileName)
         {
             if (assetFilePath == nullptr || assetFilePath.length() == 0)
             {
@@ -84,12 +87,12 @@ namespace SQLitePlugin
             }
         }
 
-        hstring ResolveDbFilePath(hstring dbFileName)
+        static hstring ResolveDbFilePath(hstring dbFileName)
         {
             return ApplicationData::Current().LocalFolder().Path() + L"\\" + dbFileName;
         }
 
-        IAsyncOperation<StorageFile> CopyDbAsync(StorageFile srcDbFile, hstring destDbFileName)
+        static IAsyncOperation<StorageFile> CopyDbAsync(StorageFile srcDbFile, hstring destDbFileName)
         {
             // This implementation is closely related to ResolveDbFilePath.
             return srcDbFile.CopyAsync(ApplicationData::Current().LocalFolder(), destDbFileName, NameCollisionOption::FailIfExists);
@@ -101,119 +104,137 @@ namespace SQLitePlugin
             std::function<void(std::string)> onSuccess,
             std::function<void(std::string)> onFailure) noexcept
         {
-
-            std::string dbFileName = options.Name;
-
-            if (dbFileName == nullptr)
+            // Schedule the task on the UI thread
+            SyncTaskQueue.Queue(concurrency::create_task(
+                [options, onSuccess, onFailure, this]()
             {
-                onFailure("You must specify database name");
-                return;
-            }
+                std::string dbFileName = options.Name;
 
-            hstring absoluteDbPath;
-            absoluteDbPath = ResolveDbFilePath(to_hstring(dbFileName));
-
-            if (OpenDBs.find(absoluteDbPath) != OpenDBs.end())
-            {
-                onSuccess("Database opened");
-                return;
-            }
-
-            IAsyncOperation<StorageFile> assetFileOp = ResolveAssetFile(options.AssetFileName, dbFileName);
-            StorageFile assetFile = nullptr;
-            if (assetFileOp != nullptr)
-            {
-                try
+                if (dbFileName == nullptr)
                 {
-                    assetFile = co_await assetFileOp;
+                    onFailure("You must specify database name");
+                    return;
                 }
-                catch (hresult_error const& ex)
+
+                hstring absoluteDbPath;
+                absoluteDbPath = ResolveDbFilePath(to_hstring(dbFileName));
+
+                if (OpenDBs.find(absoluteDbPath) != OpenDBs.end())
                 {
-                    onFailure("Unable to open asset file: " + winrt::to_string(ex.message()));
-                    co_return;
+                    onSuccess("Database opened");
+                    return;
                 }
-            }
-            
-            int openFlags = 0;
-            openFlags |= SQLITE_OPEN_NOMUTEX;
 
-
-            if (options.ReadOnly && assetFileOp != nullptr)
-            {
-                openFlags |= SQLITE_OPEN_READONLY;
-                absoluteDbPath = assetFile.Path();
-            }
-            else
-            {
-                openFlags |= SQLITE_OPEN_READWRITE;
-                openFlags |= SQLITE_OPEN_CREATE;
-
+                IAsyncOperation<StorageFile> assetFileOp = ResolveAssetFile(options.AssetFileName, dbFileName);
+                StorageFile assetFile = nullptr;
                 if (assetFileOp != nullptr)
                 {
                     try
                     {
-                        co_await CopyDbAsync(assetFile, to_hstring(dbFileName));
+                        assetFile = assetFileOp.GetResults();
                     }
                     catch (hresult_error const& ex)
                     {
-                        // CopyDbAsync throws when the file already exists.
-                        onFailure("Unable to copy asset file: " + winrt::to_string(ex.message()));
-                        co_return;
+                        onFailure("Unable to open asset file: " + winrt::to_string(ex.message()));
+                        return;
                     }
                 }
-            }
 
-            sqlite3* dbHandle = nullptr;
+                int openFlags = 0;
+                openFlags |= SQLITE_OPEN_NOMUTEX;
 
-            int result = sqlite3_open_v2(to_string(absoluteDbPath).c_str(), &dbHandle, openFlags, nullptr);
-            if (result == SQLITE_OK)
-            {
-                OpenDBs[absoluteDbPath] = OpenDB(dbHandle, absoluteDbPath);
-                onSuccess("Database opened");
-            }
-            else
-            {
-                onFailure("Unable to open DB");
-            }
+
+                if (options.ReadOnly && assetFileOp != nullptr)
+                {
+                    openFlags |= SQLITE_OPEN_READONLY;
+                    absoluteDbPath = assetFile.Path();
+                }
+                else
+                {
+                    openFlags |= SQLITE_OPEN_READWRITE;
+                    openFlags |= SQLITE_OPEN_CREATE;
+
+                    if (assetFileOp != nullptr)
+                    {
+                        try
+                        {
+                            CopyDbAsync(assetFile, to_hstring(dbFileName)).GetResults();
+                        }
+                        catch (hresult_error const& ex)
+                        {
+                            // CopyDbAsync throws when the file already exists.
+                            onFailure("Unable to copy asset file: " + winrt::to_string(ex.message()));
+                            return;
+                        }
+                    }
+                }
+
+                sqlite3* dbHandle = nullptr;
+
+                int result = sqlite3_open_v2(to_string(absoluteDbPath).c_str(), &dbHandle, openFlags, nullptr);
+                if (result == SQLITE_OK)
+                {
+                    OpenDBs[absoluteDbPath] = OpenDB(dbHandle, absoluteDbPath);
+                    onSuccess("Database opened");
+                }
+                else
+                {
+                    onFailure("Unable to open DB");
+                }
+            }));
+
+            // Return the UI thread and execute work in the background if neede
+            co_await resume_background();
+
+            SyncTaskQueue.Run();
 
         }
 
         REACT_METHOD(close, L"close");
-        void close(
+        winrt::fire_and_forget close(
             CloseOptions options,
             std::function<void(std::string)> onSuccess,
             std::function<void(std::string)> onFailure) noexcept
         {
-            std::string dbFileName = options.Path;
-
-            if (dbFileName == nullptr)
+            // Schedule the task on the UI thread
+            SyncTaskQueue.Queue(concurrency::create_task(
+                [options, onSuccess, onFailure, this]()
             {
-                onFailure("You must specify database path");
-                return;
-            }
+                std::string dbFileName = options.Path;
 
-            hstring absoluteDbPath;
-            absoluteDbPath = ResolveDbFilePath(to_hstring(dbFileName));
+                if (dbFileName == nullptr)
+                {
+                    onFailure("You must specify database path");
+                    return;
+                }
 
-            if (OpenDBs.find(absoluteDbPath) == OpenDBs.end())
-            {
-                onFailure("Specified db was not open");
-                return;
-            }
+                hstring absoluteDbPath;
+                absoluteDbPath = ResolveDbFilePath(to_hstring(dbFileName));
 
-            OpenDB db = OpenDBs[absoluteDbPath];
-            OpenDBs.erase(absoluteDbPath);
+                if (OpenDBs.find(absoluteDbPath) == OpenDBs.end())
+                {
+                    onFailure("Specified db was not open");
+                    return;
+                }
 
-            if (sqlite3_close(db.Handle) != SQLITE_OK)
-            {
-                // C# implementation returns success if the DB failed to close
-                // Matching the existing implementation
-                std::string debugMessage = "SQLitePluginModule: Error closing database: " + to_string(absoluteDbPath) + "\n";
-                OutputDebugStringA(debugMessage.c_str());
-            }
+                OpenDB db = OpenDBs[absoluteDbPath];
+                OpenDBs.erase(absoluteDbPath);
 
-            onSuccess("DB Closed");
-            return;
+                if (sqlite3_close(db.Handle) != SQLITE_OK)
+                {
+                    // C# implementation returns success if the DB failed to close
+                    // Matching the existing implementation
+                    std::string debugMessage = "SQLitePluginModule: Error closing database: " + to_string(absoluteDbPath) + "\n";
+                    OutputDebugStringA(debugMessage.c_str());
+                }
+
+                onSuccess("DB Closed");
+            }));
+
+            // Return the UI thread and execute work in the background if neede
+            co_await resume_background();
+
+            SyncTaskQueue.Run();
         }
     };
 }
