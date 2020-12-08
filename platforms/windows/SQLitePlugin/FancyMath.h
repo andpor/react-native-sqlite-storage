@@ -145,8 +145,8 @@ namespace SQLitePlugin
             return srcDbFile.CopyAsync(ApplicationData::Current().LocalFolder(), destDbFileName, NameCollisionOption::FailIfExists);
         }
 
-        REACT_METHOD(open, L"open");
-        void open(
+        REACT_METHOD(Open, L"open");
+        void Open(
             OpenOptions options,
             std::function<void(std::string)> onSuccess,
             std::function<void(std::string)> onFailure) noexcept
@@ -238,8 +238,8 @@ namespace SQLitePlugin
 
         }
 
-        REACT_METHOD(close, L"close");
-        void close(
+        REACT_METHOD(Close, L"close");
+        void Close(
             CloseOptions options,
             std::function<void(std::string)> onSuccess,
             std::function<void(std::string)> onFailure) noexcept
@@ -288,8 +288,8 @@ namespace SQLitePlugin
 
         }
         
-        REACT_METHOD(echoStringValue, L"echoStringValue");
-        void echoStringValue(
+        REACT_METHOD(EchoStringValue, L"echoStringValue");
+        void EchoStringValue(
             EchoStringValueOptions options,
             std::function<void(std::string)> onSuccess,
             std::function<void(std::string)> onFailure) noexcept
@@ -305,8 +305,8 @@ namespace SQLitePlugin
         }
 
 
-        REACT_METHOD(attach, L"attach");
-        void attach(
+        REACT_METHOD(Attach, L"attach");
+        void Attach(
             JSValue options,
             std::function<void(std::string)> onSuccess,
             std::function<void(std::string)> onFailure) noexcept
@@ -318,8 +318,8 @@ namespace SQLitePlugin
             });
         }
 
-        REACT_METHOD(deleteDB, L"delete");
-        void deleteDB(
+        REACT_METHOD(DeleteDB, L"delete");
+        void DeleteDB(
             DeleteOptions options,
             std::function<void(std::string)> onSuccess,
             std::function<void(std::string)> onFailure) noexcept
@@ -378,12 +378,22 @@ namespace SQLitePlugin
             
         }
         
+        static bool ExecuteQuery(OpenDB db, const DBQuery& query, JSValue & result)
+        {
+            if (query.SQL == nullptr || query.SQL == "")
+            {
+                result = JSValue{ "You must specify a sql query to execute" };
+                return false;
+            }
+            result = JSValue{ "You must specify a sql query to execute" };
+            return false;
+        }
 
-        /*
-        REACT_METHOD(backgroundExecuteSqlBatch, L"backgroundExecuteSqlBatch");
-        void backgroundExecuteSqlBatch(
+        REACT_METHOD(ExecuteSqlBatch, L"executeSqlBatch");
+        REACT_METHOD(ExecuteSqlBatch, L"backgroundExecuteSqlBatch");
+        void ExecuteSqlBatch(
             ExecuteSqlBatchOptions options,
-            std::function<void(std::string)> onSuccess,
+            std::function<void(std::vector<JSValueObject>)> onSuccess,
             std::function<void(std::string)> onFailure) noexcept
         {
             SerialReactDispatcher.Post(
@@ -413,11 +423,41 @@ namespace SQLitePlugin
                     }
 
                     OpenDB db = strongThis->OpenDBs[absoluteDbPath];
+                    std::vector<JSValueObject> results;
+
+                    for (auto &query : options.Executes)
+                    {
+                        JSValue result;
+                        if (ExecuteQuery(db, query, result))
+                        {
+                            //success
+                            results.push_back(
+                                {
+                                    { "qid", query.QID },
+                                    { "type", "success" },
+                                    { "result", std::move(result)}
+                                }
+                            );
+                        }
+                        else
+                        {
+                            //query failed
+                            results.push_back(
+                                {
+                                    { "qid", query.QID },
+                                    { "type", "error" },
+                                    { "error", result.AsString()},
+                                    { "result", result.AsString()}
+                                }
+                            );
+                        }
+                    }
+                    onSuccess(std::move(results));
                 }
             });
             
             
         }
-        */
+        
     };
 }
