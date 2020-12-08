@@ -2,15 +2,13 @@
 
 #include "pch.h"
 #include <functional>
+#include "JSValue.h"
 #include "NativeModules.h"
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Storage.h>
 #include <winrt/Microsoft.ReactNative.h>
 #include <winrt/Windows.Foundation.Collections.h>
 #include <winsqlite/winsqlite3.h>
-#include <ppltasks.h>
-
-#include "TaskQueue.h"
 
 using namespace winrt;
 using namespace winrt::Windows::Foundation;
@@ -34,47 +32,81 @@ namespace SQLitePlugin
     REACT_STRUCT(OpenOptions);
     struct OpenOptions
     {
-        REACT_FIELD(Name, L"name")
+        REACT_FIELD(Name, L"name");
         // Path at which to store the database
         std::string Name;
 
-        REACT_FIELD(AssetFileName, L"assetFilename")
+        REACT_FIELD(AssetFileName, L"assetFilename");
         // Optional. When creating the DB, uses this file as the initial state.
         std::string AssetFileName;
 
-        REACT_FIELD(ReadOnly, L"readOnly")
+        REACT_FIELD(ReadOnly, L"readOnly");
         bool ReadOnly;
     };
 
     REACT_STRUCT(CloseOptions);
     struct CloseOptions
     {
-        REACT_FIELD(Path, L"path")
-            // Path at which the database is located
-            std::string Path;
+        REACT_FIELD(Path, L"path");
+        // Path at which the database is located
+        std::string Path;
     };
 
     REACT_STRUCT(DeleteOptions);
     struct DeleteOptions
     {
-        REACT_FIELD(Path, L"path")
-            // Path at which the database is located
-            std::string Path;
+        REACT_FIELD(Path, L"path");
+        // Path at which the database is located
+        std::string Path;
     };
 
     REACT_STRUCT(EchoStringValueOptions);
     struct EchoStringValueOptions
     {
-        REACT_FIELD(Value, L"value")
+        REACT_FIELD(Value, L"value");
         std::string Value;
     };
 
 
+    REACT_STRUCT(DBArgs);
+    struct DBArgs
+    {
+        REACT_FIELD(DBName, L"dbname");
+        std::string DBName;
+    };
+
+    REACT_STRUCT(DBQuery);
+    struct DBQuery
+    {
+        REACT_FIELD(QID, L"qid");
+        int QID;
+
+        REACT_FIELD(Params, L"params");
+        std::vector<JSValue> Params; // optional
+
+        REACT_FIELD(SQL, L"sql");
+        std::string SQL;
+    };
+
+    REACT_STRUCT(ExecuteSqlBatchOptions);
+    struct ExecuteSqlBatchOptions
+    {
+        REACT_FIELD(DBArgs, L"dbargs");
+        DBArgs DBArgs;
+        REACT_FIELD(Executes, L"executes");
+        std::vector<DBQuery> Executes;
+    };
+
+
+
+
+
     REACT_MODULE(SQLitePlugin, L"SQLite");
-    struct SQLitePlugin
+    struct SQLitePlugin : std::enable_shared_from_this<SQLitePlugin>
     {
         std::map<hstring, OpenDB> OpenDBs;
-        TaskQueue SyncTaskQueue;
+
+        ReactDispatcher SerialReactDispatcher{ ReactDispatcher::CreateSerialDispatcher() };
 
         static IAsyncOperation<StorageFile> ResolveAssetFile(const std::string& assetFilePath, std::string& dbFileName)
         {
@@ -114,238 +146,278 @@ namespace SQLitePlugin
         }
 
         REACT_METHOD(open, L"open");
-        winrt::fire_and_forget open(
+        void open(
             OpenOptions options,
             std::function<void(std::string)> onSuccess,
             std::function<void(std::string)> onFailure) noexcept
         {
-            // Schedule the task on the UI thread
-            SyncTaskQueue.Queue(concurrency::create_task(
-                [options, onSuccess, onFailure, this]()
+            SerialReactDispatcher.Post(
+                [
+                    options{ std::move(options) },
+                    onSuccess{ std::move(onSuccess) },
+                    onFailure{ std::move(onFailure) },
+                    weak_this = std::weak_ptr(shared_from_this())
+                ]()
             {
-                std::string dbFileName = options.Name;
+                if (auto strongThis = weak_this.lock()) {
+                    std::string dbFileName = options.Name;
 
-                if (dbFileName == nullptr)
-                {
-                    onFailure("You must specify database name");
-                    return;
-                }
-
-                hstring absoluteDbPath;
-                absoluteDbPath = ResolveDbFilePath(to_hstring(dbFileName));
-
-                if (OpenDBs.find(absoluteDbPath) != OpenDBs.end())
-                {
-                    onSuccess("Database opened");
-                    return;
-                }
-
-                IAsyncOperation<StorageFile> assetFileOp = ResolveAssetFile(options.AssetFileName, dbFileName);
-                StorageFile assetFile = nullptr;
-                if (assetFileOp != nullptr)
-                {
-                    try
+                    if (dbFileName == nullptr)
                     {
-                        assetFile = assetFileOp.get();
-                    }
-                    catch (hresult_error const& ex)
-                    {
-                        onFailure("Unable to open asset file: " + winrt::to_string(ex.message()));
+                        onFailure("You must specify database name");
                         return;
                     }
-                }
 
-                int openFlags = 0;
-                openFlags |= SQLITE_OPEN_NOMUTEX;
+                    hstring absoluteDbPath;
+                    absoluteDbPath = ResolveDbFilePath(to_hstring(dbFileName));
 
+                    if (strongThis->OpenDBs.find(absoluteDbPath) != strongThis->OpenDBs.end())
+                    {
+                        onSuccess("Database opened");
+                        return;
+                    }
 
-                if (options.ReadOnly && assetFileOp != nullptr)
-                {
-                    openFlags |= SQLITE_OPEN_READONLY;
-                    absoluteDbPath = assetFile.Path();
-                }
-                else
-                {
-                    openFlags |= SQLITE_OPEN_READWRITE;
-                    openFlags |= SQLITE_OPEN_CREATE;
-
+                    IAsyncOperation<StorageFile> assetFileOp = ResolveAssetFile(options.AssetFileName, dbFileName);
+                    StorageFile assetFile = nullptr;
                     if (assetFileOp != nullptr)
                     {
                         try
                         {
-                            CopyDbAsync(assetFile, to_hstring(dbFileName)).GetResults();
+                            assetFile = assetFileOp.get();
                         }
                         catch (hresult_error const& ex)
                         {
-                            // CopyDbAsync throws when the file already exists.
-                            onFailure("Unable to copy asset file: " + winrt::to_string(ex.message()));
+                            onFailure("Unable to open asset file: " + winrt::to_string(ex.message()));
                             return;
                         }
                     }
+
+                    int openFlags = 0;
+                    openFlags |= SQLITE_OPEN_NOMUTEX;
+
+
+                    if (options.ReadOnly && assetFileOp != nullptr)
+                    {
+                        openFlags |= SQLITE_OPEN_READONLY;
+                        absoluteDbPath = assetFile.Path();
+                    }
+                    else
+                    {
+                        openFlags |= SQLITE_OPEN_READWRITE;
+                        openFlags |= SQLITE_OPEN_CREATE;
+
+                        if (assetFileOp != nullptr)
+                        {
+                            try
+                            {
+                                CopyDbAsync(assetFile, to_hstring(dbFileName)).GetResults();
+                            }
+                            catch (hresult_error const& ex)
+                            {
+                                // CopyDbAsync throws when the file already exists.
+                                onFailure("Unable to copy asset file: " + winrt::to_string(ex.message()));
+                                return;
+                            }
+                        }
+                    }
+
+                    sqlite3* dbHandle = nullptr;
+
+                    int result = sqlite3_open_v2(to_string(absoluteDbPath).c_str(), &dbHandle, openFlags, nullptr);
+                    if (result == SQLITE_OK)
+                    {
+                        strongThis->OpenDBs[absoluteDbPath] = OpenDB(dbHandle, absoluteDbPath);
+                        onSuccess("Database opened");
+                    }
+                    else
+                    {
+                        onFailure("Unable to open DB");
+                    }
                 }
-
-                sqlite3* dbHandle = nullptr;
-
-                int result = sqlite3_open_v2(to_string(absoluteDbPath).c_str(), &dbHandle, openFlags, nullptr);
-                if (result == SQLITE_OK)
-                {
-                    OpenDBs[absoluteDbPath] = OpenDB(dbHandle, absoluteDbPath);
-                    onSuccess("Database opened");
-                }
-                else
-                {
-                    onFailure("Unable to open DB");
-                }
-            }));
-
-            // Return the UI thread and execute work in the background if neede
-            co_await resume_background();
-
-            SyncTaskQueue.Run();
+            });
 
         }
 
         REACT_METHOD(close, L"close");
-        winrt::fire_and_forget close(
+        void close(
             CloseOptions options,
             std::function<void(std::string)> onSuccess,
             std::function<void(std::string)> onFailure) noexcept
         {
-            // Schedule the task on the UI thread
-            SyncTaskQueue.Queue(concurrency::create_task(
-                [options, onSuccess, onFailure, this]()
+            SerialReactDispatcher.Post(
+                [
+                    options{ std::move(options) },
+                    onSuccess{ std::move(onSuccess) },
+                    onFailure{ std::move(onFailure) },
+                    weak_this = std::weak_ptr(shared_from_this())
+                ]()
             {
-                std::string dbFileName = options.Path;
 
-                if (dbFileName == nullptr)
-                {
-                    onFailure("You must specify database path");
-                    return;
+                if (auto strongThis = weak_this.lock()) {
+                    std::string dbFileName = options.Path;
+
+                    if (dbFileName == nullptr)
+                    {
+                        onFailure("You must specify database path");
+                        return;
+                    }
+
+                    hstring absoluteDbPath;
+                    absoluteDbPath = ResolveDbFilePath(to_hstring(dbFileName));
+
+                    if (strongThis->OpenDBs.find(absoluteDbPath) == strongThis->OpenDBs.end())
+                    {
+                        onFailure("Specified db was not open");
+                        return;
+                    }
+
+                    OpenDB db = strongThis->OpenDBs[absoluteDbPath];
+                    strongThis->OpenDBs.erase(absoluteDbPath);
+
+                    if (sqlite3_close(db.Handle) != SQLITE_OK)
+                    {
+                        // C# implementation returns success if the DB failed to close
+                        // Matching the existing implementation
+                        std::string debugMessage = "SQLitePluginModule: Error closing database: " + to_string(absoluteDbPath) + "\n";
+                        OutputDebugStringA(debugMessage.c_str());
+                    }
+
+                    onSuccess("DB Closed");
                 }
+            });
 
-                hstring absoluteDbPath;
-                absoluteDbPath = ResolveDbFilePath(to_hstring(dbFileName));
-
-                if (OpenDBs.find(absoluteDbPath) == OpenDBs.end())
-                {
-                    onFailure("Specified db was not open");
-                    return;
-                }
-
-                OpenDB db = OpenDBs[absoluteDbPath];
-                OpenDBs.erase(absoluteDbPath);
-
-                if (sqlite3_close(db.Handle) != SQLITE_OK)
-                {
-                    // C# implementation returns success if the DB failed to close
-                    // Matching the existing implementation
-                    std::string debugMessage = "SQLitePluginModule: Error closing database: " + to_string(absoluteDbPath) + "\n";
-                    OutputDebugStringA(debugMessage.c_str());
-                }
-
-                onSuccess("DB Closed");
-            }));
-
-            // Return the UI thread and execute work in the background if needed
-            co_await resume_background();
-
-            SyncTaskQueue.Run();
         }
-
-
+        
         REACT_METHOD(echoStringValue, L"echoStringValue");
-        winrt::fire_and_forget echoStringValue(
+        void echoStringValue(
             EchoStringValueOptions options,
             std::function<void(std::string)> onSuccess,
             std::function<void(std::string)> onFailure) noexcept
         {
-            // Schedule the task on the UI thread
-            SyncTaskQueue.Queue(concurrency::create_task(
-                [options, onSuccess, onFailure, this]()
+            SerialReactDispatcher.Post(
+                [
+                    options{ std::move(options) },
+                    onSuccess{ std::move(onSuccess) }
+                ]()
             {
                 onSuccess(options.Value);
-            }));
-
-            // Return the UI thread and execute work in the background if needed
-            co_await resume_background();
-
-            SyncTaskQueue.Run();
+            });
         }
 
+
         REACT_METHOD(attach, L"attach");
-        winrt::fire_and_forget attach(
-            JSValueObject options,
+        void attach(
+            JSValue options,
             std::function<void(std::string)> onSuccess,
             std::function<void(std::string)> onFailure) noexcept
         {
-            // Schedule the task on the UI thread
-            SyncTaskQueue.Queue(concurrency::create_task(
-                [onSuccess, onFailure, this]()
+            SerialReactDispatcher.Post(
+                [onFailure{ std::move(onFailure) }]()
             {
                 onFailure("attach isn't supported on this platform");
-            }));
-
-            // Return the UI thread and execute work in the background if needed
-            co_await resume_background();
-
-            SyncTaskQueue.Run();
-
+            });
         }
 
         REACT_METHOD(deleteDB, L"delete");
-        winrt::fire_and_forget deleteDB(
+        void deleteDB(
             DeleteOptions options,
             std::function<void(std::string)> onSuccess,
             std::function<void(std::string)> onFailure) noexcept
         {
-            // Schedule the task on the UI thread
-            SyncTaskQueue.Queue(concurrency::create_task(
-                [options, onSuccess, onFailure, this]()
+            SerialReactDispatcher.Post(
+                [
+                    options{ std::move(options) },
+                    onSuccess{ std::move(onSuccess) },
+                    onFailure{ std::move(onFailure) },
+                    weak_this = std::weak_ptr(shared_from_this())
+                ]()
             {
-                std::string dbFileName = options.Path;
-
-                if (dbFileName == nullptr)
+                if (auto strongThis = weak_this.lock())
                 {
-                    onFailure("You must specify database name");
-                    return;
-                }
+                    std::string dbFileName = options.Path;
 
-                hstring absoluteDbPath;
-                absoluteDbPath = ResolveDbFilePath(to_hstring(dbFileName));
-
-                if (OpenDBs.find(absoluteDbPath) != OpenDBs.end())
-                {
-                    OpenDB db = OpenDBs[absoluteDbPath];
-
-                    OpenDBs.erase(absoluteDbPath);
-
-                    if (sqlite3_close(db.Handle) != SQLITE_OK)
+                    if (dbFileName == nullptr)
                     {
-                        std::string debugMessage = "SQLitePluginModule: Error closing database: " + to_string(absoluteDbPath) + "\n";
-                        OutputDebugStringA(debugMessage.c_str());
+                        onFailure("You must specify database name");
+                        return;
                     }
+
+                    hstring absoluteDbPath;
+                    absoluteDbPath = ResolveDbFilePath(to_hstring(dbFileName));
+
+                    if (strongThis->OpenDBs.find(absoluteDbPath) != strongThis->OpenDBs.end())
+                    {
+                        OpenDB db = strongThis->OpenDBs[absoluteDbPath];
+
+                        strongThis->OpenDBs.erase(absoluteDbPath);
+
+                        if (sqlite3_close(db.Handle) != SQLITE_OK)
+                        {
+                            std::string debugMessage = "SQLitePluginModule: Error closing database: " + to_string(absoluteDbPath) + "\n";
+                            OutputDebugStringA(debugMessage.c_str());
+                        }
+                    }
+
+                    try
+                    {
+                        StorageFile dbFile = StorageFile::GetFileFromPathAsync(absoluteDbPath).get();
+                        dbFile.DeleteAsync().get();
+                    }
+                    catch (winrt::hresult_error const& ex)
+                    {
+                        winrt::hstring message = ex.message();
+                        std::string errorMessage = "Error deleting database: " + to_string(message) + " " + to_string(absoluteDbPath) + "\n";
+                        onFailure(errorMessage);
+                        return;
+                    }
+
+                    onSuccess("Database Deleted");
                 }
+            });
 
-                try 
-                {
-                    StorageFile dbFile = StorageFile::GetFileFromPathAsync(absoluteDbPath).get();
-                    dbFile.DeleteAsync().get();
-                }
-                catch (winrt::hresult_error const& ex)
-                {
-                    winrt::hstring message = ex.message();
-                    std::string errorMessage = "Error deleting database: " + to_string(message) + " " + to_string(absoluteDbPath) + "\n";
-                    onFailure(errorMessage);
-                    return;
-                }
-
-                onSuccess("Database Deleted");
-            }));
-
-            // Return the UI thread and execute work in the background if needed
-            co_await resume_background();
-
-            SyncTaskQueue.Run();
+            
         }
+        
+
+        /*
+        REACT_METHOD(backgroundExecuteSqlBatch, L"backgroundExecuteSqlBatch");
+        void backgroundExecuteSqlBatch(
+            ExecuteSqlBatchOptions options,
+            std::function<void(std::string)> onSuccess,
+            std::function<void(std::string)> onFailure) noexcept
+        {
+            SerialReactDispatcher.Post(
+                [
+                    options{std::move(options)}, 
+                    onSuccess{std::move(onSuccess)}, 
+                    onFailure{std::move(onFailure)}, 
+                    weak_this = std::weak_ptr(shared_from_this())
+                ]()
+            {
+                if (auto strongThis = weak_this.lock()) {
+                    std::string dbFileName = options.DBArgs.DBName;
+
+                    if (dbFileName == nullptr)
+                    {
+                        onFailure("You must specify database path");
+                        return;
+                    }
+
+                    hstring absoluteDbPath;
+                    absoluteDbPath = ResolveDbFilePath(to_hstring(dbFileName));
+
+                    if (strongThis->OpenDBs.find(absoluteDbPath) == strongThis->OpenDBs.end())
+                    {
+                        onFailure("No such database, you must open it first");
+                        return;
+                    }
+
+                    OpenDB db = strongThis->OpenDBs[absoluteDbPath];
+                }
+            });
+            
+            
+        }
+        */
     };
 }

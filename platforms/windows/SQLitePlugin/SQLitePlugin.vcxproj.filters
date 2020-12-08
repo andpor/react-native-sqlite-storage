@@ -16,8 +16,6 @@
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="FancyMath.h" />
-    <ClInclude Include="TaskQueue.h" />
-    <ClInclude Include="ThreadSafeQueue.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="SQLitePlugin.def" />
