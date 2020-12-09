@@ -82,7 +82,7 @@ namespace SQLitePlugin
         int QID;
 
         REACT_FIELD(Params, L"params");
-        std::vector<JSValue> Params; // optional
+        JSValueArray Params; // optional
 
         REACT_FIELD(SQL, L"sql");
         std::string SQL;
@@ -378,15 +378,62 @@ namespace SQLitePlugin
             
         }
         
-        static bool ExecuteQuery(OpenDB db, const DBQuery& query, JSValue & result)
+        static void BindStatement(sqlite3_stmt* stmt_ptr, int argIndex, const JSValue& arg)
+        {
+            switch (arg.Type())
+            {
+            case JSValueType::Null:
+                sqlite3_bind_null(stmt_ptr, argIndex);
+                break;
+            case JSValueType::Boolean:
+                sqlite3_bind_int(stmt_ptr, argIndex, arg.AsBoolean());
+                break;
+            case JSValueType::Int64:
+                sqlite3_bind_int64(stmt_ptr, argIndex, arg.AsInt64());
+                break;
+            case JSValueType::Double:
+                sqlite3_bind_double(stmt_ptr, argIndex, arg.AsDouble());
+                break;
+            case JSValueType::String:
+                sqlite3_bind_text(stmt_ptr, argIndex, arg.AsString().c_str(), -1, nullptr);
+                break;
+            default:
+                sqlite3_bind_text(stmt_ptr, argIndex, arg.AsString().c_str(), -1, nullptr);
+                break;
+            }
+        }
+
+        static bool ExecuteQuery(const OpenDB db, const DBQuery& query, JSValue & result)
         {
             if (query.SQL == nullptr || query.SQL == "")
             {
                 result = JSValue{ "You must specify a sql query to execute" };
                 return false;
             }
-            result = JSValue{ "You must specify a sql query to execute" };
-            return false;
+
+            int previousRowsAffected = sqlite3_total_changes(db.Handle);
+            sqlite3_stmt* stmt_ptr;
+            int prepResult = sqlite3_prepare_v2(db.Handle, query.SQL.c_str(), -1, &stmt_ptr, nullptr);
+
+            if (prepResult != SQLITE_OK)
+            {
+                result = JSValue{ sqlite3_errmsg(db.Handle) };
+                return false;
+            }
+
+            if (!query.Params.empty())
+            {
+                int argIndex = 0;
+                for (auto& arg : query.Params)
+                {
+                    BindStatement(stmt_ptr, argIndex, arg);
+                    argIndex++;
+                }
+            }
+
+
+            return true;
+
         }
 
         REACT_METHOD(ExecuteSqlBatch, L"executeSqlBatch");
