@@ -6,6 +6,8 @@
 #include "NativeModules.h"
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Storage.h>
+#include <winrt/Windows.Storage.Streams.h>
+#include <winrt/Windows.Security.Cryptography.h>
 #include <winrt/Microsoft.ReactNative.h>
 #include <winrt/Windows.Foundation.Collections.h>
 #include <winsqlite/winsqlite3.h>
@@ -13,6 +15,8 @@
 using namespace winrt;
 using namespace winrt::Windows::Foundation;
 using namespace winrt::Windows::Storage;
+using namespace winrt::Windows::Storage::Streams;
+using namespace winrt::Windows::Security::Cryptography;
 namespace SQLitePlugin
 {
     struct OpenDB
@@ -403,6 +407,67 @@ namespace SQLitePlugin
             }
         }
 
+        static JSValue ExtractColumn(sqlite3_stmt* stmtPtr, int columnIndex)
+        {
+            switch (sqlite3_column_type(stmtPtr, columnIndex))
+            {
+            case SQLITE_INTEGER:
+                return sqlite3_column_int64(stmtPtr, columnIndex);
+            case SQLITE_FLOAT:
+                return sqlite3_column_double(stmtPtr, columnIndex);
+            case SQLITE_TEXT:
+                {
+                    const char* strPtr = (char*)sqlite3_column_text(stmtPtr, columnIndex);
+                    return std::string(strPtr, strlen(strPtr));
+                }
+            case SQLITE_BLOB:
+                {
+                    // JSON does not support raw binary data. You can't write a binary blob using this module
+                    // In case we have a pre-populated database with a binary blob in it, 
+                    // we are going to base64 encode it and return as a string.
+                    // This is consistend with iOS implementation.
+                    const void* ptr = sqlite3_column_blob(stmtPtr, columnIndex);
+                    int length = sqlite3_column_bytes(stmtPtr, columnIndex);
+                    Buffer buffer = Buffer(length);
+                    memcpy(buffer.data(), ptr, length);
+                    return to_string(CryptographicBuffer::EncodeToBase64String(buffer));
+                }
+            case SQLITE_NULL:
+            default:
+                return nullptr;
+                break;
+            }
+        }
+
+        enum WebSQLError
+        {
+            Unknown = 0,
+            Database = 1,
+            Version = 2,
+            TooLarge = 3,
+            Quota = 4,
+            Syntax = 5,
+            Constraint = 6,
+            Timeout = 7
+        };
+
+        static JSValueObject ExtractRow(sqlite3_stmt* stmtPtr)
+        {
+            JSValueObject row{};
+            int columnCount = sqlite3_column_count(stmtPtr);
+            for (int i = 0; i < columnCount; i++)
+            {
+                const char* strPtr = (char*)sqlite3_column_name(stmtPtr, i);
+                std::string columnName(strPtr, strlen(strPtr));
+                JSValue columnValue = ExtractColumn(stmtPtr, i);
+                if (!columnValue.IsNull())
+                {
+                    row[columnName] = std::move(columnValue);
+                }
+            }
+            return row;
+        }
+
         static bool ExecuteQuery(const OpenDB db, const DBQuery& query, JSValue & result)
         {
             if (query.SQL == nullptr || query.SQL == "")
@@ -412,8 +477,8 @@ namespace SQLitePlugin
             }
 
             int previousRowsAffected = sqlite3_total_changes(db.Handle);
-            sqlite3_stmt* stmt_ptr;
-            int prepResult = sqlite3_prepare_v2(db.Handle, query.SQL.c_str(), -1, &stmt_ptr, nullptr);
+            sqlite3_stmt* stmtPtr;
+            int prepResult = sqlite3_prepare_v2(db.Handle, query.SQL.c_str(), -1, &stmtPtr, nullptr);
 
             if (prepResult != SQLITE_OK)
             {
@@ -426,14 +491,68 @@ namespace SQLitePlugin
                 int argIndex = 0;
                 for (auto& arg : query.Params)
                 {
-                    BindStatement(stmt_ptr, argIndex, arg);
+                    BindStatement(stmtPtr, argIndex, arg);
                     argIndex++;
                 }
             }
 
+            std::vector<JSValue> resultRows{};
 
+            bool keepGoing = true;
+            int rowsAffected = 0;
+            sqlite3_int64 insertId = 0;
+            bool isError = false;
+
+            while (keepGoing)
+            {
+                switch (sqlite3_step(stmtPtr))
+                {
+                case SQLITE_ROW:
+                    resultRows.push_back(ExtractRow(stmtPtr));
+                    break;
+
+                case SQLITE_DONE:
+                    {
+                        int currentRowsAffected = sqlite3_total_changes(db.Handle);
+                        rowsAffected = currentRowsAffected - previousRowsAffected;
+                        sqlite3_int64  currentInsertId = sqlite3_last_insert_rowid(db.Handle);
+                        if (rowsAffected > 0 && currentInsertId != 0)
+                        {
+                            insertId = currentInsertId;
+                        }
+                        keepGoing = false;
+                        break;
+                    }
+                default:
+                    {
+                        const char* strPtr = (char*)sqlite3_errmsg(db.Handle);
+                        std::string errorMessage(strPtr, strlen(strPtr));
+                        result = JSValue{ errorMessage };
+                        keepGoing = false;
+                        isError = true;
+                    }
+                    break;
+                }
+            }
+
+            sqlite3_finalize(stmtPtr);
+
+            if (isError)
+            {
+                return false;
+            }
+            //JSValueArray tempValue{ std::move(resultRows) };
+            JSValueObject resultSet =
+            {
+                { "rows", std::move(resultRows) },
+                { "rowsAffected", rowsAffected }
+            };
+            if (insertId != 0)
+            {
+                resultSet["insertId"] = insertId;
+            }
+            result = JSValue(std::move(resultSet));
             return true;
-
         }
 
         REACT_METHOD(ExecuteSqlBatch, L"executeSqlBatch");
