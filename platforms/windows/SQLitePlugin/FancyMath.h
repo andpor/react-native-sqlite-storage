@@ -112,7 +112,7 @@ namespace SQLitePlugin
 
         ReactDispatcher SerialReactDispatcher{ ReactDispatcher::CreateSerialDispatcher() };
 
-        static IAsyncOperation<StorageFile> ResolveAssetFile(const std::string& assetFilePath, std::string& dbFileName)
+        static IAsyncOperation<StorageFile> ResolveAssetFile(const std::string& assetFilePath, const std::string& dbFileName)
         {
             if (assetFilePath == nullptr || assetFilePath.length() == 0)
             {
@@ -138,12 +138,12 @@ namespace SQLitePlugin
             }
         }
 
-        static hstring ResolveDbFilePath(hstring dbFileName)
+        static hstring ResolveDbFilePath(const hstring dbFileName)
         {
             return ApplicationData::Current().LocalFolder().Path() + L"\\" + dbFileName;
         }
 
-        static IAsyncOperation<StorageFile> CopyDbAsync(StorageFile srcDbFile, hstring destDbFileName)
+        static IAsyncOperation<StorageFile> CopyDbAsync(const StorageFile& srcDbFile, const hstring& destDbFileName)
         {
             // This implementation is closely related to ResolveDbFilePath.
             return srcDbFile.CopyAsync(ApplicationData::Current().LocalFolder(), destDbFileName, NameCollisionOption::FailIfExists);
@@ -164,16 +164,15 @@ namespace SQLitePlugin
                 ]()
             {
                 if (auto strongThis = weak_this.lock()) {
-                    std::string dbFileName = options.Name;
+                    const std::string* dbFileName = &options.Name;
 
-                    if (dbFileName == nullptr)
+                    if (dbFileName == nullptr || dbFileName->empty())
                     {
                         onFailure("You must specify database name");
                         return;
                     }
 
-                    hstring absoluteDbPath;
-                    absoluteDbPath = ResolveDbFilePath(to_hstring(dbFileName));
+                    hstring absoluteDbPath{ ResolveDbFilePath(to_hstring(*dbFileName)) };
 
                     if (strongThis->OpenDBs.find(absoluteDbPath) != strongThis->OpenDBs.end())
                     {
@@ -181,7 +180,7 @@ namespace SQLitePlugin
                         return;
                     }
 
-                    IAsyncOperation<StorageFile> assetFileOp = ResolveAssetFile(options.AssetFileName, dbFileName);
+                    IAsyncOperation<StorageFile> assetFileOp = ResolveAssetFile(options.AssetFileName, *dbFileName);
                     StorageFile assetFile = nullptr;
                     if (assetFileOp != nullptr)
                     {
@@ -196,7 +195,7 @@ namespace SQLitePlugin
                         }
                     }
 
-                    int openFlags = 0;
+                    int openFlags{ 0 };
                     openFlags |= SQLITE_OPEN_NOMUTEX;
 
 
@@ -214,7 +213,7 @@ namespace SQLitePlugin
                         {
                             try
                             {
-                                CopyDbAsync(assetFile, to_hstring(dbFileName)).GetResults();
+                                CopyDbAsync(assetFile, to_hstring(*dbFileName)).GetResults();
                             }
                             catch (hresult_error const& ex)
                             {
@@ -230,7 +229,7 @@ namespace SQLitePlugin
                     int result = sqlite3_open_v2(to_string(absoluteDbPath).c_str(), &dbHandle, openFlags, nullptr);
                     if (result == SQLITE_OK)
                     {
-                        strongThis->OpenDBs[absoluteDbPath] = OpenDB(dbHandle, absoluteDbPath);
+                        strongThis->OpenDBs[absoluteDbPath] = OpenDB(dbHandle, std::move(absoluteDbPath));
                         onSuccess("Database opened");
                     }
                     else
@@ -258,16 +257,14 @@ namespace SQLitePlugin
             {
 
                 if (auto strongThis = weak_this.lock()) {
-                    std::string dbFileName = options.Path;
 
-                    if (dbFileName == nullptr)
+                    if (options.Path == nullptr || options.Path.empty())
                     {
                         onFailure("You must specify database path");
                         return;
                     }
 
-                    hstring absoluteDbPath;
-                    absoluteDbPath = ResolveDbFilePath(to_hstring(dbFileName));
+                    hstring absoluteDbPath{ ResolveDbFilePath(to_hstring(options.Path)) };
 
                     if (strongThis->OpenDBs.find(absoluteDbPath) == strongThis->OpenDBs.end())
                     {
@@ -275,10 +272,10 @@ namespace SQLitePlugin
                         return;
                     }
 
-                    OpenDB db = strongThis->OpenDBs[absoluteDbPath];
+                    OpenDB * db = &strongThis->OpenDBs[absoluteDbPath];
                     strongThis->OpenDBs.erase(absoluteDbPath);
 
-                    if (sqlite3_close(db.Handle) != SQLITE_OK)
+                    if (sqlite3_close(db->Handle) != SQLITE_OK)
                     {
                         // C# implementation returns success if the DB failed to close
                         // Matching the existing implementation
@@ -338,24 +335,21 @@ namespace SQLitePlugin
             {
                 if (auto strongThis = weak_this.lock())
                 {
-                    std::string dbFileName = options.Path;
-
-                    if (dbFileName == nullptr)
+                    if (options.Path == nullptr || options.Path.empty())
                     {
                         onFailure("You must specify database name");
                         return;
                     }
 
-                    hstring absoluteDbPath;
-                    absoluteDbPath = ResolveDbFilePath(to_hstring(dbFileName));
+                    hstring absoluteDbPath{ ResolveDbFilePath(to_hstring(options.Path)) };
 
                     if (strongThis->OpenDBs.find(absoluteDbPath) != strongThis->OpenDBs.end())
                     {
-                        OpenDB db = strongThis->OpenDBs[absoluteDbPath];
+                        OpenDB * db = &strongThis->OpenDBs[absoluteDbPath];
 
                         strongThis->OpenDBs.erase(absoluteDbPath);
 
-                        if (sqlite3_close(db.Handle) != SQLITE_OK)
+                        if (sqlite3_close(db->Handle) != SQLITE_OK)
                         {
                             std::string debugMessage = "SQLitePluginModule: Error closing database: " + to_string(absoluteDbPath) + "\n";
                             OutputDebugStringA(debugMessage.c_str());
@@ -425,7 +419,7 @@ namespace SQLitePlugin
                     // JSON does not support raw binary data. You can't write a binary blob using this module
                     // In case we have a pre-populated database with a binary blob in it, 
                     // we are going to base64 encode it and return as a string.
-                    // This is consistend with iOS implementation.
+                    // This is consistent with iOS implementation.
                     const void* ptr = sqlite3_column_blob(stmtPtr, columnIndex);
                     int length = sqlite3_column_bytes(stmtPtr, columnIndex);
                     Buffer buffer = Buffer(length);
@@ -438,18 +432,6 @@ namespace SQLitePlugin
                 break;
             }
         }
-
-        enum WebSQLError
-        {
-            Unknown = 0,
-            Database = 1,
-            Version = 2,
-            TooLarge = 3,
-            Quota = 4,
-            Syntax = 5,
-            Constraint = 6,
-            Timeout = 7
-        };
 
         static JSValueObject ExtractRow(sqlite3_stmt* stmtPtr)
         {
@@ -468,7 +450,7 @@ namespace SQLitePlugin
             return row;
         }
 
-        static bool ExecuteQuery(const OpenDB db, const DBQuery& query, JSValue & result)
+        static bool ExecuteQuery(const OpenDB& db, const DBQuery& query, JSValue& result)
         {
             if (query.SQL == nullptr || query.SQL == "")
             {
@@ -541,16 +523,18 @@ namespace SQLitePlugin
             {
                 return false;
             }
-            //JSValueArray tempValue{ std::move(resultRows) };
+
             JSValueObject resultSet =
             {
                 { "rows", std::move(resultRows) },
                 { "rowsAffected", rowsAffected }
             };
+
             if (insertId != 0)
             {
                 resultSet["insertId"] = insertId;
             }
+
             result = JSValue(std::move(resultSet));
             return true;
         }
@@ -571,16 +555,14 @@ namespace SQLitePlugin
                 ]()
             {
                 if (auto strongThis = weak_this.lock()) {
-                    std::string dbFileName = options.DBArgs.DBName;
-
-                    if (dbFileName == nullptr)
+                    if (options.DBArgs.DBName == nullptr)
                     {
                         onFailure("You must specify database path");
                         return;
                     }
 
                     hstring absoluteDbPath;
-                    absoluteDbPath = ResolveDbFilePath(to_hstring(dbFileName));
+                    absoluteDbPath = ResolveDbFilePath(to_hstring(options.DBArgs.DBName));
 
                     if (strongThis->OpenDBs.find(absoluteDbPath) == strongThis->OpenDBs.end())
                     {
@@ -588,13 +570,13 @@ namespace SQLitePlugin
                         return;
                     }
 
-                    OpenDB db = strongThis->OpenDBs[absoluteDbPath];
+                    OpenDB* db = &strongThis->OpenDBs[absoluteDbPath];
                     std::vector<JSValueObject> results;
 
                     for (auto &query : options.Executes)
                     {
                         JSValue result;
-                        if (ExecuteQuery(db, query, result))
+                        if (ExecuteQuery(*db, query, result))
                         {
                             //success
                             results.push_back(
@@ -621,9 +603,6 @@ namespace SQLitePlugin
                     onSuccess(std::move(results));
                 }
             });
-            
-            
         }
-        
     };
 }
