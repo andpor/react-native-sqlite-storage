@@ -53,9 +53,9 @@ namespace SQLitePlugin
                     return;
                 }
 
-                OpenDB* db = &strongThis->OpenDBs[absoluteDbPath];
+                sqlite3* dbHandle = strongThis->OpenDBs[absoluteDbPath];
 
-                if (sqlite3_close(db->Handle) != SQLITE_OK)
+                if (sqlite3_close(dbHandle) != SQLITE_OK)
                 {
                     // C# implementation returns success if the DB failed to close
                     // Matching the existing implementation
@@ -78,7 +78,7 @@ namespace SQLitePlugin
     SQLitePlugin::~SQLitePlugin() {
         for (auto& db : OpenDBs)
         {
-            sqlite3_close(db.second.Handle);
+            sqlite3_close(db.second);
         }
     };
 
@@ -107,9 +107,9 @@ namespace SQLitePlugin
 
                 if (strongThis->OpenDBs.find(absoluteDbPath) != strongThis->OpenDBs.end())
                 {
-                    OpenDB* db = &strongThis->OpenDBs[absoluteDbPath];
+                    sqlite3* dbHandle = strongThis->OpenDBs[absoluteDbPath];
 
-                    if (sqlite3_close(db->Handle) != SQLITE_OK)
+                    if (sqlite3_close(dbHandle) != SQLITE_OK)
                     {
                         std::string debugMessage = "SQLitePluginModule: Error closing database: " + to_string(absoluteDbPath) + "\n";
                         OutputDebugStringA(debugMessage.c_str());
@@ -182,13 +182,13 @@ namespace SQLitePlugin
                     return;
                 }
 
-                OpenDB* db = &strongThis->OpenDBs[absoluteDbPath];
+                sqlite3* dbHandle = strongThis->OpenDBs[absoluteDbPath];
                 std::vector<JSValueObject> results;
 
                 for (auto& query : options.Executes)
                 {
                     JSValue result;
-                    if (ExecuteQuery(*db, query, result))
+                    if (ExecuteQuery(dbHandle, query, result))
                     {
                         //success
                         results.push_back(
@@ -296,7 +296,7 @@ namespace SQLitePlugin
                 int result = sqlite3_open_v2(to_string(absoluteDbPath).c_str(), &dbHandle, openFlags, nullptr);
                 if (result == SQLITE_OK)
                 {
-                    strongThis->OpenDBs[absoluteDbPath] = OpenDB(dbHandle, absoluteDbPath);
+                    strongThis->OpenDBs[absoluteDbPath] = dbHandle;
                     onSuccess("Database opened");
                 }
                 else
@@ -340,7 +340,7 @@ namespace SQLitePlugin
         return srcDbFile.CopyAsync(ApplicationData::Current().LocalFolder(), destDbFileName, NameCollisionOption::FailIfExists);
     }
 
-    bool SQLitePlugin::ExecuteQuery(const OpenDB& db, const DBQuery& query, JSValue& result)
+    bool SQLitePlugin::ExecuteQuery(sqlite3* dbHandle, const DBQuery& query, JSValue& result)
     {
         if (query.SQL == nullptr || query.SQL == "")
         {
@@ -348,13 +348,13 @@ namespace SQLitePlugin
             return false;
         }
 
-        int previousRowsAffected = sqlite3_total_changes(db.Handle);
+        int previousRowsAffected = sqlite3_total_changes(dbHandle);
         sqlite3_stmt* stmtPtr;
-        int prepResult = sqlite3_prepare_v2(db.Handle, query.SQL.c_str(), -1, &stmtPtr, nullptr);
+        int prepResult = sqlite3_prepare_v2(dbHandle, query.SQL.c_str(), -1, &stmtPtr, nullptr);
 
         if (prepResult != SQLITE_OK)
         {
-            result = JSValue{ sqlite3_errmsg(db.Handle) };
+            result = JSValue{ sqlite3_errmsg(dbHandle) };
             return false;
         }
 
@@ -385,9 +385,9 @@ namespace SQLitePlugin
 
             case SQLITE_DONE:
             {
-                int currentRowsAffected = sqlite3_total_changes(db.Handle);
+                int currentRowsAffected = sqlite3_total_changes(dbHandle);
                 rowsAffected = currentRowsAffected - previousRowsAffected;
-                sqlite3_int64  currentInsertId = sqlite3_last_insert_rowid(db.Handle);
+                sqlite3_int64  currentInsertId = sqlite3_last_insert_rowid(dbHandle);
                 if (rowsAffected > 0 && currentInsertId != 0)
                 {
                     insertId = currentInsertId;
@@ -397,7 +397,7 @@ namespace SQLitePlugin
             }
             default:
             {
-                const char* strPtr = (char*)sqlite3_errmsg(db.Handle);
+                const char* strPtr = (char*)sqlite3_errmsg(dbHandle);
                 std::string errorMessage(strPtr, strlen(strPtr));
                 result = JSValue{ errorMessage };
                 keepGoing = false;

@@ -8,6 +8,15 @@ using namespace winrt::Windows::Storage;
 
 namespace SQLitePlugin
 {
+    /* 
+    * SQLite Plugin for React Native. 
+    * 
+    * As of now, it supports callbacks only.
+    * All operations on the database have to be serialized to avoid race conditions.
+    * Each operation posts a task to SerialReactDispatcher 
+    * which executes them sequentially in the background.
+    */
+
     REACT_STRUCT(CloseOptions);
     struct CloseOptions
     {
@@ -60,19 +69,6 @@ namespace SQLitePlugin
         std::vector<DBQuery> Executes;
     };
 
-    struct OpenDB
-    {
-        sqlite3* Handle;
-        hstring Path;
-        OpenDB() {
-        };
-        OpenDB(sqlite3* handle, hstring path)
-        {
-            Handle = handle;
-            Path = path;
-        }
-    };
-
     REACT_STRUCT(OpenOptions);
     struct OpenOptions
     {
@@ -87,7 +83,6 @@ namespace SQLitePlugin
         REACT_FIELD(ReadOnly, L"readOnly");
         bool ReadOnly;
     };
-
 
     REACT_MODULE(SQLitePlugin, L"SQLite");
     struct SQLitePlugin : std::enable_shared_from_this<SQLitePlugin>
@@ -134,12 +129,12 @@ namespace SQLitePlugin
         SQLitePlugin::~SQLitePlugin();
 
     private:
-        std::map<hstring, OpenDB> OpenDBs;
+        std::map<hstring, sqlite3*> OpenDBs;
         ReactDispatcher SerialReactDispatcher{ ReactDispatcher::CreateSerialDispatcher() };
 
         static IAsyncOperation<StorageFile> CopyDbAsync(const StorageFile& srcDbFile, const hstring& destDbFileName);
         static void BindStatement(sqlite3_stmt* stmt_ptr, int argIndex, const JSValue& arg);
-        static bool ExecuteQuery(const OpenDB& db, const DBQuery& query, JSValue& result);
+        static bool ExecuteQuery(sqlite3* db, const DBQuery& query, JSValue& result);
         static JSValue ExtractColumn(sqlite3_stmt* stmtPtr, int columnIndex);
         static JSValueObject ExtractRow(sqlite3_stmt* stmtPtr);
         static IAsyncOperation<StorageFile> ResolveAssetFile(const std::string& assetFilePath, const std::string& dbFileName);
