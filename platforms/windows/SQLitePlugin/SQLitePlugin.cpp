@@ -360,7 +360,8 @@ namespace SQLitePlugin
 
         if (!query.Params.empty())
         {
-            int argIndex = 0;
+            // sqlite bind uses 1-based indexing for the arguments
+            int argIndex = 1;
             for (auto& arg : query.Params)
             {
                 BindStatement(stmtPtr, argIndex, arg);
