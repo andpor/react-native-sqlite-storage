@@ -8,12 +8,12 @@ using namespace winrt::Windows::Storage;
 
 namespace SQLitePlugin
 {
-    /* 
-    * SQLite Plugin for React Native. 
-    * 
+    /*
+    * SQLite Plugin for React Native.
+    *
     * As of now, it supports callbacks only.
     * All operations on the database have to be serialized to avoid race conditions.
-    * Each operation posts a task to SerialReactDispatcher 
+    * Each operation posts a task to SerialReactDispatcher
     * which executes them sequentially in the background.
     */
 
@@ -25,8 +25,8 @@ namespace SQLitePlugin
         std::string Path;
     };
 
-    REACT_STRUCT(DeleteOptions);
-    struct DeleteOptions
+    REACT_STRUCT(DatabaseDeleteOptions);
+    struct DatabaseDeleteOptions
     {
         REACT_FIELD(Path, L"path");
         // Path at which the database is located
@@ -69,8 +69,8 @@ namespace SQLitePlugin
         std::vector<DBQuery> Executes;
     };
 
-    REACT_STRUCT(OpenOptions);
-    struct OpenOptions
+    REACT_STRUCT(DatabaseOpenOptions);
+    struct DatabaseOpenOptions
     {
         REACT_FIELD(Name, L"name");
         // Path at which to store the database
@@ -102,7 +102,7 @@ namespace SQLitePlugin
 
         REACT_METHOD(DeleteDB, L"delete");
         void DeleteDB(
-            DeleteOptions options,
+            DatabaseDeleteOptions options,
             std::function<void(std::string)> onSuccess,
             std::function<void(std::string)> onFailure) noexcept;
 
@@ -121,7 +121,7 @@ namespace SQLitePlugin
 
         REACT_METHOD(Open, L"open");
         void Open(
-            OpenOptions options,
+            DatabaseOpenOptions options,
             std::function<void(std::string)> onSuccess,
             std::function<void(std::string)> onFailure) noexcept;
 
@@ -129,14 +129,14 @@ namespace SQLitePlugin
         SQLitePlugin::~SQLitePlugin();
 
     private:
-        std::map<hstring, sqlite3*> OpenDBs;
-        ReactDispatcher SerialReactDispatcher{ ReactDispatcher::CreateSerialDispatcher() };
+        std::map<hstring, sqlite3*> openDBs;
+        ReactDispatcher serialReactDispatcher{ ReactDispatcher::CreateSerialDispatcher() };
 
         static IAsyncOperation<StorageFile> CopyDbAsync(const StorageFile& srcDbFile, const hstring& destDbFileName);
         static void BindStatement(sqlite3_stmt* stmt_ptr, int argIndex, const JSValue& arg);
         static bool ExecuteQuery(sqlite3* db, const DBQuery& query, JSValue& result);
-        static JSValue ExtractColumn(sqlite3_stmt* stmtPtr, int columnIndex);
-        static JSValueObject ExtractRow(sqlite3_stmt* stmtPtr);
+        static JSValue ExtractColumn(sqlite3_stmt* stmt, int columnIndex);
+        static JSValueObject ExtractRow(sqlite3_stmt* stmt);
         static IAsyncOperation<StorageFile> ResolveAssetFile(const std::string& assetFilePath, const std::string& dbFileName);
         static hstring ResolveDbFilePath(const hstring dbFileName);
     };

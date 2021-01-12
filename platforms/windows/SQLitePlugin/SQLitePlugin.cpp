@@ -16,7 +16,7 @@ namespace SQLitePlugin
         std::function<void(std::string)> onSuccess,
         std::function<void(std::string)> onFailure) noexcept
     {
-        SerialReactDispatcher.Post(
+        serialReactDispatcher.Post(
             [onFailure{ std::move(onFailure) }]()
         {
             onFailure("attach isn't supported on this platform");
@@ -28,7 +28,7 @@ namespace SQLitePlugin
         std::function<void(std::string)> onSuccess,
         std::function<void(std::string)> onFailure) noexcept
     {
-        SerialReactDispatcher.Post(
+        serialReactDispatcher.Post(
             [
                 options{ std::move(options) },
                 onSuccess{ std::move(onSuccess) },
@@ -47,13 +47,13 @@ namespace SQLitePlugin
 
                 hstring absoluteDbPath{ ResolveDbFilePath(to_hstring(options.Path)) };
 
-                if (strongThis->OpenDBs.find(absoluteDbPath) == strongThis->OpenDBs.end())
+                if (strongThis->openDBs.find(absoluteDbPath) == strongThis->openDBs.end())
                 {
                     onFailure("Specified db was not open");
                     return;
                 }
 
-                sqlite3* dbHandle = strongThis->OpenDBs[absoluteDbPath];
+                sqlite3* dbHandle = strongThis->openDBs[absoluteDbPath];
 
                 if (sqlite3_close(dbHandle) != SQLITE_OK)
                 {
@@ -63,31 +63,28 @@ namespace SQLitePlugin
                     OutputDebugStringA(debugMessage.c_str());
                 }
 
-                strongThis->OpenDBs.erase(absoluteDbPath);
+                strongThis->openDBs.erase(absoluteDbPath);
 
                 onSuccess("DB Closed");
             }
         });
-
     }
 
-    SQLitePlugin::SQLitePlugin() {
-
-    };
+    SQLitePlugin::SQLitePlugin() {};
 
     SQLitePlugin::~SQLitePlugin() {
-        for (auto& db : OpenDBs)
+        for (auto& db : openDBs)
         {
             sqlite3_close(db.second);
         }
     };
 
     void SQLitePlugin::DeleteDB(
-        DeleteOptions options,
+        DatabaseDeleteOptions options,
         std::function<void(std::string)> onSuccess,
         std::function<void(std::string)> onFailure) noexcept
     {
-        SerialReactDispatcher.Post(
+        serialReactDispatcher.Post(
             [
                 options{ std::move(options) },
                 onSuccess{ std::move(onSuccess) },
@@ -105,9 +102,9 @@ namespace SQLitePlugin
 
                 hstring absoluteDbPath{ ResolveDbFilePath(to_hstring(options.Path)) };
 
-                if (strongThis->OpenDBs.find(absoluteDbPath) != strongThis->OpenDBs.end())
+                if (strongThis->openDBs.find(absoluteDbPath) != strongThis->openDBs.end())
                 {
-                    sqlite3* dbHandle = strongThis->OpenDBs[absoluteDbPath];
+                    sqlite3* dbHandle = strongThis->openDBs[absoluteDbPath];
 
                     if (sqlite3_close(dbHandle) != SQLITE_OK)
                     {
@@ -115,7 +112,7 @@ namespace SQLitePlugin
                         OutputDebugStringA(debugMessage.c_str());
                     }
 
-                    strongThis->OpenDBs.erase(absoluteDbPath);
+                    strongThis->openDBs.erase(absoluteDbPath);
                 }
 
                 try
@@ -143,7 +140,7 @@ namespace SQLitePlugin
         std::function<void(std::string)> onSuccess,
         std::function<void(std::string)> onFailure) noexcept
     {
-        SerialReactDispatcher.Post(
+        serialReactDispatcher.Post(
             [
                 options{ std::move(options) },
                 onSuccess{ std::move(onSuccess) }
@@ -158,7 +155,7 @@ namespace SQLitePlugin
         std::function<void(std::vector<JSValueObject>)> onSuccess,
         std::function<void(std::string)> onFailure) noexcept
     {
-        SerialReactDispatcher.Post(
+        serialReactDispatcher.Post(
             [
                 options{ std::move(options) },
                 onSuccess{ std::move(onSuccess) },
@@ -176,13 +173,13 @@ namespace SQLitePlugin
                 hstring absoluteDbPath;
                 absoluteDbPath = ResolveDbFilePath(to_hstring(options.DBArgs.DBName));
 
-                if (strongThis->OpenDBs.find(absoluteDbPath) == strongThis->OpenDBs.end())
+                if (strongThis->openDBs.find(absoluteDbPath) == strongThis->openDBs.end())
                 {
                     onFailure("No such database, you must open it first");
                     return;
                 }
 
-                sqlite3* dbHandle = strongThis->OpenDBs[absoluteDbPath];
+                sqlite3* dbHandle = strongThis->openDBs[absoluteDbPath];
                 std::vector<JSValueObject> results;
 
                 for (auto& query : options.Executes)
@@ -190,7 +187,7 @@ namespace SQLitePlugin
                     JSValue result;
                     if (ExecuteQuery(dbHandle, query, result))
                     {
-                        //success
+                        // Query succeeded
                         results.push_back(
                             {
                                 { "qid", query.QID },
@@ -201,7 +198,7 @@ namespace SQLitePlugin
                     }
                     else
                     {
-                        //query failed
+                        // Query failed
                         results.push_back(
                             {
                                 { "qid", query.QID },
@@ -218,11 +215,11 @@ namespace SQLitePlugin
     }
 
     void SQLitePlugin::Open(
-        OpenOptions options,
+        DatabaseOpenOptions options,
         std::function<void(std::string)> onSuccess,
         std::function<void(std::string)> onFailure) noexcept
     {
-        SerialReactDispatcher.Post(
+        serialReactDispatcher.Post(
             [
                 options{ std::move(options) },
                 onSuccess{ std::move(onSuccess) },
@@ -235,13 +232,13 @@ namespace SQLitePlugin
 
                 if (dbFileName == nullptr || dbFileName->empty())
                 {
-                    onFailure("You must specify database name");
+                    onFailure("You must specify the database name");
                     return;
                 }
 
                 hstring absoluteDbPath{ ResolveDbFilePath(to_hstring(*dbFileName)) };
 
-                if (strongThis->OpenDBs.find(absoluteDbPath) != strongThis->OpenDBs.end())
+                if (strongThis->openDBs.find(absoluteDbPath) != strongThis->openDBs.end())
                 {
                     onSuccess("Database opened");
                     return;
@@ -264,7 +261,6 @@ namespace SQLitePlugin
 
                 int openFlags{ 0 };
                 openFlags |= SQLITE_OPEN_NOMUTEX;
-
 
                 if (options.ReadOnly && assetFileOp != nullptr)
                 {
@@ -296,7 +292,7 @@ namespace SQLitePlugin
                 int result = sqlite3_open_v2(to_string(absoluteDbPath).c_str(), &dbHandle, openFlags, nullptr);
                 if (result == SQLITE_OK)
                 {
-                    strongThis->OpenDBs[absoluteDbPath] = dbHandle;
+                    strongThis->openDBs[absoluteDbPath] = dbHandle;
                     onSuccess("Database opened");
                 }
                 else
@@ -349,8 +345,8 @@ namespace SQLitePlugin
         }
 
         int previousRowsAffected = sqlite3_total_changes(dbHandle);
-        sqlite3_stmt* stmtPtr;
-        int prepResult = sqlite3_prepare_v2(dbHandle, query.SQL.c_str(), -1, &stmtPtr, nullptr);
+        sqlite3_stmt* stmt;
+        int prepResult = sqlite3_prepare_v2(dbHandle, query.SQL.c_str(), -1, &stmt, nullptr);
 
         if (prepResult != SQLITE_OK)
         {
@@ -364,7 +360,7 @@ namespace SQLitePlugin
             int argIndex = 1;
             for (auto& arg : query.Params)
             {
-                BindStatement(stmtPtr, argIndex, arg);
+                BindStatement(stmt, argIndex, arg);
                 argIndex++;
             }
         }
@@ -378,10 +374,10 @@ namespace SQLitePlugin
 
         while (keepGoing)
         {
-            switch (sqlite3_step(stmtPtr))
+            switch (sqlite3_step(stmt))
             {
             case SQLITE_ROW:
-                resultRows.push_back(ExtractRow(stmtPtr));
+                resultRows.push_back(ExtractRow(stmt));
                 break;
 
             case SQLITE_DONE:
@@ -398,7 +394,7 @@ namespace SQLitePlugin
             }
             default:
             {
-                const char* strPtr = (char*)sqlite3_errmsg(dbHandle);
+                const char* strPtr = sqlite3_errmsg(dbHandle);
                 std::string errorMessage(strPtr, strlen(strPtr));
                 result = JSValue{ errorMessage };
                 keepGoing = false;
@@ -408,7 +404,7 @@ namespace SQLitePlugin
             }
         }
 
-        sqlite3_finalize(stmtPtr);
+        sqlite3_finalize(stmt);
 
         if (isError)
         {
@@ -430,17 +426,17 @@ namespace SQLitePlugin
         return true;
     }
 
-    JSValue SQLitePlugin::ExtractColumn(sqlite3_stmt* stmtPtr, int columnIndex)
+    JSValue SQLitePlugin::ExtractColumn(sqlite3_stmt* stmt, int columnIndex)
     {
-        switch (sqlite3_column_type(stmtPtr, columnIndex))
+        switch (sqlite3_column_type(stmt, columnIndex))
         {
         case SQLITE_INTEGER:
-            return sqlite3_column_int64(stmtPtr, columnIndex);
+            return sqlite3_column_int64(stmt, columnIndex);
         case SQLITE_FLOAT:
-            return sqlite3_column_double(stmtPtr, columnIndex);
+            return sqlite3_column_double(stmt, columnIndex);
         case SQLITE_TEXT:
         {
-            const char* strPtr = (char*)sqlite3_column_text(stmtPtr, columnIndex);
+            const char* strPtr = (char*)sqlite3_column_text(stmt, columnIndex);
             return std::string(strPtr, strlen(strPtr));
         }
         case SQLITE_BLOB:
@@ -449,8 +445,8 @@ namespace SQLitePlugin
             // In case we have a pre-populated database with a binary blob in it, 
             // we are going to base64 encode it and return as a string.
             // This is consistent with iOS implementation.
-            const void* ptr = sqlite3_column_blob(stmtPtr, columnIndex);
-            int length = sqlite3_column_bytes(stmtPtr, columnIndex);
+            const void* ptr = sqlite3_column_blob(stmt, columnIndex);
+            int length = sqlite3_column_bytes(stmt, columnIndex);
             Buffer buffer = Buffer(length);
             memcpy(buffer.data(), ptr, length);
             return to_string(CryptographicBuffer::EncodeToBase64String(buffer));
@@ -462,15 +458,15 @@ namespace SQLitePlugin
         }
     }
 
-    JSValueObject SQLitePlugin::ExtractRow(sqlite3_stmt* stmtPtr)
+    JSValueObject SQLitePlugin::ExtractRow(sqlite3_stmt* stmt)
     {
         JSValueObject row{};
-        int columnCount = sqlite3_column_count(stmtPtr);
+        int columnCount = sqlite3_column_count(stmt);
         for (int i = 0; i < columnCount; i++)
         {
-            const char* strPtr = (char*)sqlite3_column_name(stmtPtr, i);
+            const char* strPtr = (char*)sqlite3_column_name(stmt, i);
             std::string columnName(strPtr, strlen(strPtr));
-            JSValue columnValue = ExtractColumn(stmtPtr, i);
+            JSValue columnValue = ExtractColumn(stmt, i);
             if (!columnValue.IsNull())
             {
                 row[columnName] = std::move(columnValue);
