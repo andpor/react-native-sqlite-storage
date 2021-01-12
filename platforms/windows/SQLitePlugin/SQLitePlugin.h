@@ -132,8 +132,9 @@ namespace SQLitePlugin
         std::map<hstring, sqlite3*> openDBs;
         ReactDispatcher serialReactDispatcher{ ReactDispatcher::CreateSerialDispatcher() };
 
-        static IAsyncOperation<StorageFile> CopyDbAsync(const StorageFile& srcDbFile, const hstring& destDbFileName);
         static void BindStatement(sqlite3_stmt* stmt_ptr, int argIndex, const JSValue& arg);
+        static bool CloseDatabaseIfOpen(const hstring& absoluteDbPath, std::map<hstring, sqlite3*>& openDBs);
+        static IAsyncOperation<StorageFile> CopyDbAsync(const StorageFile& srcDbFile, const hstring& destDbFileName);
         static bool ExecuteQuery(sqlite3* db, const DBQuery& query, JSValue& result);
         static JSValue ExtractColumn(sqlite3_stmt* stmt, int columnIndex);
         static JSValueObject ExtractRow(sqlite3_stmt* stmt);

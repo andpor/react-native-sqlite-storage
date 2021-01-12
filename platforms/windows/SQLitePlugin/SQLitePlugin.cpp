@@ -47,25 +47,14 @@ namespace SQLitePlugin
 
                 hstring absoluteDbPath{ ResolveDbFilePath(to_hstring(options.Path)) };
 
-                if (strongThis->openDBs.find(absoluteDbPath) == strongThis->openDBs.end())
+                if (CloseDatabaseIfOpen(absoluteDbPath, strongThis->openDBs))
+                {
+                    onSuccess("DB Closed");
+                }
+                else
                 {
                     onFailure("Specified db was not open");
-                    return;
                 }
-
-                sqlite3* dbHandle = strongThis->openDBs[absoluteDbPath];
-
-                if (sqlite3_close(dbHandle) != SQLITE_OK)
-                {
-                    // C# implementation returns success if the DB failed to close
-                    // Matching the existing implementation
-                    std::string debugMessage = "SQLitePluginModule: Error closing database: " + to_string(absoluteDbPath) + "\n";
-                    OutputDebugStringA(debugMessage.c_str());
-                }
-
-                strongThis->openDBs.erase(absoluteDbPath);
-
-                onSuccess("DB Closed");
             }
         });
     }
@@ -102,18 +91,7 @@ namespace SQLitePlugin
 
                 hstring absoluteDbPath{ ResolveDbFilePath(to_hstring(options.Path)) };
 
-                if (strongThis->openDBs.find(absoluteDbPath) != strongThis->openDBs.end())
-                {
-                    sqlite3* dbHandle = strongThis->openDBs[absoluteDbPath];
-
-                    if (sqlite3_close(dbHandle) != SQLITE_OK)
-                    {
-                        std::string debugMessage = "SQLitePluginModule: Error closing database: " + to_string(absoluteDbPath) + "\n";
-                        OutputDebugStringA(debugMessage.c_str());
-                    }
-
-                    strongThis->openDBs.erase(absoluteDbPath);
-                }
+                CloseDatabaseIfOpen(absoluteDbPath, strongThis->openDBs);
 
                 try
                 {
@@ -328,6 +306,24 @@ namespace SQLitePlugin
             sqlite3_bind_text(stmt_ptr, argIndex, arg.AsString().c_str(), -1, nullptr);
             break;
         }
+    }
+
+    bool SQLitePlugin::CloseDatabaseIfOpen(const hstring& absoluteDbPath, std::map<hstring, sqlite3*>& openDBs)
+    {
+        if (openDBs.find(absoluteDbPath) != openDBs.end())
+        {
+            sqlite3* dbHandle = openDBs[absoluteDbPath];
+
+            if (sqlite3_close(dbHandle) != SQLITE_OK)
+            {
+                std::string debugMessage = "SQLitePluginModule: Error closing database: " + to_string(absoluteDbPath) + "\n";
+                OutputDebugStringA(debugMessage.c_str());
+            }
+
+            openDBs.erase(absoluteDbPath);
+            return true;
+        }
+        return false;
     }
 
     IAsyncOperation<StorageFile> SQLitePlugin::CopyDbAsync(const StorageFile& srcDbFile, const hstring& destDbFileName)
