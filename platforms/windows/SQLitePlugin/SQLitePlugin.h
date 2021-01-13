@@ -17,8 +17,24 @@ namespace SQLitePlugin
     * which executes them sequentially in the background.
     */
 
-    REACT_STRUCT(CloseOptions);
-    struct CloseOptions
+    REACT_STRUCT(DatabaseAttachOptions);
+    struct DatabaseAttachOptions
+    {
+        REACT_FIELD(MainDB, L"path");
+        // path to current database instance
+        std::string MainDB;
+
+        REACT_FIELD(DBAlias, L"dbAlias");
+        // the Alias that should be use with ATTACH DATABASE
+        std::string DBAlias;
+
+        REACT_FIELD(DBFileToAttach, L"dbName");
+        // dbName that should be attached to MainDB
+        std::string DBFileToAttach;
+    };
+
+    REACT_STRUCT(DatabaseCloseOptions);
+    struct DatabaseCloseOptions
     {
         REACT_FIELD(Path, L"path");
         // Path at which the database is located
@@ -31,6 +47,21 @@ namespace SQLitePlugin
         REACT_FIELD(Path, L"path");
         // Path at which the database is located
         std::string Path;
+    };
+
+    REACT_STRUCT(DatabaseOpenOptions);
+    struct DatabaseOpenOptions
+    {
+        REACT_FIELD(Name, L"name");
+        // Path at which to store the database
+        std::string Name;
+
+        REACT_FIELD(AssetFileName, L"assetFilename");
+        // Optional. When creating the DB, uses this file as the initial state.
+        std::string AssetFileName;
+
+        REACT_FIELD(ReadOnly, L"readOnly");
+        bool ReadOnly;
     };
 
     REACT_STRUCT(DBArgs);
@@ -69,34 +100,19 @@ namespace SQLitePlugin
         std::vector<DBQuery> Executes;
     };
 
-    REACT_STRUCT(DatabaseOpenOptions);
-    struct DatabaseOpenOptions
-    {
-        REACT_FIELD(Name, L"name");
-        // Path at which to store the database
-        std::string Name;
-
-        REACT_FIELD(AssetFileName, L"assetFilename");
-        // Optional. When creating the DB, uses this file as the initial state.
-        std::string AssetFileName;
-
-        REACT_FIELD(ReadOnly, L"readOnly");
-        bool ReadOnly;
-    };
-
     REACT_MODULE(SQLitePlugin, L"SQLite");
     struct SQLitePlugin : std::enable_shared_from_this<SQLitePlugin>
     {
     public:
         REACT_METHOD(Attach, L"attach");
         void Attach(
-            JSValue options,
+            DatabaseAttachOptions options,
             std::function<void(std::string)> onSuccess,
             std::function<void(std::string)> onFailure) noexcept;
 
         REACT_METHOD(Close, L"close");
         void Close(
-            CloseOptions options,
+            DatabaseCloseOptions options,
             std::function<void(std::string)> onSuccess,
             std::function<void(std::string)> onFailure) noexcept;
 

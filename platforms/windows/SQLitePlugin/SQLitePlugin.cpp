@@ -12,19 +12,72 @@ using namespace winrt::Windows::Security::Cryptography;
 namespace SQLitePlugin
 {
     void SQLitePlugin::Attach(
-        JSValue options,
+        DatabaseAttachOptions options,
         std::function<void(std::string)> onSuccess,
         std::function<void(std::string)> onFailure) noexcept
     {
         serialReactDispatcher.Post(
-            [onFailure{ std::move(onFailure) }]()
+            [
+                options{ std::move(options) },
+                onSuccess{ std::move(onSuccess) },
+                onFailure{ std::move(onFailure) },
+                weak_this = std::weak_ptr(shared_from_this())
+            ]()
         {
-            onFailure("attach isn't supported on this platform");
+            if (auto strongThis = weak_this.lock()) {
+
+                if (options.MainDB == nullptr)
+                {
+                    onFailure("You must specify a database to attach to");
+                    return;
+                }
+
+                if (options.DBAlias == nullptr)
+                {
+                    onFailure("You must specify a database alias to use");
+                    return;
+                }
+
+                if (options.DBFileToAttach == nullptr)
+                {
+                    onFailure("You must specify database to attach");
+                    return;
+                }
+
+                hstring absoluteDbPath;
+                absoluteDbPath = ResolveDbFilePath(to_hstring(options.MainDB));
+
+                if (strongThis->openDBs.find(absoluteDbPath) == strongThis->openDBs.end())
+                {
+                    onFailure("No such database, you must open it first");
+                    return;
+                }
+
+                hstring absoluteDbPathToAttach;
+                absoluteDbPathToAttach = ResolveDbFilePath(to_hstring(options.DBFileToAttach));
+
+                std::string statement = ("ATTACH DATABASE '" + to_string(absoluteDbPathToAttach) + "' AS " + options.DBAlias);
+
+                sqlite3* dbHandle = strongThis->openDBs[absoluteDbPath];
+
+                if (sqlite3_exec(dbHandle, statement.c_str(), NULL, NULL, NULL) == SQLITE_OK)
+                {
+                    onSuccess("Database successfully attached");
+                    return;
+                }
+                else
+                {
+                    const char* strPtr = sqlite3_errmsg(dbHandle);
+                    std::string errorMessage(strPtr, strlen(strPtr));
+                    onFailure("Failed to attach database: " + errorMessage);
+                    return;
+                }
+            }
         });
     }
 
     void SQLitePlugin::Close(
-        CloseOptions options,
+        DatabaseCloseOptions options,
         std::function<void(std::string)> onSuccess,
         std::function<void(std::string)> onFailure) noexcept
     {
@@ -479,19 +532,19 @@ namespace SQLitePlugin
         }
         else if (assetFilePath == "1")
         {
-            // Built path to pre-populated DB asset from app bundle www subdirectory
+            // Build a path to the pre-populated DB asset from app bundle www subdirectory
             return StorageFile::GetFileFromApplicationUriAsync(Uri(
                 L"ms-appx:///www/" + winrt::to_hstring(dbFileName)));
         }
         else if (assetFilePath[0] == '~')
         {
-            // Built path to pre-populated DB asset from app bundle subdirectory
+            // Build a path to the pre-populated DB asset from app bundle subdirectory
             return StorageFile::GetFileFromApplicationUriAsync(Uri(
                 L"ms-appx:///" + winrt::to_hstring(assetFilePath.substr(1))));
         }
         else
         {
-            // Built path to pre-populated DB asset from app sandbox directory
+            // Build a path to the pre-populated DB asset from app sandbox directory
             return StorageFile::GetFileFromApplicationUriAsync(Uri(
                 L"ms-appdata:///local/" + winrt::to_hstring(assetFilePath)));
         }
