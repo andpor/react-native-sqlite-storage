@@ -32,11 +32,9 @@
   "peerDependencies": {
     "react-native": ">=0.14.0"
   },
-  "dependencies": {
-    "react": "16.13.1",
-    "react-native": "0.63.2"
-  },
   "devDependencies": {
+    "react": "16.13.1",
+    "react-native": "^0.63.2",
     "react-native-windows": "^0.63.6"
   }
 }
