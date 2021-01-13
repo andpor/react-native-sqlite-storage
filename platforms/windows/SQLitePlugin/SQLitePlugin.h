@@ -61,7 +61,7 @@ namespace SQLitePlugin
         std::string AssetFileName;
 
         REACT_FIELD(ReadOnly, L"readOnly");
-        bool ReadOnly;
+        bool ReadOnly = false;
     };
 
     REACT_STRUCT(DBArgs);
@@ -75,7 +75,7 @@ namespace SQLitePlugin
     struct DBQuery
     {
         REACT_FIELD(QID, L"qid");
-        int QID;
+        int QID = 0;
 
         REACT_FIELD(Params, L"params");
         JSValueArray Params; // optional
