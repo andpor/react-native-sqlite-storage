@@ -12,7 +12,7 @@ module.exports = {
 				solutionFile: 'SQLitePlugin.sln',
 				projects: [
 				  {
-					projectFile: 'SQLitePlugin\\SQLitePlugin.vcxproj',
+					projectFile: 'SQLitePlugin/SQLitePlugin.vcxproj',
 					directDependency: true,
 				  }
 				],
