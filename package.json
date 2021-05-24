@@ -31,5 +31,10 @@
   "homepage": "https://github.com/andpor/react-native-sqlite-storage",
   "peerDependencies": {
     "react-native": ">=0.14.0"
+  },
+  "devDependencies": {
+    "react": "16.13.1",
+    "react-native": "^0.63.2",
+    "react-native-windows": "^0.63.6"
   }
 }
