@@ -353,10 +353,10 @@ namespace SQLitePlugin
             sqlite3_bind_double(stmt_ptr, argIndex, arg.AsDouble());
             break;
         case JSValueType::String:
-            sqlite3_bind_text(stmt_ptr, argIndex, arg.AsString().c_str(), -1, nullptr);
+            sqlite3_bind_text(stmt_ptr, argIndex, arg.AsString().c_str(), -1, SQLITE_TRANSIENT);
             break;
         default:
-            sqlite3_bind_text(stmt_ptr, argIndex, arg.AsString().c_str(), -1, nullptr);
+            sqlite3_bind_text(stmt_ptr, argIndex, arg.AsString().c_str(), -1, SQLITE_TRANSIENT);
             break;
         }
     }
