@@ -101,7 +101,7 @@ Add `var SQLite = require('react-native-sqlite-storage')` to your index.ios.js
 
 #### Step 3. Write application JavaScript code using the SQLite plugin
 
-Add JS application code to use SQLite API in your index.ios.js etc. Here is some sample code. For full working example see test/index.ios.callback.js. Please note that Promise based API is now supported as well with full examples in the working React Native app under test/index.ios.promise.js
+Add JS application code to use SQLite API in your index.ios.js etc. Here is some sample code:
 
 ```javascript
 errorCB(err) {
@@ -119,23 +119,28 @@ openCB() {
 var db = SQLite.openDatabase("test.db", "1.0", "Test Database", 200000, openCB, errorCB);
 db.transaction((tx) => {
   tx.executeSql('SELECT * FROM Employees a, Departments b WHERE a.department = b.department_id', [], (tx, results) => {
-      console.log("Query completed");
+    console.log("Query completed");
 
-      // Get rows with Web SQL Database spec compliance
-      var len = results.rows.length;
-      for (let i = 0; i < len; i++) {
-        let row = results.rows.item(i);
-        console.log(`Employee name: ${row.name}, Dept Name: ${row.deptName}`);
-      }
+    // Get rows with Web SQL Database spec compliance
+    var len = results.rows.length;
+    for (let i = 0; i < len; i++) {
+      let row = results.rows.item(i);
+      console.log(`Employee name: ${row.name}, Dept Name: ${row.deptName}`);
+    }
 
-      // Alternatively, you can use the non-standard raw method:
-      /*
-        let rows = results.rows.raw(); // shallow copy of rows Array
-        rows.map(row => console.log(`Employee name: ${row.name}, Dept Name: ${row.deptName}`));
-      */
-    });
+    // Alternatively, you can use the non-standard raw method:
+    /*
+    let rows = results.rows.raw(); // shallow copy of rows Array
+    rows.map(row => console.log(`Employee name: ${row.name}, Dept Name: ${row.deptName}`));
+    */
+  });
 });
 ```
+
+For full working example see [test/index.ios.callback.js](test/index.ios.callback.js).
+Note that Promise based API is now supported as well with full examples in the working
+React Native app under [test/index.ios.promise.js](test/index.ios.promise.js)
+
 
 # How to use (Android)
 
@@ -237,7 +242,7 @@ Alternative approach on newer versions of React Native (0.18+)
 import org.pgsqlite.SQLitePluginPackage;
 
 public class MainApplication extends Application implements ReactApplication {
-  ......
+  ...
 
   /**
    * A list of packages used by the app. If the app uses additional views
@@ -316,10 +321,10 @@ Enjoy!
 
 Opening a database is slightly different between iOS and Android. Where as on Android the location of the database file is fixed, there are three choices of where the database file can be located on iOS. The 'location' parameter you provide to openDatabase call indicated where you would like the file to be created. This parameter is neglected on Android.
 
-WARNING: the default location on iOS has changed in version 3.0.0 - it is now a no-sync location as mandated by Apple so the release is backward incompatible.
+> **WARNING:** the default location on iOS has changed in version 3.0.0 - it is now a no-sync location as mandated by Apple so the release is backward incompatible.
 
 
-To open a database in default no-sync location (affects iOS *only*)::
+To open a database in default no-sync location (affects iOS *only*):
 
 ```js
 SQLite.openDatabase({name: 'my.db', location: 'default'}, successcb, errorcb);
@@ -409,7 +414,7 @@ Note that in this case, the source db file will be open in read-only mode and no
 
 Sqlite3 offers the capability to attach another database to an existing database-instance, i.e. for making cross database JOINs available.
 This feature allows to SELECT and JOIN tables over multiple databases with only one statement and only one database connection.
-To archieve this, you need to open both databases and to call the attach()-method of the destination (or master) -database to the other ones.
+To archieve this, you need to open both databases and to call the attach() method of the destination (or master) database to the other ones.
 
 ```js
 let dbMaster, dbSecond;
@@ -429,26 +434,28 @@ dbSecond = SQLite.openDatabase({name: 'second'},
 
 The first argument of attach() is the name of the database, which is used in SQLite.openDatabase(). The second argument is the alias, that is used to query on tables of the attached database.
 
-The following statement would select data from the master database and include the "second"-database within a simple SELECT/JOIN-statement:
+The following statement would select data from the master database and include the "second" database within a simple SELECT/JOIN statement:
 
 ```sql
 SELECT * FROM user INNER JOIN second.subscriptions s ON s.user_id = user.id
 ```
 
-To detach a database, just use the detach()-method:
+To detach a database, just use the detach() method:
 
 ```js
 dbMaster.detach( 'second', successCallback, errorCallback );
 ```
 
-For sure, their is also Promise-support available for attach() and detach(), as shown in the example-application under the
+For sure, there is also Promise support available for attach() and detach(), as shown in the example-application under the
 directory "examples".
 
-# Original Cordova SQLite Bindings from Chris Brody and Davide Bertola
+
+## Original Cordova SQLite Bindings from Chris Brody and Davide Bertola
+
 https://github.com/litehelpers/Cordova-sqlite-storage
 
 The issues and limitations for the actual SQLite can be found on this site.
 
-## Issues
+## Known Issues
 
 1. Android binds all numeric SQL input values to double. This is due to the underlying React Native limitation where only a Numeric type is available on the interface point making it ambiguous to distinguish integers from doubles. Once I figure out the proper way to do this I will update the codebase [(Issue #4141)] (https://github.com/facebook/react-native/issues/4141).
