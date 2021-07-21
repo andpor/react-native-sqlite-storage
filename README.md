@@ -271,7 +271,7 @@ See full examples (callbacks and Promise) in the `test` directory
 
 ## Setting up your project to import a pre-populated SQLite database from application for iOS
 
-#### Step 1 - Create 'www' folder.
+#### Step 1 - Create 'www' folder
 
 Create a folder called 'www' (yes must be called precisely that else things won't work) in the project folder via Finder
 
@@ -377,7 +377,7 @@ When calling `SQLite.openDatabase` in your React Native code, you need to set th
 SQLite.openDatabase({name: 'my.db', location: 'Shared'}, successcb, errorcb);
 ```
 
-## Importing a pre-populated database.
+## Importing a pre-populated database
 
 You can import an existing - prepopulated database file into your application. Depending on your instructions in openDatabase call, the sqlite-storage will look at different places to locate you pre-populated database file.
 
@@ -458,4 +458,15 @@ The issues and limitations for the actual SQLite can be found on this site.
 
 ## Known Issues
 
-1. Android binds all numeric SQL input values to double. This is due to the underlying React Native limitation where only a Numeric type is available on the interface point making it ambiguous to distinguish integers from doubles. Once I figure out the proper way to do this I will update the codebase [(Issue #4141)] (https://github.com/facebook/react-native/issues/4141).
+1. The Android implementation only accepts binding arguments as strings. Even if we pass an integer or double as a parameter, it will be internally converted to string. Check [the issue](https://github.com/andpor/react-native-sqlite-storage/issues/410#issuecomment-592672490)
+
+2. React Native does not distinguish between integers and doubles. Only a Numeric type is available on the interface point. Check [the original issue](https://github.com/facebook/react-native/issues/4141)
+
+The current solution for both problems above is to cast the bound value in the SQL statement as shown here:
+
+```sql
+INSERT INTO products (name,qty,price) VALUES (?, cast(? as integer), cast(? as real))
+SELECT * FROM products WHERE id = cast(? as integer)
+SELECT * FROM products WHERE qty > cast(? as integer)
+SELECT * FROM products WHERE price < cast(? as real)
+```
