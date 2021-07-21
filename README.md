@@ -269,54 +269,6 @@ var SQLite = require('react-native-sqlite-storage')
 See full examples (callbacks and Promise) in the `test` directory
 
 
-## Setting up your project to import a pre-populated SQLite database from application for iOS
-
-#### Step 1 - Create 'www' folder
-
-Create a folder called 'www' (yes must be called precisely that else things won't work) in the project folder via Finder
-
-#### Step 2 - Create the database file
-
-Copy/paste your pre-populated database file into the 'www' folder. Give it the same name you are going to use in openDatabase call in your application
-
-#### Step 3 - Add file to project
-
-in XCode, right click on the main folder and select Add Files to 'your project name'
-
-![alt tag](https://raw.github.com/andpor/react-native-sqlite-storage/master/instructions/addFilesToProject.png)
-
-#### Step 4 - Choose files to add
-
-In the Add Files dialog, navigate to the 'www' directory you created in Step 1, select it, make sure you check the option to Create Folder Reference
-
-![alt tag](https://raw.github.com/andpor/react-native-sqlite-storage/master/instructions/addFilesToProjectSelect.png)
-
-#### Step 5 - Verify project structure
-
-Ensure your project structure after previous steps are executed looks like this
-
-![alt tag](https://raw.github.com/andpor/react-native-sqlite-storage/master/instructions/projectStructureAfter.png)
-
-### Step 6 - Adjust openDatabase call
-
-Modify your `openDatabase` call in your application adding the `createFromLocation` parameter.
-
-If you named your database file in step 2 as "testDB" then the `openDatabase` call should look like something like this:
-
-```js
-  ...
-  1.SQLite.openDatabase({name : "testDB", createFromLocation : 1}, okCallback,errorCallback);
-  // default - if your folder is called www and data file is named the same as the dbName - testDB in this example
-  2.SQLite.openDatabase({name : "testDB", createFromLocation : "~data/mydbfile.sqlite"}, okCallback,errorCallback);
-  // if your folder is called data rather than www or your filename does not match the name of the db
-  3.SQLite.openDatabase({name : "testDB", createFromLocation : "/data/mydbfile.sqlite"}, okCallback,errorCallback);
-  // if your folder is not in app bundle but in app sandbox i.e. downloaded from some remote location.
-  ...
-```
-For Android, the www directory is always relative to the assets directory for the app: src/main/assets
-
-Enjoy!
-
 ## Opening a database
 
 Opening a database is slightly different between iOS and Android. Where as on Android the location of the database file is fixed, there are three choices of where the database file can be located on iOS. The 'location' parameter you provide to openDatabase call indicated where you would like the file to be created. This parameter is neglected on Android.
@@ -381,7 +333,6 @@ SQLite.openDatabase({name: 'my.db', location: 'Shared'}, successcb, errorcb);
 
 You can import an existing - prepopulated database file into your application. Depending on your instructions in openDatabase call, the sqlite-storage will look at different places to locate you pre-populated database file.
 
-
 Use this flavor of openDatabase call, if your folder is called www and data file is named the same as the dbName - testDB in this example
 
 ```js
@@ -409,6 +360,55 @@ SQLite.openDatabase({name : "testDB", readOnly: true, createFromLocation : "/dat
 ```
 
 Note that in this case, the source db file will be open in read-only mode and no updates will be allowed. You cannot delete a database that was open with readOnly option. For Android, the read only option works with pre-populated db files located in FilesDir directory because all other assets are never physically located on the file system but rather read directly from the app bundle.
+
+
+## Setting up your project to import a pre-populated SQLite database from application for iOS
+
+#### Step 1 - Create 'www' folder
+
+Create a folder called 'www' (yes must be called precisely that else things won't work) in the project folder via Finder
+
+#### Step 2 - Create the database file
+
+Copy/paste your pre-populated database file into the 'www' folder. Give it the same name you are going to use in openDatabase call in your application
+
+#### Step 3 - Add file to project
+
+in XCode, right click on the main folder and select Add Files to 'your project name'
+
+![alt tag](https://raw.github.com/andpor/react-native-sqlite-storage/master/instructions/addFilesToProject.png)
+
+#### Step 4 - Choose files to add
+
+In the Add Files dialog, navigate to the 'www' directory you created in Step 1, select it, make sure you check the option to Create Folder Reference
+
+![alt tag](https://raw.github.com/andpor/react-native-sqlite-storage/master/instructions/addFilesToProjectSelect.png)
+
+#### Step 5 - Verify project structure
+
+Ensure your project structure after previous steps are executed looks like this
+
+![alt tag](https://raw.github.com/andpor/react-native-sqlite-storage/master/instructions/projectStructureAfter.png)
+
+### Step 6 - Adjust openDatabase call
+
+Modify your `openDatabase` call in your application adding the `createFromLocation` parameter.
+
+If you named your database file in step 2 as "testDB" then the `openDatabase` call should look like something like this:
+
+```js
+  ...
+  1.SQLite.openDatabase({name : "testDB", createFromLocation : 1}, okCallback,errorCallback);
+  // default - if your folder is called www and data file is named the same as the dbName - testDB in this example
+  2.SQLite.openDatabase({name : "testDB", createFromLocation : "~data/mydbfile.sqlite"}, okCallback,errorCallback);
+  // if your folder is called data rather than www or your filename does not match the name of the db
+  3.SQLite.openDatabase({name : "testDB", createFromLocation : "/data/mydbfile.sqlite"}, okCallback,errorCallback);
+  // if your folder is not in app bundle but in app sandbox i.e. downloaded from some remote location.
+  ...
+```
+
+For Android, the www directory is always relative to the assets directory for the app: src/main/assets
+
 
 ## Attaching another database
 
