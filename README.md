@@ -26,7 +26,7 @@ Version 3.2 is the first version compatible with RN 0.40.
 Then follow the instructions for your platform to link react-native-sqlite-storage into your project
 
 ## Promises
-To enable promises, run 
+To enable promises, run:
 ```javascript
 SQLite.enablePromise(true);
 ```
@@ -66,11 +66,13 @@ Done, skip to Step 2.
 ##### Without CocoaPods:
 
 This command should be executed in the root directory of your RN project
+
 ```shell
 react-native link
 ```
 
 rnpm and xcode are dependencies of this project and should get installed with the module but in case there are issue running rnpm link and rnpm/xcode are not already installed you can try to install it globally as follows:
+
 ```shell
 npm -g install rnpm xcode
 ```
@@ -119,19 +121,16 @@ db.transaction((tx) => {
   tx.executeSql('SELECT * FROM Employees a, Departments b WHERE a.department = b.department_id', [], (tx, results) => {
       console.log("Query completed");
 
-      // Get rows with Web SQL Database spec compliance.
-
+      // Get rows with Web SQL Database spec compliance
       var len = results.rows.length;
       for (let i = 0; i < len; i++) {
         let row = results.rows.item(i);
         console.log(`Employee name: ${row.name}, Dept Name: ${row.deptName}`);
       }
 
-      // Alternatively, you can use the non-standard raw method.
-
+      // Alternatively, you can use the non-standard raw method:
       /*
         let rows = results.rows.raw(); // shallow copy of rows Array
-
         rows.map(row => console.log(`Employee name: ${row.name}, Dept Name: ${row.deptName}`));
       */
     });
@@ -172,8 +171,9 @@ module.exports = {
 
 Located under Gradle Settings in Project Panel
 
+File: android/settings.gradle
+
 ```gradle
-// file: android/settings.gradle
 ...
 
 include ':react-native-sqlite-storage'
@@ -181,14 +181,13 @@ project(':react-native-sqlite-storage').projectDir = new File(rootProject.projec
 // IMPORTANT: if you are working with a version less than 4.0.0 the project directory is '../node_modules/react-native-sqlite-storage/src/android'
 ```
 
-#### Step 2 - Update app module Gradle Build script
+#### Step 2 - Update app module Gradle build script
 
 Located under Gradle Settings in Project Panel
 
-```gradle
-// file: android/app/build.gradle
-...
+File: android/app/build.gradle
 
+```gradle
 dependencies {
     ...
     implementation project(':react-native-sqlite-storage')
@@ -199,7 +198,7 @@ dependencies {
 
 This should work on React version but if it does not, try the ReactActivity based approach
 
-> Note: for version 3.0.0 and below you would have to pass in the instance of your Activity to the SQLitePluginPackage constructor
+> **Note:** for version 3.0.0 and below you would have to pass in the instance of your Activity to the SQLitePluginPackage constructor
 
 ```java
 ...
@@ -232,7 +231,7 @@ public class MainActivity extends Activity implements DefaultHardwareBackBtnHand
 
 Alternative approach on newer versions of React Native (0.18+)
 
-> Note: for version 3.0.0 and below you would have to pass in the instance of your Activity to the SQLitePluginPackage constructor
+> **Note:** for version 3.0.0 and below you would have to pass in the instance of your Activity to the SQLitePluginPackage constructor
 
 ```java
 import org.pgsqlite.SQLitePluginPackage;
@@ -255,15 +254,15 @@ public class MainApplication extends Application implements ReactApplication {
 
 #### Step 4 - Require and use in Javascript
 
-See full examples (callbacks and Promise) in the `test` directory
+File: index.android.js
 
 ```js
-// file: index.android.js
-
 var React = require('react-native');
 var SQLite = require('react-native-sqlite-storage')
-...
 ```
+
+See full examples (callbacks and Promise) in the `test` directory
+
 
 ## Setting up your project to import a pre-populated SQLite database from application for iOS
 
@@ -300,7 +299,6 @@ Modify your `openDatabase` call in your application adding the `createFromLocati
 If you named your database file in step 2 as "testDB" then the `openDatabase` call should look like something like this:
 
 ```js
-
   ...
   1.SQLite.openDatabase({name : "testDB", createFromLocation : 1}, okCallback,errorCallback);
   // default - if your folder is called www and data file is named the same as the dbName - testDB in this example
@@ -309,7 +307,6 @@ If you named your database file in step 2 as "testDB" then the `openDatabase` ca
   3.SQLite.openDatabase({name : "testDB", createFromLocation : "/data/mydbfile.sqlite"}, okCallback,errorCallback);
   // if your folder is not in app bundle but in app sandbox i.e. downloaded from some remote location.
   ...
-
 ```
 For Android, the www directory is always relative to the assets directory for the app: src/main/assets
 
