@@ -61,7 +61,7 @@ OR
 pod update
 ```
 
-Done, skip to Step 2.
+Done, skip to How to Use
 
 ##### Without CocoaPods:
 
@@ -93,61 +93,14 @@ Add libSQLite.a (from Workspace location) to the required Libraries and Framewor
 
 ![alt tag](https://raw.github.com/andpor/react-native-sqlite-storage/master/instructions/addlibs.png)
 
-#### Step 2. Application JavaScript require
 
-Add `var SQLite = require('react-native-sqlite-storage')` to your index.ios.js
-
-![alt tag](instructions/require.png)
-
-#### Step 3. Write application JavaScript code using the SQLite plugin
-
-Add JS application code to use SQLite API in your index.ios.js etc. Here is some sample code:
-
-```javascript
-errorCB(err) {
-  console.log("SQL Error: " + err);
-},
-
-successCB() {
-  console.log("SQL executed fine");
-},
-
-openCB() {
-  console.log("Database OPENED");
-},
-
-var db = SQLite.openDatabase("test.db", "1.0", "Test Database", 200000, openCB, errorCB);
-db.transaction((tx) => {
-  tx.executeSql('SELECT * FROM Employees a, Departments b WHERE a.department = b.department_id', [], (tx, results) => {
-    console.log("Query completed");
-
-    // Get rows with Web SQL Database spec compliance
-    var len = results.rows.length;
-    for (let i = 0; i < len; i++) {
-      let row = results.rows.item(i);
-      console.log(`Employee name: ${row.name}, Dept Name: ${row.deptName}`);
-    }
-
-    // Alternatively, you can use the non-standard raw method:
-    /*
-    let rows = results.rows.raw(); // shallow copy of rows Array
-    rows.map(row => console.log(`Employee name: ${row.name}, Dept Name: ${row.deptName}`));
-    */
-  });
-});
-```
-
-For full working example see [test/index.ios.callback.js](test/index.ios.callback.js).
-Note that Promise based API is now supported as well with full examples in the working
-React Native app under [test/index.ios.promise.js](test/index.ios.promise.js)
-
-
-# How to use (Android)
+# Android
 
 ### React Native 0.60 and above
 
-If you would like to use the devices SQLite there are no extra steps.
-However, if you would like to use the SQLite bundled with this library (includes support for FTS5), add the following to your `react-native.config.js`
+If you would like to use the device's SQLite library there are no extra steps.
+
+However, if you would like to use the SQLite library bundled with this plugin (includes support for FTS5), add the following to your `react-native.config.js`:
 
 ```js
 module.exports = {
@@ -257,16 +210,54 @@ public class MainApplication extends Application implements ReactApplication {
 }
 ```
 
-#### Step 4 - Require and use in Javascript
 
-File: index.android.js
+# How to Use
 
-```js
-var React = require('react-native');
-var SQLite = require('react-native-sqlite-storage')
+Add `var SQLite = require('react-native-sqlite-storage')` to your `App.js`:
+
+![alt tag](instructions/require.png)
+
+Add JS application code to use the SQLite plugin in your `App.js`
+
+Here is a sample code:
+
+```javascript
+errorCB(err) {
+  console.log("SQL Error: " + err);
+},
+
+successCB() {
+  console.log("SQL executed fine");
+},
+
+openCB() {
+  console.log("Database OPENED");
+},
+
+var db = SQLite.openDatabase("test.db", "1.0", "Test Database", 200000, openCB, errorCB);
+db.transaction((tx) => {
+  tx.executeSql('SELECT * FROM Employees a, Departments b WHERE a.department = b.department_id', [], (tx, results) => {
+    console.log("Query completed");
+
+    // Get rows with Web SQL Database spec compliance
+    var len = results.rows.length;
+    for (let i = 0; i < len; i++) {
+      let row = results.rows.item(i);
+      console.log(`Employee name: ${row.name}, Dept Name: ${row.deptName}`);
+    }
+
+    // Alternatively, you can use the non-standard raw method:
+    /*
+    let rows = results.rows.raw(); // shallow copy of rows Array
+    rows.map(row => console.log(`Employee name: ${row.name}, Dept Name: ${row.deptName}`));
+    */
+  });
+});
 ```
 
-See full examples (callbacks and Promise) in the `test` directory
+For full working example see [test/index.ios.callback.js](test/index.ios.callback.js).
+Note that Promise based API is now supported as well with full examples in the working
+React Native app under [test/index.ios.promise.js](test/index.ios.promise.js)
 
 
 ## Opening a database
@@ -412,9 +403,9 @@ For Android, the www directory is always relative to the assets directory for th
 
 ## Attaching another database
 
-Sqlite3 offers the capability to attach another database to an existing database-instance, i.e. for making cross database JOINs available.
+SQLite3 offers the capability to attach another database to an existing database instance, i.e. for making cross database JOINs available.
 This feature allows to SELECT and JOIN tables over multiple databases with only one statement and only one database connection.
-To archieve this, you need to open both databases and to call the attach() method of the destination (or master) database to the other ones.
+To archieve this, you need to open both databases and to call the `attach()` method of the destination (or master) database to the other ones.
 
 ```js
 let dbMaster, dbSecond;
@@ -432,7 +423,7 @@ dbSecond = SQLite.openDatabase({name: 'second'},
 );
 ```
 
-The first argument of attach() is the name of the database, which is used in SQLite.openDatabase(). The second argument is the alias, that is used to query on tables of the attached database.
+The first argument of `attach()` is the name of the database, which is used in `SQLite.openDatabase()`. The second argument is the alias, that is used to query on tables of the attached database.
 
 The following statement would select data from the master database and include the "second" database within a simple SELECT/JOIN statement:
 
@@ -440,14 +431,13 @@ The following statement would select data from the master database and include t
 SELECT * FROM user INNER JOIN second.subscriptions s ON s.user_id = user.id
 ```
 
-To detach a database, just use the detach() method:
+To detach a database, just use the `detach()` method:
 
 ```js
 dbMaster.detach( 'second', successCallback, errorCallback );
 ```
 
-For sure, there is also Promise support available for attach() and detach(), as shown in the example-application under the
-directory "examples".
+There is also Promise support for the `attach()` and `detach()` methods as shown in the example application under the [test](test) folder
 
 
 ## Original Cordova SQLite Bindings from Chris Brody and Davide Bertola
