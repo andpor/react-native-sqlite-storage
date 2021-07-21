@@ -25,12 +25,6 @@ Version 3.2 is the first version compatible with RN 0.40.
 ```
 Then follow the instructions for your platform to link react-native-sqlite-storage into your project
 
-## Promises
-To enable promises, run:
-```javascript
-SQLite.enablePromise(true);
-```
-
 ## iOS
 
 ### React Native 0.60 and above
@@ -439,6 +433,14 @@ dbMaster.detach( 'second', successCallback, errorCallback );
 
 There is also Promise support for the `attach()` and `detach()` methods as shown in the example application under the [test](test) folder
 
+
+## Promises
+
+To enable promises, run:
+
+```javascript
+SQLite.enablePromise(true);
+```
 
 ## Original Cordova SQLite Bindings from Chris Brody and Davide Bertola
 
