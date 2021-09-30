@@ -8,12 +8,10 @@
 package io.liteglue;
 
 import android.annotation.SuppressLint;
-
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteStatement;
-
 import android.util.Base64;
 
 import com.facebook.common.logging.FLog;
@@ -24,8 +22,6 @@ import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 
 import java.io.File;
-import java.lang.IllegalArgumentException;
-import java.lang.Number;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -49,16 +45,16 @@ class SQLiteAndroidDatabase {
     /**
      * Open a database.
      *
-     * @param dbfile   The database File specification
+     * @param dbfile The database File specification
      */
     void open(File dbfile) throws Exception {
-        this.open(dbfile,SQLiteOpenFlags.READWRITE | SQLiteOpenFlags.CREATE);
+        this.open(dbfile, SQLiteOpenFlags.READWRITE | SQLiteOpenFlags.CREATE);
     }
 
     /**
      * Open a database.
      *
-     * @param dbfile   The database File specification
+     * @param dbfile The database File specification
      */
     void open(File dbfile, int openFlags) throws Exception {
         this.dbFile = dbfile; // for possible bug workaround
@@ -78,20 +74,20 @@ class SQLiteAndroidDatabase {
 
     void bugWorkaround() throws Exception {
         this.closeDatabaseNow();
-        this.open(this.dbFile,this.openFlags);
+        this.open(this.dbFile, this.openFlags);
     }
 
     /**
      * Executes a batch request and sends the results via cbc.
      *
-     * @param queryArr   Array of query strings
+     * @param queryArr    Array of query strings
      * @param queryParams Array of JSON query parameters
-     * @param queryIDs   Array of query ids
-     * @param cbc        Callback context from Cordova API
+     * @param queryIDs    Array of query ids
+     * @param cbc         Callback context from Cordova API
      */
     @SuppressLint("NewApi")
     void executeSqlBatch(String[] queryArr, ReadableArray[] queryParams,
-                                 String[] queryIDs, CallbackContext cbc) {
+                         String[] queryIDs, CallbackContext cbc) {
 
         if (mydb == null) {
             // not allowed - can only happen if someone has closed (and possibly deleted) a database and then re-used the database
@@ -170,9 +166,7 @@ class SQLiteAndroidDatabase {
                         errorMessage = ex.getMessage();
                         FLog.e(SQLitePlugin.TAG, "SQLiteDatabase.executeInsert() failed", ex);
                     }
-                }
-
-                else if (queryType == QueryType.begin) {
+                } else if (queryType == QueryType.begin) {
                     needRawQuery = false;
                     try {
                         mydb.beginTransaction();
@@ -183,9 +177,7 @@ class SQLiteAndroidDatabase {
                         errorMessage = ex.getMessage();
                         FLog.e(SQLitePlugin.TAG, "SQLiteDatabase.beginTransaction() failed", ex);
                     }
-                }
-
-                else if (queryType == QueryType.commit) {
+                } else if (queryType == QueryType.commit) {
                     needRawQuery = false;
                     try {
                         mydb.setTransactionSuccessful();
@@ -197,9 +189,7 @@ class SQLiteAndroidDatabase {
                         errorMessage = ex.getMessage();
                         FLog.e(SQLitePlugin.TAG, "SQLiteDatabase.setTransactionSuccessful/endTransaction() failed", ex);
                     }
-                }
-
-                else if (queryType == QueryType.rollback) {
+                } else if (queryType == QueryType.rollback) {
                     needRawQuery = false;
                     try {
                         mydb.endTransaction();
@@ -276,8 +266,8 @@ class SQLiteAndroidDatabase {
      * @return results in string form
      */
     private WritableMap executeSqlStatementQuery(SQLiteDatabase mydb,
-                                                String query, ReadableArray queryParams,
-                                                CallbackContext cbc) throws Exception {
+                                                 String query, ReadableArray queryParams,
+                                                 CallbackContext cbc) throws Exception {
         WritableMap rowsResult = Arguments.createMap();
 
         Cursor cur;

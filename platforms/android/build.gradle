@@ -1,7 +1,7 @@
 buildscript {
     repositories {
         google()
-        jcenter()
+        mavenCentral()
     }
 
     dependencies {
@@ -40,4 +40,6 @@ repositories {
 
 dependencies {
     implementation 'com.facebook.react:react-native:+'
+    implementation 'net.zetetic:android-database-sqlcipher:4.4.3@aar'
+    implementation "androidx.sqlite:sqlite:2.1.0"
 }
