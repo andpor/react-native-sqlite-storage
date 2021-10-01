@@ -1,4 +1,8 @@
 # Version History
+
+v6.0.1
+ 1. Add missing error function to plugin.
+
 v6.0.0
  1. Added RNW>=0.62 WinRT CPP implementation thanks to tsytsarkin (https://github.com/andpor/react-native-sqlite-storage/pull/461)
  2. Fix xcode 12 compatibility (https://github.com/andpor/react-native-sqlite-storage/pull/447)
