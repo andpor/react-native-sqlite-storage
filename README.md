@@ -207,11 +207,13 @@ public class MainApplication extends Application implements ReactApplication {
 
 
 ## Windows
+
 ** RNW 0.63 with Autolinking and above **
 
 No manual steps required
 
 ** React Native 0.62 **
+
 ### Step 1: Update the solution file
 
 Add the `SQLitePlugin` project to your solution.
@@ -237,27 +239,6 @@ Add `#include "winrt/SQLitePlugin.h"`.
 Add `PackageProviders().Append(winrt::SQLitePlugin::ReactPackageProvider());` before `InitializeComponent();`.
 
 Refer to this guide for more details: https://microsoft.github.io/react-native-windows/docs/next/native-modules-using
-
-
-## Setting up your project to import a pre-populated SQLite database from application for iOS
-
-#### Step 1 - Create 'www' folder.
-
-Create a folder called 'www' (yes must be called precisely that else things won't work) in the project folder via Finder
-
-#### Step 2 - Create the database file
-
-Copy/paste your pre-populated database file into the 'www' folder. Give it the same name you are going to use in openDatabase call in your application
-
-#### Step 3 - Add file to project
-
-in XCode, right click on the main folder and select Add Files to 'your project name'
-
-![alt tag](https://raw.github.com/andpor/react-native-sqlite-storage/master/instructions/addFilesToProject.png)
-
-#### Step 4 - Choose files to add
-
-In the Add Files dialog, navigate to the 'www' directory you created in Step 1, select it, make sure you check the option to Create Folder Reference
 
 
 # How to Use
