@@ -208,13 +208,13 @@ public class MainApplication extends Application implements ReactApplication {
 
 ## Windows
 
-** RNW 0.63 with Autolinking and above **
+### RNW 0.63 with Autolinking and above
 
 No manual steps required
 
-** React Native 0.62 **
+### React Native 0.62
 
-### Step 1: Update the solution file
+#### Step 1: Update the solution file
 
 Add the `SQLitePlugin` project to your solution.
 
@@ -222,21 +222,20 @@ Add the `SQLitePlugin` project to your solution.
 2. Right-click Solution icon in Solution Explorer > Add > Existing Project
 3. Select `node_modules\react-native-sqlite-storage\platforms\windows\SQLitePlugin\SQLitePlugin.vcxproj`
 
-### Step 2: Update the .vcxproj file
+#### Step 2: Update the .vcxproj file
 
 Add a reference to `SQLitePlugin` to your main application project. From Visual Studio 2019:
 
 1. Right-click main application project > Add > Reference... 
 2. Check `SQLitePlugin` from Solution Projects
 
+#### Step 3: Update the `pch.h` file
 
-### Step 3: Update the `pch.h` file
+Add `#include "winrt/SQLitePlugin.h"`
 
-Add `#include "winrt/SQLitePlugin.h"`.
+#### Step 4: Register the package in `App.cpp`
 
-### Step 4: Register the package in `App.cpp`
-
-Add `PackageProviders().Append(winrt::SQLitePlugin::ReactPackageProvider());` before `InitializeComponent();`.
+Add `PackageProviders().Append(winrt::SQLitePlugin::ReactPackageProvider());` before `InitializeComponent();`
 
 Refer to this guide for more details: https://microsoft.github.io/react-native-windows/docs/next/native-modules-using
 
