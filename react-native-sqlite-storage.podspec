@@ -18,5 +18,6 @@ Pod::Spec.new do |s|
   s.source_files   = "platforms/ios/*.{h,m}"
 
   s.dependency 'React'
+  s.dependency 'SQLCipher'
   s.library = 'sqlite3'
 end
