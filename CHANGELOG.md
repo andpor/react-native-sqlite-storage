@@ -1,4 +1,8 @@
 # Version History
+
+v5.1.0
+ - Use SQLCipher by default
+
 v5.0.0
  1. Change RN to Google Maven (https://github.com/andpor/react-native-sqlite-storage/pull/405)
  2. Native Android with JSON1 support (https://github.com/andpor/react-native-sqlite-storage/pull/392)
@@ -45,7 +49,7 @@ v3.3.4
  
 v3.3.3
  1. Fix for the db location string [Issue #172] (https://github.com/andpor/react-native-sqlite-storage/issues/172)
- 2. #define in iOS casebase for SQLCIPHER. If you include this #define in your main project settings, this library will pick up appropriate key handling code automatically.
+ 2. define in iOS casebase for SQLCIPHER. If you include this #define in your main project settings, this library will pick up appropriate key handling code automatically.
  
 v3.3.2
  1. Yoga import fix
