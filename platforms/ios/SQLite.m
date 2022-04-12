@@ -22,6 +22,8 @@
 #import <React/RCTUtils.h>
 #import <React/RCTBridge.h>
 #import <React/RCTEventDispatcher.h>
+#define SQLITE_HAS_CODEC
+
 
 /*
  * Copyright (C) 2015-Present Andrzej Porebski
@@ -31,8 +33,7 @@
  * This library is available under the terms of the MIT License (2008).
  * See http://opensource.org/licenses/alphabetical for full text.
  */
-
-#import "sqlite3.h"
+#include <SQLCipher/sqlite3.h>
 
 #include <regex.h>
 
@@ -225,16 +226,22 @@ RCT_EXPORT_METHOD(open: (NSDictionary *) options success:(RCTResponseSenderBlock
         } else {
           sqlite3_create_function(db, "regexp", 2, SQLITE_ANY, NULL, &sqlite_regexp, NULL, NULL);
           const char *key = NULL;
-          
-#ifdef SQLCIPHER
+
           NSString *dbkey = options[@"key"];
           if (dbkey != NULL) {
             key = [dbkey UTF8String];
             if (key != NULL) {
-              sqlite3_key(db, key, strlen(key));
+                sqlite3_key(db, key, strlen(key));
+                if (sqlite3_exec(db, (const char*)"SELECT count(*) FROM sqlite_master;", NULL, NULL, NULL) != SQLITE_OK){
+                    RCTLog(@"Unable to open database with key, try to open with empty key");
+                    const char *emptyKey="";
+                    sqlite3_close (db);
+                    sqlite3_open_v2(name, &db,sqlOpenFlags, NULL);
+                    sqlite3_create_function(db, "regexp", 2, SQLITE_ANY, NULL, &sqlite_regexp, NULL, NULL);
+                }
+                    
             }
           }
-#endif
 
           sqlite3_exec(db, "PRAGMA journal_mode=WAL;", NULL, NULL, NULL);
 
