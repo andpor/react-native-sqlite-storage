@@ -406,7 +406,6 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                     dbfile.getParentFile().mkdirs();
                 }
             }
-            SQLiteDatabase mydb;
 
             FLog.v(TAG, "DB file is ready, proceeding to OPEN SQLite DB: " + dbfile.getAbsolutePath());
             SQLiteDatabase mydb;
@@ -868,7 +867,6 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
         final int openFlags;
         private String key;
         private String assetFilename;
-        private String key;
         private boolean androidLockWorkaround;
         final BlockingQueue<DBQuery> q;
         final CallbackContext openCbc;
