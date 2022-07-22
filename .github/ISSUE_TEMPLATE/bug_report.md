@@ -20,8 +20,8 @@ about: Create a report to help us improve
 
 ## Steps to Reproduce (for bugs)
 <!--- Provide a link to a live example, or - -->
-<!--- Fork the jsfiddle to reproduce https://codepen.io/alphalpha/pen/oqKJgG ->
-<!--- Important - if you are having issues with SQL, make sure you provide a runnable example else we may not be able to reproduce the problem !-->
+<!--- Fork the jsfiddle to reproduce https://codepen.io/alphalpha/pen/oqKJgG -->
+<!--- Important - if you are having issues with SQL, make sure you provide a runnable example else we may not be able to reproduce the problem -->
 
 ## Context
 <!--- How has this issue affected you? What are you trying to accomplish? -->

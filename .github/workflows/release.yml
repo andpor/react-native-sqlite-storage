@@ -1,0 +1,63 @@
+name: Release new version
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to increment'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+          - preminor
+          - premajor
+          - prepatch
+
+      channel:
+        description: 'Choose channel for release'
+        required: false
+        type: choice
+        default: production
+        options:
+          - production
+          - beta
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Git repository # clone the repo to local ci workspace
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.ADMIN_GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 14
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'npm'
+
+      - name: Install npm dependencies
+        run: npm install -g release-it
+
+      - name: Setup git user
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-action"
+      - name: Release (production)
+        if: ${{ github.event.inputs.channel == 'production' }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.ADMIN_GITHUB_TOKEN }}
+        run: |
+          release-it --ci --increment=${{ github.event.inputs.version }}
+      - name: Release (no-production)
+        if: ${{ github.event.inputs.channel != 'production' }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.ADMIN_GITHUB_TOKEN }}
+        run: |
+          release-it --ci --increment=${{ github.event.inputs.version }} --preRelease=${{ github.event.inputs.channel }}

@@ -1,5 +1,5 @@
 {
-  "name": "react-native-sqlite-storage",
+  "name": "@mendix/react-native-sqlite-storage",
   "version": "5.0.0",
   "description": "SQLite3 bindings for React Native (Android & iOS)",
   "main": "sqlite.js",
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/andpor/react-native-sqlite-storage.git"
+    "url": "https://github.com/mendix/react-native-sqlite-storage.git"
   },
   "keywords": [
     "react-native-sqlite-storage",
@@ -23,13 +23,35 @@
     "promise",
     "cordova-sqlite-storage"
   ],
-  "author": "Andrzej Porebski",
+  "files": [
+    "lib/*",
+    "platforms/*"
+  ],
+  "author": "Mendix, Andrzej Porebski",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/andpor/react-native-sqlite-storage/issues"
+    "url": "https://github.com/mendix/react-native-sqlite-storage/issues"
   },
-  "homepage": "https://github.com/andpor/react-native-sqlite-storage",
+  "homepage": "https://github.com/mendix/react-native-sqlite-storage",
   "peerDependencies": {
     "react-native": ">=0.14.0"
+  },
+  "release-it": {
+    "git": {
+      "commitMessage": "chore: release ${version}",
+      "tagName": "v${version}"
+    },
+    "npm": {
+      "publish": true,
+      "allowSameVersion": true
+    },
+    "github": {
+      "release": true
+    },
+    "plugins": {
+      "@release-it/conventional-changelog": {
+        "preset": "angular"
+      }
+    }
   }
 }

@@ -1,4 +1,8 @@
 # Version History
+
+v5.1.0
+ - Use SQLCipher by default
+
 v5.0.0
  1. Change RN to Google Maven (https://github.com/andpor/react-native-sqlite-storage/pull/405)
  2. Native Android with JSON1 support (https://github.com/andpor/react-native-sqlite-storage/pull/392)
