@@ -1,5 +1,8 @@
 # Version History
 
+v6.1.0
+- Use SQLCipher by default
+
 v6.0.1
  1. Add missing error function to plugin.
 
