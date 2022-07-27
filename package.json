@@ -26,7 +26,9 @@
   "files": [
     "lib/*",
     "platforms/*",
-    "react-native.config.js"
+    "react-native.config.js",
+    "react-native-sqlite-storage.podspec",
+    "LICENCE"
   ],
   "author": "Mendix, Andrzej Porebski",
   "license": "MIT",
