@@ -25,7 +25,8 @@
   ],
   "files": [
     "lib/*",
-    "platforms/*"
+    "platforms/*",
+    "react-native.config.js"
   ],
   "author": "Mendix, Andrzej Porebski",
   "license": "MIT",
