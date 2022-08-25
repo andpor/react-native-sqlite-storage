@@ -43,6 +43,8 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import net.sqlcipher.database.SQLiteDatabase;
 import net.sqlcipher.database.SQLiteStatement;
@@ -86,6 +88,13 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
     @Override
     public String getName() {
         return PLUGIN_NAME;
+    }
+
+    @Override
+    public Map<String, Object> getConstants() {
+       final Map<String, Object> constants = new HashMap<>();
+       constants.put("SUPPORTS_ENCRYPTION", true);
+       return constants;
     }
 
     @ReactMethod
