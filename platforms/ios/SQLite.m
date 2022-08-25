@@ -741,4 +741,9 @@ RCT_EXPORT_METHOD(executeSql: (NSDictionary *) options success:(RCTResponseSende
   return YES;
 }
 
+- (NSDictionary *)constantsToExport
+{
+ return @{ @"SUPPORTS_ENCRYPTION": @true };
+}
+
 @end /* vim: set expandtab : */
