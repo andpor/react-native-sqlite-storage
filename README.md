@@ -3,6 +3,9 @@ SQLite3 Native Plugin for React Native for both Android (Classic and Native), iO
 
 Foundation of this library is based on Chris Brody's Cordova SQLite plugin.
 
+## Translation
+- [Portuguese](README.br.md)
+
 Features:
   1. iOS and Android supported via identical JavaScript API.
   2. Android in pure Java and Native modes
