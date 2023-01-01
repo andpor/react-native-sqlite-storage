@@ -307,7 +307,7 @@ namespace SQLitePlugin
                     {
                         try
                         {
-                            CopyDbAsync(assetFile, to_hstring(*dbFileName)).GetResults();
+                            CopyDbAsync(assetFile, to_hstring(*dbFileName));
                         }
                         catch (hresult_error const& ex)
                         {
