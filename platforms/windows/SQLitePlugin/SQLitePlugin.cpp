@@ -307,14 +307,9 @@ namespace SQLitePlugin
                     {
                         try
                         {
-                            CopyDbAsync(assetFile, to_hstring(*dbFileName));
+                            CopyDbAsync(assetFile, to_hstring(*dbFileName)).get();
                         }
-                        catch (hresult_error const& ex)
-                        {
-                            // CopyDbAsync throws when the file already exists.
-                            onFailure("Unable to copy asset file: " + winrt::to_string(ex.message()));
-                            return;
-                        }
+                        catch (hresult_error const& ex){}
                     }
                 }
 
