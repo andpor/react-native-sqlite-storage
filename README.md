@@ -334,6 +334,7 @@ Almost identical to iOS, but we'll be using Visual Studio
 2. Open `windows\<ProjectName>.sln` with Visual Studio
 3. Right-click `<ProjectName>\Assets` in the Solution Explorer
 4. `Add -> Existing Item` and select your database
+5. Finally, set `Content` to `True` in File Properties (right side of Visual Studio, by default)
 
 Enjoy!
 
