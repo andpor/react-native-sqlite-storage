@@ -282,7 +282,7 @@ Add `PackageProviders().Append(winrt::SQLitePlugin::ReactPackageProvider());` be
 Refer to this guide for more details: https://microsoft.github.io/react-native-windows/docs/next/native-modules-using
 
 
-## Setting up your project to import a pre-populated SQLite database from application for iOS
+## Pre-populated SQLite database (iOS)
 
 #### Step 1 - Create 'www' folder.
 
@@ -326,6 +326,15 @@ Modify you openDatabase call in your application adding createFromLocation param
 
 ```
 For Android, the www directory is always relative to the assets directory for the app: src/main/assets
+
+## Pre-populated SQLite database (Windows)
+Almost identical to iOS, but we'll be using Visual Studio
+
+1. Put your database in `windows\<ProjectName>\www`
+2. Open `windows\<ProjectName>.sln` with Visual Studio
+3. Right-click `<ProjectName>\Assets` in the Solution Explorer
+4. `Add -> Existing Item` and select your database
+5. Finally, set `Content` to `True` in File Properties (right side of Visual Studio, by default)
 
 Enjoy!
 
