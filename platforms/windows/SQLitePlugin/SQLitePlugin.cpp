@@ -311,7 +311,7 @@ namespace SQLitePlugin
                         }
                         catch (hresult_error const& ex)
                         {
-                            if (ex.code() == 0x800700B7) 
+                            if (ex.code() == HRESULT_FROM_WIN32(ERROR_ALREADY_EXISTS)) 
                             {
                                 // Ignore, CopyDbAsync throws when the file already exists.
                             } else
