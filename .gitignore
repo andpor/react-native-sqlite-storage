@@ -65,6 +65,7 @@ npm-debug.log
 *.iml
 .idea
 local.properties
+yarn.lock
 
 # Created by https://www.gitignore.io/api/rade,gradle
 
