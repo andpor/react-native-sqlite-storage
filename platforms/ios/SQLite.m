@@ -32,7 +32,7 @@
  * See http://opensource.org/licenses/alphabetical for full text.
  */
 
-#import "sqlite3.h"
+#import <SQLCipher/sqlite3.h>
 
 #include <regex.h>
 
@@ -231,7 +231,7 @@ RCT_EXPORT_METHOD(open: (NSDictionary *) options success:(RCTResponseSenderBlock
           if (dbkey != NULL) {
             key = [dbkey UTF8String];
             if (key != NULL) {
-              sqlite3_key(db, key, strlen(key));
+              sqlite3_key(db, key, (int)strlen(key));
             }
           }
 #endif

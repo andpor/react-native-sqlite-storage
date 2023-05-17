@@ -8,42 +8,36 @@
 package org.pgsqlite;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteStatement;
-import android.content.Context;
-import android.util.Base64;
-
+import com.facebook.common.logging.FLog;
+import com.facebook.react.bridge.Callback;
+import com.facebook.react.bridge.ReactApplicationContext;
+import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.bridge.ReadableArray;
+import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.WritableMap;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.IllegalArgumentException;
 import java.util.Locale;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.facebook.common.logging.FLog;
-import com.facebook.react.bridge.Arguments;
-import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.ReactContextBaseJavaModule;
-import com.facebook.react.bridge.ReactMethod;
-import com.facebook.react.bridge.ReadableArray;
-import com.facebook.react.bridge.ReadableMap;
-import com.facebook.react.bridge.Callback;
-import com.facebook.react.bridge.ReadableType;
-import com.facebook.react.bridge.WritableArray;
-import com.facebook.react.bridge.WritableMap;
 
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.IOException;
+
 
 
 public class SQLitePlugin extends ReactContextBaseJavaModule {
@@ -335,7 +329,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
      * @return instance of SQLite database
      * @throws Exception
      */
-    private SQLiteDatabase openDatabase(String dbname, String assetFilePath, int openFlags, CallbackContext cbc) throws Exception {
+    private SQLiteDatabase openDatabase(String dbname, String key, String assetFilePath, int openFlags, CallbackContext cbc) throws Exception {
         InputStream in = null;
         File dbfile = null;
         try {
@@ -411,7 +405,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
 
             FLog.v(TAG, "DB file is ready, proceeding to OPEN SQLite DB: " + dbfile.getAbsolutePath());
 
-            SQLiteDatabase mydb = SQLiteDatabase.openDatabase(dbfile.getAbsolutePath(), null, openFlags);
+            SQLiteDatabase mydb = SQLiteDatabase.openDatabase(dbfile.getAbsolutePath(), key, null, openFlags);
 
             if (cbc != null)
                 cbc.success("Database opened");
@@ -858,6 +852,14 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
         }
     }
 
+    private void closeQuietly(SQLiteCursor closeable) {
+        closeable.close();
+    }
+
+    private void closeQuietly(SQLiteStatement closeable) {
+        closeable.close();
+    }
+
     private void closeQuietly(Closeable closeable) {
         if (closeable != null) {
             try {
@@ -869,6 +871,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
     }
 
     private class DBRunner implements Runnable {
+        final String key;
         final String dbname;
         final int openFlags;
         private String assetFilename;
@@ -880,6 +883,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
 
         DBRunner(final String dbname, ReadableMap options, CallbackContext cbc) {
             this.dbname = dbname;
+            this.key = options.getString("key");
             int openFlags = SQLiteDatabase.OPEN_READWRITE | SQLiteDatabase.CREATE_IF_NECESSARY;
             try {
                 this.assetFilename = SQLitePluginConverter.getString(options,"assetFilename",null);
@@ -899,9 +903,10 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
             this.openCbc = cbc;
         }
 
+        @Override
         public void run() {
             try {
-                this.mydb = openDatabase(dbname, this.assetFilename, this.openFlags, this.openCbc);
+                this.mydb = openDatabase(dbname, this.key, this.assetFilename, this.openFlags, this.openCbc);
             } catch (SQLiteException ex) {
                 FLog.e(TAG, "SQLite error opening database, stopping db thread", ex);
                 if (this.openCbc != null) {
@@ -930,7 +935,7 @@ public class SQLitePlugin extends ReactContextBaseJavaModule {
                     if (androidLockWorkaround && dbq.queries.length == 1 && dbq.queries[0].equals("COMMIT")) {
                         // FLog.v(TAG, "close and reopen db");
                         closeDatabaseNow(dbname);
-                        this.mydb = openDatabase(dbname, "", this.openFlags, null);
+                        this.mydb = openDatabase(dbname, this.key, "", this.openFlags, null);
                         // FLog.v(TAG, "close and reopen db finished");
                     }
 
