@@ -22,6 +22,11 @@ def safeExtGet(prop, fallback) {
 }
 
 android {
+    def agpVersion = com.android.Version.ANDROID_GRADLE_PLUGIN_VERSION
+    if (agpVersion.tokenize('.')[0].toInteger() >= 7) {
+        namespace "io.liteglue"
+    }
+
     compileSdkVersion safeExtGet('compileSdkVersion', 30)
 
     defaultConfig {
