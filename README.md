@@ -25,12 +25,6 @@ Version 3.2 is the first version compatible with RN 0.40.
 ```
 Then follow the instructions for your platform to link react-native-sqlite-storage into your project
 
-## Promises
-To enable promises, run 
-```javascript
-SQLite.enablePromise(true);
-```
-
 ## iOS
 #### Standard Method
 ** React Native 0.60 and above **
@@ -99,39 +93,26 @@ Add var SQLite = require('react-native-sqlite-storage') to your index.ios.js
 Add JS application code to use SQLite API in your index.ios.js etc. Here is some sample code. For full working example see test/index.ios.callback.js. Please note that Promise based API is now supported as well with full examples in the working React Native app under test/index.ios.promise.js
 
 ```javascript
-errorCB(err) {
-  console.log("SQL Error: " + err);
-},
+var db = await SQLite.openDatabase("test.db", "1.0", "Test Database", 200000);
+await db.transaction((tx) => {
+  const (tx, results) = await tx.executeSql('SELECT * FROM Employees a, Departments b WHERE a.department = b.department_id', []);
+  console.log("Query completed");
 
-successCB() {
-  console.log("SQL executed fine");
-},
+  // Get rows with Web SQL Database spec compliance.
 
-openCB() {
-  console.log("Database OPENED");
-},
+  var len = results.rows.length;
+  for (let i = 0; i < len; i++) {
+    let row = results.rows.item(i);
+    console.log(`Employee name: ${row.name}, Dept Name: ${row.deptName}`);
+  }
 
-var db = SQLite.openDatabase("test.db", "1.0", "Test Database", 200000, openCB, errorCB);
-db.transaction((tx) => {
-  tx.executeSql('SELECT * FROM Employees a, Departments b WHERE a.department = b.department_id', [], (tx, results) => {
-      console.log("Query completed");
+  // Alternatively, you can use the non-standard raw method.
 
-      // Get rows with Web SQL Database spec compliance.
+  /*
+    let rows = results.rows.raw(); // shallow copy of rows Array
 
-      var len = results.rows.length;
-      for (let i = 0; i < len; i++) {
-        let row = results.rows.item(i);
-        console.log(`Employee name: ${row.name}, Dept Name: ${row.deptName}`);
-      }
-
-      // Alternatively, you can use the non-standard raw method.
-
-      /*
-        let rows = results.rows.raw(); // shallow copy of rows Array
-
-        rows.map(row => console.log(`Employee name: ${row.name}, Dept Name: ${row.deptName}`));
-      */
-    });
+    rows.map(row => console.log(`Employee name: ${row.name}, Dept Name: ${row.deptName}`));
+  */
 });
 ```
 
@@ -316,11 +297,11 @@ Modify you openDatabase call in your application adding createFromLocation param
 ```js
 
   ...
-  1.SQLite.openDatabase({name : "testDB", createFromLocation : 1}, okCallback,errorCallback);
+  1.SQLite.openDatabase({name : "testDB", createFromLocation : 1});
   // default - if your folder is called www and data file is named the same as the dbName - testDB in this example
-  2.SQLite.openDatabase({name : "testDB", createFromLocation : "~data/mydbfile.sqlite"}, okCallback,errorCallback);
+  2.SQLite.openDatabase({name : "testDB", createFromLocation : "~data/mydbfile.sqlite"});
   // if your folder is called data rather than www or your filename does not match the name of the db
-  3.SQLite.openDatabase({name : "testDB", createFromLocation : "/data/mydbfile.sqlite"}, okCallback,errorCallback);
+  3.SQLite.openDatabase({name : "testDB", createFromLocation : "/data/mydbfile.sqlite"});
   // if your folder is not in app bundle but in app sandbox i.e. downloaded from some remote location.
   ...
 
@@ -339,13 +320,13 @@ WARNING: the default location on iOS has changed in version 3.0.0 - it is now a 
 To open a database in default no-sync location (affects iOS *only*)::
 
 ```js
-SQLite.openDatabase({name: 'my.db', location: 'default'}, successcb, errorcb);
+SQLite.openDatabase({name: 'my.db', location: 'default'});
 ```
 
 To specify a different location (affects iOS *only*):
 
 ```js
-SQLite.openDatabase({name: 'my.db', location: 'Library'}, successcb, errorcb);
+SQLite.openDatabase({name: 'my.db', location: 'Library'});
 ```
 
 where the `location` option may be set to one of the following choices:
@@ -386,7 +367,7 @@ In both `ios/MY_APP_NAME/Info.plist` and `ios/MY_APP_EXT_NAME/Info.plist` (along
 When calling `SQLite.openDatabase` in your React Native code, you need to set the `location` param to `'Shared'`:
 
 ```js
-SQLite.openDatabase({name: 'my.db', location: 'Shared'}, successcb, errorcb);
+SQLite.openDatabase({name: 'my.db', location: 'Shared'});
 ```
 
 ## Importing a pre-populated database.
@@ -397,19 +378,19 @@ You can import an existing - prepopulated database file into your application. D
 Use this flavor of openDatabase call, if your folder is called www and data file is named the same as the dbName - testDB in this example
 
 ```js
-SQLite.openDatabase({name : "testDB", createFromLocation : 1}, okCallback,errorCallback);
+SQLite.openDatabase({name : "testDB", createFromLocation : 1});
 ```
 
 Use this flavor of openDatabase call if your folder is called data rather than www or your filename does not match the name of the db. In this case db is named testDB but the file is mydbfile.sqlite which is located in a data subdirectory of www
 
 ```js
-SQLite.openDatabase({name : "testDB", createFromLocation : "~data/mydbfile.sqlite"}, okCallback,errorCallback);
+SQLite.openDatabase({name : "testDB", createFromLocation : "~data/mydbfile.sqlite"});
 ```
 
 Use this flavor of openDatabase call if your folder is not in application bundle but in app sandbox i.e. downloaded from some remote location. In this case the source file is located in data subdirectory of Documents location (iOS) or FilesDir (Android).
 
 ```js
-SQLite.openDatabase({name : "testDB", createFromLocation : "/data/mydbfile.sqlite"}, okCallback,errorCallback);
+SQLite.openDatabase({name : "testDB", createFromLocation : "/data/mydbfile.sqlite"});
 ```
 
 ## Additional options for pre-populated database file
@@ -417,7 +398,7 @@ SQLite.openDatabase({name : "testDB", createFromLocation : "/data/mydbfile.sqlit
 You can provide additional instructions to sqlite-storage to tell it how to handle your pre-populated database file. By default, the source file is copied over to the internal location which works in most cases but sometimes this is not really an option particularly when the source db file is large. In such situations you can tell sqlite-storage you do not want to copy the file but rather use it in read-only fashion via direct access. You accomplish this by providing an additional optional readOnly parameter to openDatabase call
 
 ```js
-SQLite.openDatabase({name : "testDB", readOnly: true, createFromLocation : "/data/mydbfile.sqlite"}, okCallback,errorCallback);
+SQLite.openDatabase({name : "testDB", readOnly: true, createFromLocation : "/data/mydbfile.sqlite"});
 ```
 
 Note that in this case, the source db file will be open in read-only mode and no updates will be allowed. You cannot delete a database that was open with readOnly option. For Android, the read only option works with pre-populated db files located in FilesDir directory because all other assets are never physically located on the file system but rather read directly from the app bundle.
@@ -431,17 +412,10 @@ To archieve this, you need to open both databases and to call the attach()-metho
 ```js
 let dbMaster, dbSecond;
 
-dbSecond = SQLite.openDatabase({name: 'second'},
-  (db) => {
-    dbMaster = SQLite.openDatabase({name: 'master'},
-      (db) => {
-        dbMaster.attach( "second", "second", () => console.log("Database attached successfully"), () => console.log("ERROR"))
-      },
-      (err) => console.log("Error on opening database 'master'", err)
-    );
-  },
-  (err) => console.log("Error on opening database 'second'", err)
-);
+const db = await dbSecond = SQLite.openDatabase({name: 'second'});
+const dbMaster = await SQLite.openDatabase({name: 'master'}); 
+await dbMaster.attach( "second", "second");
+console.log("Database attached successfully");
 ```
 
 The first argument of attach() is the name of the database, which is used in SQLite.openDatabase(). The second argument is the alias, that is used to query on tables of the attached database.
@@ -455,7 +429,7 @@ SELECT * FROM user INNER JOIN second.subscriptions s ON s.user_id = user.id
 To detach a database, just use the detach()-method:
 
 ```js
-dbMaster.detach( 'second', successCallback, errorCallback );
+dbMaster.detach( 'second');
 ```
 
 For sure, their is also Promise-support available for attach() and detach(), as shown in the example-application under the

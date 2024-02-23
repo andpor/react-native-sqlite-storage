@@ -17,7 +17,6 @@ import ListView from 'deprecated-react-native-listview';
 
 import SQLite from 'react-native-sqlite-storage';
 SQLite.DEBUG(true);
-SQLite.enablePromise(false);
 
 const database_name = "Test.db";
 const database_version = "1.0";
