@@ -4,6 +4,7 @@ v7.0.0
  1. A+ Promise support
  2. Removed callback API
  3. Added types
+ 4. Removed Windows support
 
 v6.1.1-3
  1. Add SUPPORTS_ENCRYPTION const to native module (iOS/Android)
