@@ -1,5 +1,5 @@
 /**
- * sqlite.ios.callback.js
+ * sqlite.windows.callback.js
  *
  * Created by Andrzej Porebski on 10/29/15.
  * Copyright (c) 2015 Andrzej Porebski.
@@ -105,6 +105,20 @@ class SQLiteDemo extends Component {
       });
   }
 
+  attachDatabase = (db) => {
+    this.updateProgress("Attaching DB");
+    db.attach("TestDBToAttach.db", "TestDBToAttach",
+      () => {
+        this.updateProgress("Database is ready ... attaching ...");
+        this.updateProgress("Successfully attached to the db");
+        console.log("Successfully attached to the db");
+      },
+      (error) => {
+        console.log("Error attaching the DB:", error);
+        this.updateProgress(error);
+      });
+  }
+
   populateDB = (tx) => {
     this.updateProgress("Executing DROP stmts");
 
@@ -180,6 +194,8 @@ class SQLiteDemo extends Component {
     this.updateProgress("Opening database ...",true);
     db = SQLite.openDatabase(database_name, database_version, database_displayname, database_size, this.openCB, this.errorCB);
     this.populateDatabase(db);
+    // Test attaching the db. Attaching once, should work. Attaching the second time should fail.
+    this.attachDatabase(db);
   }
 
   deleteDatabase = () => {

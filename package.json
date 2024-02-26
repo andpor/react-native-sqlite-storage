@@ -1,6 +1,6 @@
 {
   "name": "@mendix/react-native-sqlite-storage",
-  "version": "5.1.3",
+  "version": "6.1.3",
   "description": "SQLite3 bindings for React Native (Android & iOS)",
   "main": "sqlite.js",
   "scripts": {
@@ -38,6 +38,11 @@
   "homepage": "https://github.com/mendix/react-native-sqlite-storage",
   "peerDependencies": {
     "react-native": ">=0.14.0"
+  },
+  "devDependencies": {
+    "react": "16.13.1",
+    "react-native": "^0.63.2",
+    "react-native-windows": "^0.63.6"
   },
   "release-it": {
     "git": {

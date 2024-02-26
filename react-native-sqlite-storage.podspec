@@ -17,7 +17,7 @@ Pod::Spec.new do |s|
   s.preserve_paths = 'README.md', 'LICENSE', 'package.json', 'sqlite.js'
   s.source_files   = "platforms/ios/*.{h,m}"
 
-  s.dependency 'React'
+  s.dependency 'React-Core'
   s.dependency 'SQLCipher'
   s.library = 'sqlite3'
 end
