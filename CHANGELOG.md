@@ -71,7 +71,7 @@ v3.3.0 (Extended thanks to dryganets for his significant contributions to this r
  3. All statements and queries are closed in finally statements in order to fix SQLiteCipher corner case crashes [PR #132] (https://github.com/andpor/react-native-sqlite-storage/pull/132)
  4. Minor style fix	in index.ios.callback.js and index.ios.promise.js [PR #136] (https://github.com/andpor/react-native-sqlite-storage/pull/136)
  5. Fix determination logic for opened db [PR #139] (https://github.com/andpor/react-native-sqlite-storage/pull/139)
- 6. Clean up in lib/sqlite.core.js [PR #138] (https://github.com/andpor/react-native-sqlite-storage/pull/138)
+ 6. Clean up in lib/sqlite.js [PR #138] (https://github.com/andpor/react-native-sqlite-storage/pull/138)
  7. Production grade logging for the Android plugin [PR #137] (https://github.com/andpor/react-native-sqlite-storage/pull/137)
  8. Remove pre-honeycomb workaround code in Android that was causing issues in SQL Cipher [PR #147] (https://github.com/andpor/react-native-sqlite-storage/pull/147)
  9. Fix broken Markdown headings [PR #153] (https://github.com/andpor/react-native-sqlite-storage/pull/153)

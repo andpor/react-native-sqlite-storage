@@ -2,7 +2,8 @@
   "name": "@mendix/react-native-sqlite-storage",
   "version": "7.0.0",
   "description": "SQLite3 bindings for React Native (Android & iOS)",
-  "main": "sqlite.js",
+  "main": "lib/sqlite.js",
+  "types": "types/index.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified yet\" && exit 1"
   },
