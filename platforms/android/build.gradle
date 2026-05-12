@@ -1,11 +1,10 @@
 buildscript {
     repositories {
         google()
-        jcenter()
+        mavenCentral()
     }
-
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.1.4'
+        classpath 'com.android.tools.build:gradle:8.1.1'
     }
 }
 
@@ -15,16 +14,44 @@ def safeExtGet(prop, fallback) {
     rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
 }
 
+def isNewArchitectureEnabled() {
+    return project.hasProperty("newArchEnabled") && project.newArchEnabled == "true"
+}
+
+if (isNewArchitectureEnabled()) {
+    apply plugin: 'com.facebook.react'
+}
+
 android {
-    compileSdkVersion safeExtGet('compileSdkVersion', 23)
-    buildToolsVersion safeExtGet('buildToolsVersion', '27.0.3')
+    namespace "org.pgsqlite"
+    compileSdkVersion safeExtGet('compileSdkVersion', 34)
+    buildToolsVersion safeExtGet('buildToolsVersion', '34.0.0')
 
     defaultConfig {
-        minSdkVersion safeExtGet('minSdkVersion', 16)
-        targetSdkVersion safeExtGet('targetSdkVersion', 22)
+        minSdkVersion safeExtGet('minSdkVersion', 24)
+        targetSdkVersion safeExtGet('targetSdkVersion', 34)
         versionCode 1
         versionName "1.0"
+        buildConfigField "boolean", "IS_NEW_ARCHITECTURE_ENABLED", isNewArchitectureEnabled().toString()
     }
+
+    buildFeatures {
+        buildConfig true
+    }
+
+    sourceSets {
+        main {
+            if (isNewArchitectureEnabled()) {
+                java.srcDirs += [
+                    'src/newarch/java',
+                    "${project.buildDir}/generated/source/codegen/java"
+                ]
+            } else {
+                java.srcDirs += ['src/oldarch/java']
+            }
+        }
+    }
+
     lintOptions {
         abortOnError false
     }
@@ -33,11 +60,16 @@ android {
 repositories {
     mavenCentral()
     google()
-    maven {
-        url "https://maven.google.com"
-    }
 }
 
 dependencies {
-    implementation 'com.facebook.react:react-native:+'
+    implementation 'com.facebook.react:react-android:+'
+}
+
+if (isNewArchitectureEnabled()) {
+    react {
+        jsRootDir = file("../../src/")
+        libraryName = "RNSQLiteStorageSpec"
+        codegenJavaPackageName = "org.pgsqlite"
+    }
 }

@@ -23,6 +23,10 @@
 #import <React/RCTBridge.h>
 #import <React/RCTEventDispatcher.h>
 
+#ifdef RCT_NEW_ARCH_ENABLED
+#import <ReactCommon/RCTTurboModule.h>
+#endif
+
 /*
  * Copyright (C) 2015-Present Andrzej Porebski
  * Copyright (C) 2012-2015 Chris Brody
@@ -733,5 +737,13 @@ RCT_EXPORT_METHOD(executeSql: (NSDictionary *) options success:(RCTResponseSende
 {
   return YES;
 }
+
+#ifdef RCT_NEW_ARCH_ENABLED
+- (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:
+    (const facebook::react::ObjCTurboModule::InitParams &)params
+{
+  return std::make_shared<facebook::react::NativeSQLiteSpecJSI>(params);
+}
+#endif
 
 @end /* vim: set expandtab : */

@@ -1,10 +1,23 @@
 {
   "name": "react-native-sqlite-storage",
-  "version": "6.0.1",
+  "version": "6.1.0",
   "description": "SQLite3 bindings for React Native (Android & iOS)",
   "main": "sqlite.js",
+  "files": [
+    "sqlite.js",
+    "lib/",
+    "src/",
+    "platforms/ios/",
+    "platforms/android/",
+    "react-native.config.js",
+    "react-native-sqlite-storage.podspec",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified yet\" && exit 1"
+    "test": "jest --passWithNoTests",
+    "test:watch": "jest --watch"
   },
   "repository": {
     "type": "git",
@@ -21,6 +34,9 @@
     "ios",
     "android",
     "promise",
+    "turbomodule",
+    "fabric",
+    "new-architecture",
     "cordova-sqlite-storage"
   ],
   "author": "Andrzej Porebski",
@@ -30,11 +46,33 @@
   },
   "homepage": "https://github.com/andpor/react-native-sqlite-storage",
   "peerDependencies": {
-    "react-native": ">=0.14.0"
+    "react": ">=18.2.0",
+    "react-native": ">=0.75.0"
   },
   "devDependencies": {
-    "react": "16.13.1",
-    "react-native": "^0.63.2",
-    "react-native-windows": "^0.63.6"
+    "jest": "^29.7.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/example/",
+      "/test/",
+      "/__tests__/helpers/"
+    ],
+    "moduleNameMapper": {
+      "^react-native$": "<rootDir>/__mocks__/react-native.js"
+    }
+  },
+  "codegenConfig": {
+    "name": "RNSQLiteStorageSpec",
+    "type": "modules",
+    "jsSrcsDir": "src/specs",
+    "android": {
+      "javaPackageName": "org.pgsqlite"
+    },
+    "ios": {
+      "modulesConformingToProtocol": {}
+    }
   }
 }

@@ -15,6 +15,10 @@
 
 #import <React/RCTBridgeModule.h>
 
+#ifdef RCT_NEW_ARCH_ENABLED
+#import <RNSQLiteStorageSpec/RNSQLiteStorageSpec.h>
+#endif
+
 // Used to remove dependency on sqlite3.h in this header:
 struct sqlite3;
 
@@ -30,7 +34,13 @@ enum WebSQLError {
 };
 typedef int WebSQLError;
 
-@interface SQLite : NSObject <RCTBridgeModule> {
+@interface SQLite : NSObject
+#ifdef RCT_NEW_ARCH_ENABLED
+  <NativeSQLiteSpec>
+#else
+  <RCTBridgeModule>
+#endif
+{
     NSMutableDictionary *openDBs;
 }
 

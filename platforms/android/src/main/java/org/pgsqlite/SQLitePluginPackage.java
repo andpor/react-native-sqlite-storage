@@ -7,47 +7,54 @@ package org.pgsqlite;
 
 import android.app.Activity;
 
-import com.facebook.react.ReactPackage;
-import com.facebook.react.bridge.JavaScriptModule;
+import com.facebook.react.TurboReactPackage;
 import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.uimanager.ViewManager;
+import com.facebook.react.module.model.ReactModuleInfo;
+import com.facebook.react.module.model.ReactModuleInfoProvider;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
-import java.util.List;
-
-public class SQLitePluginPackage implements ReactPackage {
+public class SQLitePluginPackage extends TurboReactPackage {
 
     /**
-     * @deprecated, use method without activity
-     * activity parameter is ignored
+     * @deprecated activity parameter is ignored. Kept for binary compatibility
+     * with older consumers that still pass an Activity reference.
      */
-    public SQLitePluginPackage(Activity activity){
+    @Deprecated
+    public SQLitePluginPackage(Activity activity) {
         this();
     }
 
-    public SQLitePluginPackage() {
+    public SQLitePluginPackage() {}
+
+    @Override
+    public NativeModule getModule(String name, ReactApplicationContext reactContext) {
+        if ("SQLite".equals(name)) {
+            return new SQLitePlugin(reactContext);
+        }
+        return null;
     }
 
     @Override
-    public List<NativeModule> createNativeModules(
-                                ReactApplicationContext reactContext) {
-      List<NativeModule> modules = new ArrayList<>();
-
-      modules.add(new SQLitePlugin(reactContext));
-
-      return modules;
-    }
-
-    // Deprecated RN 0.47
-    public List<Class<? extends JavaScriptModule>> createJSModules() {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public List<ViewManager> createViewManagers(ReactApplicationContext reactContext) {
-      return Collections.emptyList();
+    public ReactModuleInfoProvider getReactModuleInfoProvider() {
+        return () -> {
+            Map<String, ReactModuleInfo> map = new HashMap<>();
+            boolean isTurboModule = BuildConfig.IS_NEW_ARCHITECTURE_ENABLED;
+            map.put(
+                "SQLite",
+                new ReactModuleInfo(
+                    "SQLite",
+                    "org.pgsqlite.SQLitePlugin",
+                    false,  // canOverrideExistingModule
+                    false,  // needsEagerInit
+                    false,  // hasConstants
+                    false,  // isCxxModule
+                    isTurboModule
+                )
+            );
+            return map;
+        };
     }
 }
